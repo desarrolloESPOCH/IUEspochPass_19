@@ -1,0 +1,39 @@
+<p-menubar [model]="this.items()">
+  <ng-template pTemplate="start">
+    <div class="flex align-items-center justify-content-between">
+      <div class="flex align-items-center fondo">
+        <div class="flex align-items-center">
+          @if(themeDark()){
+          <img src="logo-espoch.svg" height="40" class="mr-2" />
+          }@else{
+          <img src="logo-espoch1.svg" height="40" class="mr-2" />
+          }
+
+          <div class="flex align-items-center">
+            <div class="titulo">
+              <p class="font-bold">ESPOCH PASS</p>
+            </div>
+          </div>
+        </div>
+        <div class="card grid mt-1 gap-1 justify-content-center">
+          <div class="mr-3">
+            @defer () {
+            <p-dropdown
+              opción="Roles"
+              [(ngModel)]="rolSeleccionado"
+              (onChange)="onChangeRol($event)"
+              optionLabel="strNombre"
+              [options]="lstRoles()"
+              [appendTo]="'body'"
+              [emptyMessage]="'No tiene roles asignados'"
+            ></p-dropdown>
+            }@placeholder(minimum 250ms) {
+            <p-skeleton height="2rem" width="200px" styleClass="mb-2" />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</p-menubar>
+<app-c-linea-rol [color]="idRolSeleccionado()" />

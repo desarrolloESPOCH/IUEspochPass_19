@@ -1,0 +1,34 @@
+<div
+  class="w-full flex justify-content-center align-items-center"
+  style="height: 66vh"
+>
+  @if((isLoading())){
+
+  <p-progressSpinner ariaLabel="loading" />
+  }@else{
+  <p-panel class="shadow-2" header="Información del Usuario">
+    <div class="flex justify-content-center">
+      @defer(){
+
+      <img
+        [src]="foto()"
+        alt="foto del usuario"
+        style="
+          width: 250px;
+          height: 250px;
+          border: solid 1px rgba(219, 212, 212, 0.568);
+        "
+      />
+      }@placeholder (minimum 1000ms){
+      <p-skeleton size="21rem" styleClass="mr-2" />}
+    </div>
+    <div class="flex justify-items-center">
+      <h2>Cédula:</h2>
+      <h2>{{ this.User().strCedula }}</h2>
+    </div>
+    <p>nombres: {{ this.User().Usuario }}</p>
+    <p>dependencia/facultad: {{ this.dependencia() }}</p>
+    <p>cargo: {{ this.cargo() }}</p>
+  </p-panel>
+  }
+</div>

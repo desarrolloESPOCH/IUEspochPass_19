@@ -1,0 +1,42 @@
+.rol1 {
+  background-color: #d31a2b;
+}
+
+.rol2 {
+  background-color: #39923b;
+}
+
+.rol3 {
+  background-color: #3399cc;
+}
+
+.rol4 {
+  background-color: #dcad2a;
+}
+
+.rol5 {
+  background-color: #304a54;
+}
+
+.rol6 {
+  background-color: #999999;
+}
+.linea {
+  width: 100%;
+  height: 7px;
+  border-radius: 1px;
+}
+
+.animate {
+  animation: lineaAni 1.9s;
+}
+
+@keyframes lineaAni {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}

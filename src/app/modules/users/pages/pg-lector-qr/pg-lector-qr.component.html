@@ -1,0 +1,74 @@
+<p-toast></p-toast>
+<div class="container-dynamic fadein animation-duration-200">
+  <app-qr-scanner (qrDetected)="onQrScanned($event)" />
+</div>
+
+<!-- <div class="row w-full">
+  <div
+    class="flex col-xs-12 col-md-6 col-lg-4 col-xl-3 my-1 w-full justify-content-center"
+  > -->
+<!-- <select
+      #select1
+      (change)="action.playDevice(select1.value)"
+      class="form-select form-select-md input"
+    >
+      <option class="" [value]="null" selected>Seleccione cámara</option>
+      <option
+        *ngFor="let c of action.devices.value; let i = index"
+        [value]="c.deviceId"
+        [selected]="i == action.deviceIndexActive"
+      >
+        {{ c.label }}
+      </option>
+    </select> -->
+<!-- <button (click)="iniciarEscaneo()">Iniciar Escaneo</button>
+  </div>
+  <div class="flex justify-content-center mt-5"> -->
+<!-- <ngx-scanner-qrcode
+      #scanner
+      #action="scanner"
+      (scanSuccess)="onEvent($event)"
+      style="min-width: 80%"
+    ></ngx-scanner-qrcode> -->
+<!-- </div>
+  <div class="flex w-full">
+    <app-qr-scanner (qrDetected)="onQrScanned($event)"></app-qr-scanner>
+  </div> -->
+<!-- <span>{{ action.data.value | json }}</span -->
+<!-- value -->
+<!-- <span>{{ action.data | async | json }}</span> -->
+
+<!-- some.component.html -->
+<!-- <ngx-scanner [formats]="['QR_CODE']" (scanSuccess)="onScanSuccess($event)">
+  </ngx-scanner> -->
+<!-- @if(hasScanned){
+  <div class="flex justify-content-center" style="width: 100%">
+    @if(base64textString!=''){
+
+    <img
+      [src]="base64textString"
+      style="width: 150px; height: 150px; border: solid 1px rgb(37, 36, 36)"
+    />
+    }
+  </div>
+  <div class="field col-12 md:col-3">
+    <label for="firstname6">Usuario</label>
+    <input
+      id="firstname6"
+      type="text"
+      [(ngModel)]="Usuario"
+      class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+    />
+  </div>
+  <div class="field col-12 md:col-3">
+    <label for="firstname6">Dependencia</label>
+    <input
+      id="firstname6"
+      type="text"
+      [(ngModel)]="dependencia"
+      class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+    />
+  </div>
+  } -->
+<!-- <br />
+</div> -->

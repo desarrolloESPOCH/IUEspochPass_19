@@ -1,0 +1,36 @@
+.barra {
+  height: 7px;
+  width: 0px;
+  background-color: #d31a2b;
+  animation: animacionBarra 2s ease-in-out;
+}
+
+.sello {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 7px);
+  animation: animacionSello 2s ease-in-out;
+}
+
+img {
+  max-width: 400px;
+  min-width: 300px;
+}
+@keyframes animacionBarra {
+  from {
+    width: 0px;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes animacionSello {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 100;
+  }
+}

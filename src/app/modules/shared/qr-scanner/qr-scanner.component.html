@@ -1,0 +1,26 @@
+<!-- <div class="scanner-container">
+ 
+</div> -->
+
+<div class="caja flex justify-content-center align-items-center">
+  <div
+    style="
+      width: 400px;
+      height: 600px;
+      min-height: 400px;
+      background-color: blueviolet;
+    "
+  >
+    <video #videoElement autoplay playsinline></video>
+    <div #scannerOverlay class="scanner-overlay">
+      <div class="bottom-left"></div>
+      <div class="bottom-right"></div>
+    </div>
+  </div>
+  <p class="scanner-text">Escanea un código QR</p>
+
+  @if(scannedCode){
+
+  <p>Código Escaneado: {{ scannedCode }}</p>
+  }
+</div>

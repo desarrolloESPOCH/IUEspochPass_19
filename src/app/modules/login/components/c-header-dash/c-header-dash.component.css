@@ -1,0 +1,11 @@
+:host ::ng-deep .p-menubar-start {
+  flex: 3;
+}
+
+.fondo {
+  /* background-color: aqua; */
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

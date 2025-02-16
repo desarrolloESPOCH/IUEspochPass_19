@@ -1,0 +1,40 @@
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  height: 70px;
+  z-index: 10;
+}
+.efecto-blur {
+  padding: 8px 5%;
+  background: rgb(255 255 255 / 5%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-bottom: 0.5px solid rgb(255 255 255 / 15%);
+}
+
+.button {
+  background-color: transparent;
+  border: 3px solid white;
+  cursor: pointer;
+  outline: none;
+  color: white;
+  text-transform: uppercase;
+  text-align: center;
+  border-radius: 5px;
+  transition: all 0.3s;
+  padding: 12px 24px;
+  font-size: 20px;
+  line-height: 1em;
+}
+
+.logo {
+  display: flex;
+  color: white;
+}
+
+.button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}

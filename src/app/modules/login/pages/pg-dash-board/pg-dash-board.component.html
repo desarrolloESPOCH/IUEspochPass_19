@@ -1,0 +1,53 @@
+<!-- cspell:disable -->
+<!-- <app-loading></app-loading> -->
+
+<div #lienzo class="lienzo">
+  <app-c-header-dash class="header" />
+
+  @if (!isExpand) {
+
+  <app-c-sidebar
+    class="sidebar container-slider overflow-y-visible desaparece"
+  />
+  } @if (!sidebarVisible) {
+  <p-button
+    class="desaparece button"
+    icon="pi pi-bars"
+    [outlined]="true"
+    (click)="toggleButton()"
+    severity="secondary"
+  ></p-button>
+  <p-button
+    class="menumovil button"
+    icon="pi pi-bars"
+    [outlined]="true"
+    (click)="sidebarVisible = true"
+    severity="secondary"
+  ></p-button>
+  }@else {
+  <p-button
+    class="menumovil button"
+    icon="pi pi-bars"
+    [outlined]="true"
+    (click)="sidebarVisible = true"
+    severity="secondary"
+  ></p-button>
+  }
+  <!-- <app-camino class="path" /> -->
+  <div class="main container-dynamic container-slider">
+    <!-- <app-informacion-proceso /> -->
+    <router-outlet />
+  </div>
+
+  <app-c-footer class="footer" />
+</div>
+
+<p-sidebar class="flex" [(visible)]="sidebarVisible">
+  <div class="">
+    <app-c-sidebar />
+  </div>
+</p-sidebar>
+
+<p-sidebar [(visible)]="sidebarTimeVisible" position="right">
+  <!-- <app-c-time-line /> -->
+</p-sidebar>

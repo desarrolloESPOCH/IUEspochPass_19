@@ -1,0 +1,11 @@
+<div style="overflow: hidden">
+  @if(wait()){
+  <app-c-splash />
+  } @else {
+  <div class="animate__animated animate__fadeIn animate__slow">
+    @defer () {
+    <app-c-landing />
+    }
+  </div>
+  }
+</div>

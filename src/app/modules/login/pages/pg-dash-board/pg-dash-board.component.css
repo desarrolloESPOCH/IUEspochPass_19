@@ -1,0 +1,92 @@
+/* cspell:disable */
+.lienzo {
+  height: 100dvh;
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  grid-template-areas:
+    "header header header header"
+    "sidebar button path path"
+    "sidebar main main main"
+    "footer footer footer footer";
+  grid-template-columns: auto 56px 1fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
+}
+
+.header {
+  grid-area: header;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background-color: "red";
+}
+.button {
+  padding: 5px;
+  grid-area: button;
+  /* height: fit-content; */
+  justify-content: center;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}
+
+.path {
+  grid-area: path;
+  padding-right: 20px;
+}
+
+.main {
+  grid-area: main;
+}
+
+.footer {
+  grid-area: footer;
+}
+
+.menumovil {
+  display: none;
+}
+@media screen and (max-width: 800px) {
+  /* .lienzo {
+    grid-template-areas:
+      " header header header"
+      " button path path"
+      " main main main"
+      " footer footer footer";
+    grid-template-columns: 1fr 1fr 1fr;
+    transition: grid-template-columns 1.5s ease-in-out;
+  } */
+
+  .desaparece {
+    display: none;
+  }
+
+  .menumovil {
+    display: flex;
+  }
+}
+
+:host ::ng-deep {
+  .speeddial-linear-demo {
+    .p-speeddial-direction-up {
+      left: calc(50% - 2rem);
+      bottom: 0;
+    }
+
+    .p-speeddial-direction-down {
+      left: calc(50% - 2rem);
+      top: 0;
+    }
+
+    .p-speeddial-direction-left {
+      right: 0;
+      top: calc(50% - 2rem);
+    }
+
+    .p-speeddial-direction-right {
+      left: 0;
+      top: calc(50% - 2rem);
+    }
+  }
+}

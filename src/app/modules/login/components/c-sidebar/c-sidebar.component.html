@@ -1,0 +1,22 @@
+<div class="flex justify-content-start">
+  @defer() { @if(items.length==0){
+  <div style="width: 210px">
+    @for( i of [1,2,3,4];track i){
+    <p-skeleton height="3rem" styleClass="mb-2" />
+    }
+  </div>
+  }@else{
+
+  <p-panelMenu [model]="items" [style]="{ width: '210px' }"></p-panelMenu>
+  } }@placeholder(minimum 250ms){
+
+  <div style="width: 210px">
+    @for( i of [1,2,3,4];track i){
+    <p-skeleton height="3rem" styleClass="mb-2" />
+    }
+  </div>
+
+  } @error {
+  <p>no se puedo cargar</p>
+  }
+</div>

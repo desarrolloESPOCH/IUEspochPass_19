@@ -1,1 +1,86 @@
 /* You can add global styles to this file, and also import other style files */
+/* You can add global styles to this file, and also import other style files */
+
+/* @import "primeng/resources/themes/lara-light-blue/theme.css"; */
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.scss";
+
+@import "../node_modules/quill/dist/quill.core.css";
+@import "../node_modules/quill/dist/quill.snow.css";
+
+:root {
+  /* --contenido: calc(100vh - 64px); */
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  /* font-family: "Roboto", sans-serif; */
+  background-color: var(--surface-ground);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+html {
+  font-size: 12px;
+  /* background-color: var(--surface-ground); */
+}
+
+.fadeIn {
+  animation-name: fadeIn;
+}
+
+.container-dynamic {
+  width: 100%;
+  padding: 10px;
+}
+
+.container-slider {
+  /* height: var(--contenido); */
+  overflow-y: scroll;
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.container-slider::-webkit-scrollbar {
+  width: 8px; /* Tamaño del scroll en vertical */
+  height: 8px; /* Tamaño del scroll en horizontal */
+  /*display: none;  Ocultar scroll */
+}
+
+.container-slider::-webkit-scrollbar-thumb {
+  background: #7a7979;
+  border-radius: 4px;
+}
+
+/* Cambiamos el fondo y agregamos una sombra cuando esté en hover */
+.container-slider::-webkit-scrollbar-thumb:hover {
+  background: #b3b3b3;
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Cambiamos el fondo cuando esté en active */
+.container-slider::-webkit-scrollbar-thumb:active {
+  background-color: #999999;
+}
+
+.container-slider::-webkit-scrollbar-track {
+  background: #e1e1e1;
+  border-radius: 4px;
+}
+
+/* Cambiamos el fondo cuando esté en active o hover */
+.container-slider::-webkit-scrollbar-track:hover,
+.container-slider::-webkit-scrollbar-track:active {
+  background: #d4d4d4;
+}

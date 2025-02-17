@@ -22,6 +22,7 @@
     "@angular/router": "^18.2.0",
     "@zxing/browser": "^0.1.5",
     "js-base64": "^3.7.7",
+    "ng-qrcode": "^18.0.0",
     "ngx-scanner-qrcode": "^1.7.3",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",

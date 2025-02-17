@@ -3,13 +3,24 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { QrService } from '../../../../services/qr/QrService';
 import { delay, firstValueFrom } from 'rxjs';
-import { PanelModule } from 'primeng/panel';
 import { swUsuariosService } from '../../../../services/usuarios/Usuarios.service';
 import { SkeletonModule } from 'primeng/skeleton';
+import { DividerModule } from 'primeng/divider';
+import { FieldsetModule } from 'primeng/fieldset';
+import { ButtonModule } from 'primeng/button';
+import { Router } from '@angular/router';
+import { MessagesModule } from 'primeng/messages';
 @Component({
   selector: 'app-pg-validar-qr',
   standalone: true,
-  imports: [ProgressSpinnerModule, PanelModule, SkeletonModule],
+  imports: [
+    ProgressSpinnerModule,
+    SkeletonModule,
+    DividerModule,
+    FieldsetModule,
+    ButtonModule,
+    MessagesModule,
+  ],
   templateUrl: './pg-validar-qr.component.html',
   styleUrl: './pg-validar-qr.component.css',
 })
@@ -18,6 +29,8 @@ export default class PgValidarQrComponent {
   private swCas = inject(SwCasService);
   private swQr = inject(QrService);
   private swUser = inject(swUsuariosService);
+  private router = inject(Router);
+  isValid = signal(true);
 
   isLoading = signal(true);
   User = signal<any>({});
@@ -26,11 +39,24 @@ export default class PgValidarQrComponent {
   cargo = signal<string>('');
 
   ngOnInit() {
-    console.log('codigoQr: ', this.codigoQr());
     this.validarQr();
   }
 
+  esJsonValido(cadena: string) {
+    try {
+      JSON.parse(cadena);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   validarQr = () => {
+    if (!this.esJsonValido(this.codigoQr())) {
+      this.isLoading.set(false);
+      this.isValid.set(false);
+      return;
+    }
     let infoQr = JSON.parse(this.codigoQr());
     const datos: IQrValidarParams = {
       strHash: infoQr.strHash,
@@ -49,6 +75,7 @@ export default class PgValidarQrComponent {
       .pipe(delay(500))
       .subscribe({
         next: (response) => {
+          console.log('response: ', response);
           this.isLoading.set(false);
           if (response.count > 0) {
             this.User.set(response.data[0]);
@@ -57,10 +84,16 @@ export default class PgValidarQrComponent {
             this.obtenerDataAcademico(this.User().strCedula);
             this.getRoles();
           } else {
+            this.isValid.set(false);
+
             console.log('codigo invalido: ', response);
+            this.isLoading.set(false);
           }
         },
         error: (e) => {
+          this.isValid.set(false);
+
+          console.log('e: ', e);
           this.isLoading.set(false);
         },
       });
@@ -69,10 +102,13 @@ export default class PgValidarQrComponent {
   obtenerDataAcademico = async (cedula: string) => {
     try {
       let cedula_ = cedula.slice(0, 9) + '-' + cedula.slice(9, 10);
+      console.log('cedula_: ', cedula_);
       const estudiante = await firstValueFrom(
-        this.swUser.getInformacionEstudiante(cedula)
+        this.swUser.getInformacionEstudiante(cedula_)
       );
+
       console.log('estudiante: ', estudiante);
+      this.foto.set(estudiante.listado[0].strfoto);
     } catch (e) {
       console.log('error: ', e);
     }
@@ -93,6 +129,10 @@ export default class PgValidarQrComponent {
       console.log('objImg: ', objImg);
       this.foto.set(objImg.imgArchivo);
     });
+  };
+
+  nativage = () => {
+    this.router.navigate(['/dashboard/users/lector']);
   };
 }
 

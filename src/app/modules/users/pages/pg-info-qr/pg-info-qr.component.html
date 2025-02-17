@@ -1,1 +1,69 @@
-<p>pg-info-qr works!</p>
+<p-card header="" class="animate__animated animate__fadeIn animate__slow">
+  <div class="grid">
+    <div class="flex justify-content-center align-items-center md:col-6 col-12">
+      <div class="shadow-3">
+        <qr-code
+          value="{{ datos }}"
+          size="300"
+          errorCorrectionLevel="M"
+        ></qr-code>
+      </div>
+    </div>
+
+    <div
+      class="flex justify-content-center align-items-center animate__fadeIn animate__slow md:col-4 col-12"
+    >
+      <img class="shadow-3" src="{{ foto }}" alt="" width="310px" />
+    </div>
+
+    <div class="mt-2 md:col-4 sm:col-12 w-full">
+      <div class="flex flex-column gap-2 w-full">
+        <label for="username"> <h3>Nombres:</h3> </label>
+        <input
+          disabled="true"
+          pInputText
+          aria-describedby="username-help"
+          [(ngModel)]="nombre"
+        />
+      </div>
+      <div class="flex flex-column gap-2">
+        <label for="username"><h3>Apellidos</h3></label>
+        <input
+          disabled="true"
+          pInputText
+          aria-describedby="username-help"
+          [(ngModel)]="apellidos"
+        />
+      </div>
+
+      <div class="flex flex-column gap-2">
+        <label for="username"><h3>Documento</h3></label>
+        <input
+          disabled="true"
+          pInputText
+          aria-describedby="username-help"
+          [(ngModel)]="cedula"
+        />
+      </div>
+
+      <div class="flex flex-column gap-2">
+        <h3>Correo</h3>
+        <input
+          disabled="true"
+          pInputText
+          aria-describedby="username-help"
+          [(ngModel)]="correo"
+        />
+      </div>
+      <div class="flex flex-column gap-2">
+        <label for="username"><h3>Dependencia / Facultad</h3> </label>
+        <input
+          disabled="true"
+          pInputText
+          aria-describedby="username-help"
+          [(ngModel)]="dependencia"
+        />
+      </div>
+    </div>
+  </div>
+</p-card>

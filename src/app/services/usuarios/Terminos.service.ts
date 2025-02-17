@@ -1,9 +1,9 @@
 // cspell: disable;
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { environment } from '../../../../environments/environment';
 import { IResponse } from './interfaces/IResponse.interface';
 import { Itermino } from './interfaces/Itermino';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

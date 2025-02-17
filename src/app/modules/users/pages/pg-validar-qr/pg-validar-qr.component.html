@@ -1,12 +1,22 @@
 <div
-  class="w-full flex justify-content-center align-items-center"
+  class="w-full flex justify-content-center align-items-center flex-wrap"
   style="height: 66vh"
 >
   @if((isLoading())){
 
   <p-progressSpinner ariaLabel="loading" />
+  }@else{ @if(!isValid()){
+  <div class="flex">
+    <p-messages severity="error">
+      <ng-template pTemplate>
+        <div class="ml-2">El código QR no es valido.</div>
+      </ng-template>
+    </p-messages>
+  </div>
+
   }@else{
-  <p-panel class="shadow-2" header="Información del Usuario">
+
+  <p-fieldset legend="Información del Usuario">
     <div class="flex justify-content-center">
       @defer(){
 
@@ -15,20 +25,41 @@
         alt="foto del usuario"
         style="
           width: 250px;
-          height: 250px;
+          height: 300px;
           border: solid 1px rgba(219, 212, 212, 0.568);
+          border-radius: 12px;
         "
       />
       }@placeholder (minimum 1000ms){
       <p-skeleton size="21rem" styleClass="mr-2" />}
     </div>
-    <div class="flex justify-items-center">
-      <h2>Cédula:</h2>
-      <h2>{{ this.User().strCedula }}</h2>
+    <p-divider />
+
+    <div class="flex justify-items-center flex-wrap">
+      <h4>Cédula:</h4>
+      <h4>{{ this.User().strCedula }}</h4>
     </div>
-    <p>nombres: {{ this.User().Usuario }}</p>
-    <p>dependencia/facultad: {{ this.dependencia() }}</p>
-    <p>cargo: {{ this.cargo() }}</p>
-  </p-panel>
-  }
+    <p-divider />
+    <div class="flex justify-items-center flex-wrap">
+      <h4>Nombres:</h4>
+      <h4>{{ this.User().Usuario }}</h4>
+    </div>
+    <p-divider />
+
+    <div class="flex justify-items-center flex-wrap">
+      <h4>DEPENDENCIA/FACULTAD:</h4>
+      <h4>{{ this.dependencia() }}</h4>
+    </div>
+    <p-divider />
+
+    <div class="flex justify-items-center flex-wrap">
+      <h4>CARGO:</h4>
+      <h4>{{ this.cargo() }}</h4>
+    </div>
+    <p-divider />
+    <div class="card flex justify-content-center">
+      <p-button label="Volver a Escanear" (onClick)="nativage()" />
+    </div>
+  </p-fieldset>
+  } }
 </div>

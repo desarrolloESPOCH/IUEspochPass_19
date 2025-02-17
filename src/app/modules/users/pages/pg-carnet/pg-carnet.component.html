@@ -1,1 +1,43 @@
-<p>pg-carnet works!</p>
+<div class="grid w-full">
+  <div class="col-12 md:col-6">
+    <p-card header="ESPOCH-PASS">
+      @if(!mostrarCarnet){
+      <p-skeleton width="100%" height="1rem"></p-skeleton>
+      <br />
+      <p-skeleton width="100%" height="1rem"></p-skeleton>
+      <br />
+      <p-skeleton width="300px" height="11rem"></p-skeleton>
+      }@else{
+      <p>Clic en el carnet para ver más detalles</p>
+      <div
+        class="animate__animated animate__pulse animate__delay-1s animate__repeat-3 flex justify-content-center align-items-center"
+      >
+        <img src="./carnet/{{ rol }}.svg" width="100%" (click)="opencarnet()" />
+        <!-- <app-carnet
+          [data]="infoCarnet"
+          class="animate__animated animate__fadeIn animate__slow"
+        /> -->
+      </div>
+      <p>Valido Hasta {{ fecha() | date : "d/M/yy, h:mm a" }}</p>
+
+      }
+    </p-card>
+  </div>
+
+  <div class="col-12 md:col-6">
+    <p-card header="Términos y condiciones">
+      <p>
+        @if(!mostrarCarnet){
+        <p-skeleton class="mt-2" width="100%" height="1rem"></p-skeleton>
+        <br />
+        <p-skeleton class="mt-5" width="100%" height="1rem"></p-skeleton>
+        <br />
+
+        <p-skeleton class="mt-5" width="100%" height="1rem"></p-skeleton>
+
+        }@else{ {{ strTerminos() }} }
+      </p>
+    </p-card>
+  </div>
+</div>
+<p-toast></p-toast>

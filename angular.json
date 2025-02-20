@@ -47,6 +47,27 @@
               ],
               "outputHashing": "all"
             },
+            "pruebas": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pruebas.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -76,7 +97,9 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "IUEspochPass_19:build:production"
+              "buildTarget": "IUEspochPass_19:build:production",
+              "ssl": true
+
             },
             "development": {
               "buildTarget": "IUEspochPass_19:build:development",
@@ -84,6 +107,10 @@
             },
             "movil": {
               "buildTarget": "IUEspochPass_19:build:movil",
+              "ssl": true
+            },
+            "pruebas": {
+              "buildTarget": "IUEspochPass_19:build:pruebas",
               "ssl": true
             }
           },

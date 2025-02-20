@@ -75,11 +75,9 @@ export default class PgValidarQrComponent {
       .pipe(delay(500))
       .subscribe({
         next: (response) => {
-          console.log('response: ', response);
           this.isLoading.set(false);
           if (response.count > 0) {
             this.User.set(response.data[0]);
-            console.log('response: ', this.User().intIdPersona);
             this.getFoto(this.User().intIdPersona);
             this.obtenerDataAcademico(this.User().strCedula);
             this.getRoles();

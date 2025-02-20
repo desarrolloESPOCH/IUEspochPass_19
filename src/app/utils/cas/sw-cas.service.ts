@@ -80,27 +80,43 @@ export class SwCasService {
     let atributos = xmlString
       .split('<cas:attributes>')[1]
       .split('</cas:attributes')[0];
+    console.log('atributos: ', atributos);
     let perId = atributos.split('<cas:perid>')[1].split('</cas:perid>')[0];
-    await this.getUserRoles(Number(perId));
+    console.log('perId: ', perId);
+    // await this.getUserRoles(Number(perId));
     return {
-      per_email: atributos.split('<cas:upn>')[1].split('</cas:upn>')[0],
-      per_id: atributos.split('<cas:perid>')[1].split('</cas:perid>')[0],
-      newLogin: atributos
-        .split('<cas:isFromNewLogin>')[1]
-        .split('</cas:isFromNewLogin>')[0],
-      cedula: atributos.split('<cas:cedula>')[1].split('</cas:cedula>')[0],
+      per_email: this.validarAtributo(atributos, '<cas:upn>', '</cas:upn>'),
+      per_id: this.validarAtributo(atributos, '<cas:perid>', '</cas:perid>'),
+      newLogin: this.validarAtributo(
+        atributos,
+        '<cas:isFromNewLogin>',
+        '</cas:isFromNewLogin>'
+      ),
+      cedula: this.validarAtributo(atributos, '<cas:cedula>', '</cas:cedula>'),
       // nombres: this.nombres(),
-      nombres: atributos
-        .split('<cas:given_name>')[1]
-        .split('</cas:given_name>')[0],
+      nombres: this.validarAtributo(
+        atributos,
+        '<cas:given_name>',
+        '</cas:given_name>'
+      ),
       // apellidos: this.apellidos(),
-      apellidos: atributos
-        .split('<cas:family_name>')[1]
-        .split('</cas:family_name>')[0],
+      apellidos: this.validarAtributo(
+        atributos,
+        '<cas:family_name>',
+        '</cas:family_name>'
+      ),
       periodoAcademico: '',
-      procesoEvaluacion: this.idProceso(),
+      procesoEvaluacion: '',
     };
   }
+
+  validarAtributo = (atributo: string, inicio: string, fin: string) => {
+    const inicioPos = atributo.indexOf(inicio);
+    const finPos = atributo.indexOf(fin, inicioPos + inicio.length);
+    return inicioPos !== -1 && finPos !== -1
+      ? atributo.substring(inicioPos + inicio.length, finPos)
+      : '';
+  };
 
   private removeSession = () => {
     sessionStorage.clear();

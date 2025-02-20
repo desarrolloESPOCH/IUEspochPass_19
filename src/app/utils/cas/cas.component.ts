@@ -28,13 +28,14 @@ export default class CasComponent {
   private swUsuario = inject(swUsuariosService);
 
   constructor() {
-    console.log('afasdfafd');
-    this.route.queryParams.subscribe((params: any) => {
+    this.route.queryParams.subscribe(async (params: any) => {
       this.ticket.set(params['ticket']);
       if (this.ticket()) {
         try {
-          this.validate(this.ticket());
+          console.log('this.ticket(): ', this.ticket());
+          await this.validate(this.ticket());
         } catch (error) {
+          console.log('error: ', error);
           this.router.navigate(['/dashboard/welcome']);
         }
       } else {
@@ -48,10 +49,20 @@ export default class CasComponent {
       const validationResult = await firstValueFrom(
         this.swCas.validateTicketLocal(ticketSession)
       );
-      const transformacion = await this.swCas.transformXmltoJson(
+      let transformacion = await this.swCas.transformXmltoJson(
         validationResult
       );
-
+      // console.log('transformacion: ', transformacion);
+      // transformacion = {
+      //   per_email: '',
+      //   per_id: '179752',
+      //   newLogin: 'true',
+      //   cedula: '0605163971',
+      //   nombres: 'ERICK ALEXANDER',
+      //   apellidos: 'MELENDRES CALLE',
+      //   periodoAcademico: '',
+      //   procesoEvaluacion: 0,
+      // };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
       }
@@ -59,6 +70,7 @@ export default class CasComponent {
         this.swUsuario.validateRoles(Number(transformacion.per_id))
       );
 
+      console.log('----roles: ', roles);
       if (roles.count == 0) {
         this.router.navigate(['/enrolamiento']);
       }

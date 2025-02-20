@@ -1,12 +1,11 @@
-// cspell:disable
 import { IEnvironment } from './interfaces/IEnvironment.interfaces';
 
+// cspell:disable
 export const environment: IEnvironment = {
   production: true,
-  env: 'Produccion',
+  env: 'Pruebas',
   CAS_SERVER_URL: 'https://seguridad.espoch.edu.ec/cas',
-  REDIRECT_URI: 'https://carnetdigital.espoch.edu.ec',
-  // REDIRECT_URI: 'https://pruebas5.espoch.edu.ec',
+  REDIRECT_URI: 'https://pruebas5.espoch.edu.ec',
 
   SERVICIO_WEB: 'https://apicarnetdigital.espoch.edu.ec/wsespochpass',
   VALIDATE:

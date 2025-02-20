@@ -62,7 +62,7 @@ export class CHeaderDashComponent {
   ]);
 
   constructor() {
-    this.themeDark.set(JSON.parse(localStorage.getItem('darkTheme') || ''));
+    // this.themeDark.set(JSON.parse(localStorage.getItem('darkTheme') || ''));
     this.getRoles();
   }
 

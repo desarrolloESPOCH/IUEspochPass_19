@@ -163,7 +163,6 @@ export default class PgEnrolarComponent {
 
       this.swUser.validarMatriculaVigente(cedula).subscribe({
         next: (res) => {
-          console.log('res: ', res);
           this.frmRegistro.patchValue({
             intIdPersona: this.dataEnrol.per_id,
             strCedula: this.dataEnrol.cedula,

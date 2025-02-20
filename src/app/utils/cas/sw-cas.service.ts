@@ -80,9 +80,7 @@ export class SwCasService {
     let atributos = xmlString
       .split('<cas:attributes>')[1]
       .split('</cas:attributes')[0];
-    console.log('atributos: ', atributos);
     let perId = atributos.split('<cas:perid>')[1].split('</cas:perid>')[0];
-    console.log('perId: ', perId);
     // await this.getUserRoles(Number(perId));
     return {
       per_email: this.validarAtributo(atributos, '<cas:upn>', '</cas:upn>'),
@@ -125,7 +123,6 @@ export class SwCasService {
   getUserRoles = async (perId: number) => {
     try {
       const response = await firstValueFrom(this.swUser.getRolesByUser(perId));
-      console.log('response: ', response);
       // this.idProceso.set(response.data[0].roles[0].intIdProcesoEva);
       // this.nombres.set(response.data[0].strNombres);
       // this.apellidos.set(response.data[0].strApellidos);

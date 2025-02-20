@@ -13,7 +13,14 @@
     <div
       class="flex justify-content-center align-items-center animate__fadeIn animate__slow md:col-4 col-12"
     >
-      <img class="shadow-3" src="{{ foto }}" alt="" width="310px" />
+      @if(foto.trim()==''){
+      <img
+        src="./avatar.png"
+        style="border: solid 1px rgb(37, 36, 36); width: 310px"
+      />
+      }@else {
+      <img class="shadow-3" [src]="foto" alt="" width="275px" height="300px" />
+      }
     </div>
 
     <div class="mt-2 md:col-4 sm:col-12 w-full">

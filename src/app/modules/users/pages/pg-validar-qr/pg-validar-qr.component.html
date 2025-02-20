@@ -18,7 +18,18 @@
 
   <p-fieldset legend="Información del Usuario">
     <div class="flex justify-content-center">
-      @defer(){
+      @defer(){ @if(foto().trim()==''){
+      <img
+        [src]="'./avatar.png'"
+        alt="foto del usuario"
+        style="
+          width: 250px;
+          height: 300px;
+          border: solid 1px rgba(219, 212, 212, 0.568);
+          border-radius: 12px;
+        "
+      />
+      }@else {
 
       <img
         [src]="foto()"
@@ -30,7 +41,7 @@
           border-radius: 12px;
         "
       />
-      }@placeholder (minimum 1000ms){
+      } }@placeholder (minimum 1000ms){
       <p-skeleton size="21rem" styleClass="mr-2" />}
     </div>
     <p-divider />

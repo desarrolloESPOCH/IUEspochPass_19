@@ -32,10 +32,8 @@ export default class CasComponent {
       this.ticket.set(params['ticket']);
       if (this.ticket()) {
         try {
-          console.log('this.ticket(): ', this.ticket());
           await this.validate(this.ticket());
         } catch (error) {
-          console.log('error: ', error);
           this.router.navigate(['/dashboard/welcome']);
         }
       } else {
@@ -70,7 +68,6 @@ export default class CasComponent {
         this.swUsuario.validateRoles(Number(transformacion.per_id))
       );
 
-      console.log('----roles: ', roles);
       if (roles.count == 0) {
         this.router.navigate(['/enrolamiento']);
       }

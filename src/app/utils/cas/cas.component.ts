@@ -38,6 +38,8 @@ export default class CasComponent {
         }
       } else {
         console.log('No se loguea aun');
+        this.swCas.removeSession();
+        this.router.navigate(['/']);
       }
     });
   }
@@ -50,16 +52,16 @@ export default class CasComponent {
       let transformacion = await this.swCas.transformXmltoJson(
         validationResult
       );
-      // console.log('transformacion: ', transformacion);
+      console.log('transformacion: ', transformacion);
       // transformacion = {
-      //   per_email: '',
-      //   per_id: '179752',
+      //   per_email: 'kareng.rodriguez@espoch.edu.ec',
+      //   per_id: '90204',
       //   newLogin: 'true',
-      //   cedula: '0605163971',
-      //   nombres: 'ERICK ALEXANDER',
-      //   apellidos: 'MELENDRES CALLE',
+      //   cedula: '1105919649',
+      //   nombres: 'KAREN GABRIELA',
+      //   apellidos: 'RODRIGUEZ LARA',
       //   periodoAcademico: '',
-      //   procesoEvaluacion: 0,
+      //   procesoEvaluacion: '',
       // };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
@@ -69,7 +71,9 @@ export default class CasComponent {
       );
 
       if (roles.count == 0) {
+        await this.swCas.saveInfo(transformacion);
         this.router.navigate(['/enrolamiento']);
+        return;
       }
 
       transformacion.nombres = roles.data[0].strNombres;

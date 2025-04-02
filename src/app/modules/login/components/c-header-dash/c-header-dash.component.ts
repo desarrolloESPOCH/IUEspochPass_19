@@ -82,6 +82,7 @@ export class CHeaderDashComponent {
           let selectRol =
             sessionStorage.getItem('rol') ??
             JSON.parse(this.lstRoles()[0].intIdRol.toString());
+
           sessionStorage.setItem('rol', selectRol);
           this.swEventosServices.cambiarRol(selectRol);
           this.rolSeleccionado = this.lstRoles().find(

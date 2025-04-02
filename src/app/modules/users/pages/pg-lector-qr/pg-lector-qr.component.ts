@@ -20,8 +20,6 @@ export class PgLectorQrComponent {
 
   constructor() {}
   onQrScanned(code: string) {
-    console.log('Código recibido en el componente padre:', code);
-
     this.router.navigate(['/dashboard/users/validarQr', code]);
 
     // alert('Código escaneado: ' + code);

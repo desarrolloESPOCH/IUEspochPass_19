@@ -56,47 +56,25 @@ export default class PgEnrolarComponent {
   tokenTTHH: string = '';
   rol: number = 2;
   ngOnInit() {
-    // ROL ESTUDIANTE CAMBIAR ESTUDIANTE
-    // let user: ISession = {
-    //   per_email: 'cristhian.guallimba@espoch.edu.ec',
-    //   per_id: '91013',
-    //   nombres: 'CRISTHIAN SEBASTIAN',
-    //   apellidos: 'GUALLIMBA SANIPATIN',
-    //   cedula: '1725725368',
-    //   newLogin: '',
-    // };
-    // this.swCas.ActualizarInvitados(user);
-
-    // ROL ESTUDIANTE CAMBIAR ESTUDIANTE
-    // let user: ISession = {
-    //   per_email: 'ruben.saltos@espoch.edu.ec',
-    //   per_id: '1004',
-    //   nombres: 'PEDRO RUBÉN ñ',
-    //   apellidos: 'SALTOS',
-    //   cedula: '0603519372',
-    //   newLogin: '',
-    // };
-    // this.swCas.ActualizarInvitados(user);
-
     this.dataEnrol = this.swCas.getUserInfo();
-    if (!this.dataEnrol) {
-      this.alerty.add({
-        severity: 'error',
-        summary: 'Enrolamiento fallido',
-        detail: 'Por favor inicie sesion y vuelva a ingresar al link',
-      });
-      setTimeout(() => {
-        // this.router.navigate(['/']);
-        this.swCas.logoutLocal();
-        return;
-      }, 1500);
-    }
-    this.obtenerToken(this.dataEnrol);
+    // if (!this.dataEnrol.per_id) {
+    //   this.alerty.add({
+    //     severity: 'error',
+    //     summary: 'Enrolamiento fallido',
+    //     detail: 'Por favor inicie sesion y vuelva a ingresar al link',
+    //   });
+    //   setTimeout(() => {
+    //     this.swCas.logoutLocal();
+    //     this.router.navigate(['/']);
+    //     return;
+    //   }, 1500);
+    // }
+    this.obtenerToken();
 
     this.formBuilder(this.dataEnrol);
   }
 
-  obtenerToken = (usuario: any) => {
+  obtenerToken = () => {
     this.swUser.getAccesoTokenTTHH().subscribe((res) => {
       this.tokenTTHH = res.token;
       this.getCargos(this.dataEnrol);
@@ -220,13 +198,9 @@ export default class PgEnrolarComponent {
       strCargo,
       conexion: this.conexion(),
     };
-    console.log('json: ', json);
 
     this.swUser.postRegistroEnrol(json).subscribe((objEnrol) => {
-      console.log('registro: ', objEnrol);
       if (objEnrol.count > 0) {
-        console.log('mayor a 0: ');
-
         this.alerty.add({
           severity: 'success',
           summary: 'Enrolamiento',

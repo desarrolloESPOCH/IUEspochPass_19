@@ -22,6 +22,10 @@ export const routesLogin: Routes = [
       },
     ],
   },
+  {
+    path: 'logout',
+    loadComponent: () => import('./../../utils/cas/cas.component'),
+  },
 
   {
     path: 'enrolamiento',

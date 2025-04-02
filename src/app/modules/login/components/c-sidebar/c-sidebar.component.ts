@@ -40,7 +40,6 @@ export class CSidebarComponent {
   };
 
   getItemsMenu = (rol: number) => {
-    console.log('rols: ', rol);
     const menuArmado = this.swMenu.getMenu(rol).subscribe((items) => {
       const menu = this.swSidebar.createRolesMenu(
         items.data,

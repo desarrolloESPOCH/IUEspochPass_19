@@ -116,8 +116,10 @@ export class SwCasService {
       : '';
   };
 
-  private removeSession = () => {
+  removeSession = () => {
     sessionStorage.clear();
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('rol');
   };
 
   getUserRoles = async (perId: number) => {

@@ -60,14 +60,12 @@ export class PgInfoQrComponent {
         intRol: this.rol == 3 ? this.rol : 1,
       };
       this.qr.generarQr(json).subscribe((obj) => {
-        console.log('obj: ', obj);
         this.datos = JSON.stringify(obj.data[0]);
       });
       if (this.rol == 3) {
         const numeroConGuion =
           this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
         this.obtenerFotoAcademico(numeroConGuion);
-        console.log('this.cedula: ', numeroConGuion);
       } else {
         this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
         this.getRoles();

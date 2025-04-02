@@ -47,9 +47,8 @@ export class PgCarnetComponent {
     this.getTerminos(this.rol);
 
     this.swEventosServices.rolCambiado.subscribe((rol: any) => {
-      console.log('rol: ', rol);
       this.rol = rol;
-      this.obtenerCarnet(this.swCas.getUserInfo().per_id);
+      if (rol != 6) this.obtenerCarnet(this.swCas.getUserInfo().per_id);
       this.getTerminos(rol);
     });
   }
@@ -80,8 +79,6 @@ export class PgCarnetComponent {
           ff.setHours(ff.getHours() + 5); // Se le suma 5 horas para que la fecha sea la correcta en el calendario
 
           this.fecha.set(ff);
-          console.log(' this.fecha: ', this.fecha());
-          console.log(new Date());
           if (new Date() < this.fecha()) {
             this.infoCarnet = this.rol;
             this.qrInfo.datos = carnet.data[0];

@@ -66,7 +66,6 @@ export default class PgValidarQrComponent {
       intEstado: 1,
     };
     this.getValidar(datos);
-    console.log('infoQr: ', infoQr);
   };
 
   getValidar = (json: IQrValidarParams) => {
@@ -84,7 +83,6 @@ export default class PgValidarQrComponent {
           } else {
             this.isValid.set(false);
 
-            console.log('codigo invalido: ', response);
             this.isLoading.set(false);
           }
         },
@@ -100,12 +98,10 @@ export default class PgValidarQrComponent {
   obtenerDataAcademico = async (cedula: string) => {
     try {
       let cedula_ = cedula.slice(0, 9) + '-' + cedula.slice(9, 10);
-      console.log('cedula_: ', cedula_);
       const estudiante = await firstValueFrom(
         this.swUser.getInformacionEstudiante(cedula_)
       );
 
-      console.log('estudiante: ', estudiante);
       this.foto.set(estudiante.listado[0].strfoto);
     } catch (e) {
       console.log('error: ', e);
@@ -116,7 +112,6 @@ export default class PgValidarQrComponent {
     this.swUser
       .getRolesByUser(this.User().intIdPersona)
       .subscribe((response) => {
-        console.log('response: ', response);
         this.cargo.set(response.data[0].strCargo);
         this.dependencia.set(response.data[0].strDepencia);
       });
@@ -124,7 +119,6 @@ export default class PgValidarQrComponent {
 
   getFoto = (perId: string) => {
     this.swUser.getFotoTTHH(perId).subscribe((objImg) => {
-      console.log('objImg: ', objImg);
       this.foto.set(objImg.imgArchivo);
     });
   };

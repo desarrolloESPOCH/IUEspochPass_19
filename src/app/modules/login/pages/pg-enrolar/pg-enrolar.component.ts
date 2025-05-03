@@ -59,11 +59,12 @@ export default class PgEnrolarComponent {
     this.dataEnrol = this.swCas.getUserInfo();
 
     if (this.dataEnrol.per_id == '') {
-      this.alerty.add({
-        severity: 'error',
-        summary: 'Enrolamiento fallido',
-        detail: 'Por favor inicie sesion y vuelva a ingresar al link',
-      });
+      console.log('No se loguea aun');
+      // this.alerty.add({
+      //   severity: 'error',
+      //   summary: 'Enrolamiento fallido',
+      //   detail: 'Por favor inicie sesion y vuelva a ingresar al link',
+      // });
       // setTimeout(() => {
       //   this.swCas.logoutLocal();
       //   this.router.navigate(['/']);

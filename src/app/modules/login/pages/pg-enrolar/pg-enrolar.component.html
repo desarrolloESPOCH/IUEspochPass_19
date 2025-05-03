@@ -1,171 +1,181 @@
-<div class="container">
-  @if(dataEnrol.per_id == ''){
-  <div
-    class="container-slider ll flex justify-content-center align-items-start"
-  >
-    <div class="grid w-full mt-1" style="max-width: 1000px">
-      <p-card class="col-12">
-        @if (enrolado) {
+<div class="total">
+  <div class="container">
+    @if(dataEnrol.per_id !== ''){
+    <div
+      class="container-slider ll flex justify-content-center align-items-start"
+    >
+      <div class="grid w-full mt-1" style="max-width: 1000px">
+        <p-card class="col-12">
+          @if (enrolado) {
 
-        <p class="text-center">
-          Ahora usted ya esta registrado en nuestro sistema, por favor diríjase
-          a la entrada institucional para su ingreso e inicie sesión con su
-          usuario y contraseña.
-        </p>
-        <br />
-        <div class="w-full flex justify-content-center">
-          <p-button
-            label="Iniciar sesión"
-            (click)="login()"
-            icon="pi pi-user"
-          ></p-button>
-        </div>
+          <p class="text-center">
+            Ahora usted ya esta registrado en nuestro sistema, por favor
+            diríjase a la entrada institucional para su ingreso e inicie sesión
+            con su usuario y contraseña.
+          </p>
+          <br />
+          <div class="w-full flex justify-content-center">
+            <p-button
+              label="Iniciar sesión"
+              (click)="login()"
+              icon="pi pi-user"
+            ></p-button>
+          </div>
 
-        }@else {
-        <p>
-          Bienvenido al sistema ESPOCH-PASS, por favor compruebe los siguientes
-          datos para el ingreso institucional
-        </p>
-        }
-      </p-card>
-
-      @if (!enrolado) {
-      <div class="col-12">
-        <p-card>
-          @if(!sinMatricula){
-          <form [formGroup]="frmRegistro">
-            <p-fieldset legend="REGISTRO" class="mb-5">
-              <div class="grid gap-5">
-                <div class="col-12 md:col-2">
-                  <div class="flex justify-content-center w-full">
-                    @if(base64textString==''){
-
-                    <img
-                      src="./avatar.png"
-                      style="
-                        border: solid 1px rgb(37, 36, 36);
-                        width: 175px;
-                        height: 200px;
-                        border-radius: 12px;
-                      "
-                    />
-                    }@else {
-                    <img
-                      [src]="base64textString"
-                      style="
-                        border: solid 1px rgb(37, 36, 36);
-                        width: 175px;
-                        height: 200px;
-                        border-radius: 12px;
-                      "
-                    />
-                    }
-                  </div>
-                </div>
-                <div class="cold-12 md:col-8">
-                  <div class="grid justify-content-between align-items-center">
-                    <div class="field col-12 md:col-3">
-                      <label for="firstname6">Cédula:</label>
-                      <input
-                        id="firstname6"
-                        type="text"
-                        formControlName="strCedula"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-                    <div class="field col-12 md:col-4">
-                      <label for="firstname6">Nombres:</label>
-                      <input
-                        [disabled]="true"
-                        id="firstname6"
-                        type="text"
-                        formControlName="strNombres"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-                    <div class="field col-12 md:col-4">
-                      <label for="lastname6">Apellidos:</label>
-                      <input
-                        id="lastname6"
-                        formControlName="strApellidos"
-                        type="text"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid">
-                    <div class="field col-12 md:col-6 xl:col-4">
-                      <label for="city">Correo:</label>
-                      <input
-                        id="city"
-                        type="text"
-                        formControlName="strCorreo"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-                    <div class="field col-12 md:col-6 xl:col-4">
-                      <label for="city">Cargo:</label>
-                      <input
-                        id="city"
-                        type="text"
-                        formControlName="cargo"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-
-                    <div class="field col-12 md:col-6 xl:col-4">
-                      <label for="city">Dependencia:</label>
-                      <input
-                        id="city"
-                        type="text"
-                        formControlName="dependencia"
-                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="w-full mb-5">
-                <div class="flex justify-content-center w-full mb-5">
-                  <p-button
-                    label="Registrarse"
-                    (click)="guardar()"
-                    icon="pi pi-user"
-                  ></p-button>
-                </div>
-              </div>
-              <br /><br /><br /><br /><br />
-            </p-fieldset>
-          </form>
-
-          }@else{
-          <p-card>
-            <p>
-              Usted no se encuentra matriculado en la ESPOCH, por favor primero
-              necesita realizar el proceso de inscripción.
-            </p>
-            <br />
-            <div class="mt-3">
-              <p-button
-                label="Atras"
-                (click)="atras()"
-                icon="pi pi-arrow-left"
-              ></p-button>
-            </div>
-          </p-card>
+          }@else {
+          <p>
+            Bienvenido al sistema ESPOCH-PASS, por favor compruebe los
+            siguientes datos para el ingreso institucional
+          </p>
           }
         </p-card>
-      </div>
 
-      }
+        @if (!enrolado) {
+        <div class="col-12">
+          <p-card>
+            @if(!sinMatricula){
+            <form [formGroup]="frmRegistro">
+              <p-fieldset legend="REGISTRO" class="mb-5">
+                <div class="grid gap-5">
+                  <div class="col-12 md:col-2">
+                    <div class="flex justify-content-center w-full">
+                      @if(base64textString==''){
+
+                      <img
+                        src="./avatar.png"
+                        style="
+                          border: solid 1px rgb(37, 36, 36);
+                          width: 175px;
+                          height: 200px;
+                          border-radius: 12px;
+                        "
+                      />
+                      }@else {
+                      <img
+                        [src]="base64textString"
+                        style="
+                          border: solid 1px rgb(37, 36, 36);
+                          width: 175px;
+                          height: 200px;
+                          border-radius: 12px;
+                        "
+                      />
+                      }
+                    </div>
+                  </div>
+                  <div class="cold-12 md:col-8">
+                    <div
+                      class="grid justify-content-between align-items-center"
+                    >
+                      <div class="field col-12 md:col-3">
+                        <label for="firstname6">Cédula:</label>
+                        <input
+                          id="firstname6"
+                          type="text"
+                          formControlName="strCedula"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+                      <div class="field col-12 md:col-4">
+                        <label for="firstname6">Nombres:</label>
+                        <input
+                          [disabled]="true"
+                          id="firstname6"
+                          type="text"
+                          formControlName="strNombres"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+                      <div class="field col-12 md:col-4">
+                        <label for="lastname6">Apellidos:</label>
+                        <input
+                          id="lastname6"
+                          formControlName="strApellidos"
+                          type="text"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+                    </div>
+                    <div class="grid">
+                      <div class="field col-12 md:col-6 xl:col-4">
+                        <label for="city">Correo:</label>
+                        <input
+                          id="city"
+                          type="text"
+                          formControlName="strCorreo"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+                      <div class="field col-12 md:col-6 xl:col-4">
+                        <label for="city">Cargo:</label>
+                        <input
+                          id="city"
+                          type="text"
+                          formControlName="cargo"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+
+                      <div class="field col-12 md:col-6 xl:col-4">
+                        <label for="city">Dependencia:</label>
+                        <input
+                          id="city"
+                          type="text"
+                          formControlName="dependencia"
+                          class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="w-full mb-5">
+                  <div class="flex justify-content-center w-full mb-5">
+                    <p-button
+                      label="Registrarse"
+                      (click)="guardar()"
+                      icon="pi pi-user"
+                    ></p-button>
+                  </div>
+                </div>
+                <br /><br /><br /><br /><br />
+              </p-fieldset>
+            </form>
+
+            }@else{
+            <p-card>
+              <p>
+                Usted no se encuentra matriculado en la ESPOCH, por favor
+                primero necesita realizar el proceso de inscripción.
+              </p>
+              <br />
+              <div class="mt-3">
+                <p-button
+                  label="Atras"
+                  (click)="atras()"
+                  icon="pi pi-arrow-left"
+                ></p-button>
+              </div>
+            </p-card>
+            }
+          </p-card>
+        </div>
+
+        }
+      </div>
     </div>
+    }@else {
+    <p-card>
+      <p>
+        No tiene acceso al sistema, por favor comuniquese a
+        soporte&#64;espoch.edu.ec, reportando el inconveniente con su numero de
+        cédula y captura de pantalla
+      </p>
+    </p-card>
+    }
   </div>
-  }@else {
-  <p-card>
-    <p>Por favor inicie session primero y vuelva a ingresar</p>
-  </p-card>
-  }
+  <div>
+    <app-c-footer> </app-c-footer>
+  </div>
 </div>
 
 <p-toast></p-toast>
-<app-c-footer> </app-c-footer>

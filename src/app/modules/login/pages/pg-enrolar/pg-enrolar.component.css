@@ -2,3 +2,9 @@
   height: var(--contenido);
   overflow-y: scroll;
 }
+
+.total {
+  display: grid;
+  min-height: 100dvh;
+  grid-template-rows: 1fr auto;
+}

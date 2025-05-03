@@ -52,14 +52,14 @@ export default class CasComponent {
       let transformacion = await this.swCas.transformXmltoJson(
         validationResult
       );
-      console.log('transformacion: ', transformacion);
+      // console.log('transformacion: ', transformacion);
       // transformacion = {
-      //   per_email: 'kareng.rodriguez@espoch.edu.ec',
-      //   per_id: '90204',
-      //   newLogin: 'true',
-      //   cedula: '1105919649',
-      //   nombres: 'KAREN GABRIELA',
-      //   apellidos: 'RODRIGUEZ LARA',
+      //   per_email: '',
+      //   per_id: '',
+      //   newLogin: '',
+      //   cedula: '',
+      //   nombres: '',
+      //   apellidos: '',
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };

@@ -57,19 +57,21 @@ export default class PgEnrolarComponent {
   rol: number = 2;
   ngOnInit() {
     this.dataEnrol = this.swCas.getUserInfo();
-    // if (!this.dataEnrol.per_id) {
-    //   this.alerty.add({
-    //     severity: 'error',
-    //     summary: 'Enrolamiento fallido',
-    //     detail: 'Por favor inicie sesion y vuelva a ingresar al link',
-    //   });
-    //   setTimeout(() => {
-    //     this.swCas.logoutLocal();
-    //     this.router.navigate(['/']);
-    //     return;
-    //   }, 1500);
-    // }
-    this.obtenerToken();
+
+    if (this.dataEnrol.per_id == '') {
+      this.alerty.add({
+        severity: 'error',
+        summary: 'Enrolamiento fallido',
+        detail: 'Por favor inicie sesion y vuelva a ingresar al link',
+      });
+      // setTimeout(() => {
+      //   this.swCas.logoutLocal();
+      //   this.router.navigate(['/']);
+      //   return;
+      // }, 1500);
+    } else {
+      this.obtenerToken();
+    }
 
     this.formBuilder(this.dataEnrol);
   }

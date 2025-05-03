@@ -1,5 +1,5 @@
 <div class="container">
-  @if(dataEnrol){
+  @if(dataEnrol.per_id == ''){
   <div
     class="container-slider ll flex justify-content-center align-items-start"
   >
@@ -35,10 +35,10 @@
           @if(!sinMatricula){
           <form [formGroup]="frmRegistro">
             <p-fieldset legend="REGISTRO" class="mb-5">
-              <div class="grid">
-                <div class="col-12 md:col-4 lg:col-2">
+              <div class="grid gap-5">
+                <div class="col-12 md:col-2">
                   <div class="flex justify-content-center w-full">
-                    @if(base64textString.trim()==''){
+                    @if(base64textString==''){
 
                     <img
                       src="./avatar.png"
@@ -62,7 +62,7 @@
                     }
                   </div>
                 </div>
-                <div class="lg:col-10">
+                <div class="cold-12 md:col-8">
                   <div class="grid justify-content-between align-items-center">
                     <div class="field col-12 md:col-3">
                       <label for="firstname6">Cédula:</label>

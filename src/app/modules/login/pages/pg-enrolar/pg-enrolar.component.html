@@ -1,6 +1,15 @@
+<!-- cspell:disable -->
 <div class="total">
   <div class="container">
-    @if(dataEnrol.per_id !== ''){
+    @if(!dataEnrol.per_id ){
+    <p-card>
+      <p>
+        No tiene acceso al sistema, por favor comuniquese a
+        soporte&#64;espoch.edu.ec, reportando el inconveniente con su número de
+        cédula y captura de pantalla
+      </p>
+    </p-card>
+    }@else {
     <div
       class="container-slider ll flex justify-content-center align-items-start"
     >
@@ -117,7 +126,7 @@
                       </div>
 
                       <div class="field col-12 md:col-6 xl:col-4">
-                        <label for="city">Dependencia:</label>
+                        <label for="city">Dependencia/Facultad:</label>
                         <input
                           id="city"
                           type="text"
@@ -163,14 +172,6 @@
         }
       </div>
     </div>
-    }@else {
-    <p-card>
-      <p>
-        No tiene acceso al sistema, por favor comuniquese a
-        soporte&#64;espoch.edu.ec, reportando el inconveniente con su numero de
-        cédula y captura de pantalla
-      </p>
-    </p-card>
     }
   </div>
   <div>

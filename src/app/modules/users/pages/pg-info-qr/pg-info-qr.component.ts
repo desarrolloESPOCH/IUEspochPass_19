@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -35,7 +35,7 @@ export class PgInfoQrComponent {
   rol: any;
   datos: any;
 
-  foto: any = '';
+  foto = signal<string>('');
   public base64textString: any = [];
 
   swFoto = inject(FotoService);
@@ -83,19 +83,25 @@ export class PgInfoQrComponent {
 
   obtenerFotoTTHH(usuario: any) {
     this.swUser.getFotoTTHH(usuario).subscribe((objImg) => {
-      this.foto = objImg.imgArchivo;
+      this.foto.set(objImg.imgArchivo);
     });
   }
 
-  obtenerFotoAcademico(usuario: any) {
-    this.swUser.getInformacionEstudiante(usuario).subscribe((objImg: any) => {
-      this.foto = objImg.listado[0].strfoto;
+  obtenerFotoAcademico = async (usuario: any) => {
+    const { listado } = await this.swUser.getInformacionEstudianteSYNC(usuario);
+    if (listado.length == 0) {
+      const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(
+        this.swCas.getUserInfo().per_id
+      );
+      this.foto.set(imgArchivo);
       this.getRoles();
-      //   this.dependencia =
-      //     objImg.listado[0].carreraSelecionadaFacultad +
-      //     ' - ' +
-      //     objImg.listado[0].carreraSeleccionada;
-      // });
-    });
-  }
+    } else {
+      const [info] = listado;
+      console.log('strfoto: ', info.strfoto);
+      // console.log('listado: ', listado[0].strfoto);
+      this.foto.set(info.strfoto);
+      console.log('si pasa', this.foto());
+      this.getRoles();
+    }
+  };
 }

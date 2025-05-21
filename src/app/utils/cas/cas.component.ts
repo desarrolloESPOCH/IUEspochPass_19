@@ -54,15 +54,45 @@ export default class CasComponent {
       );
       // console.log('transformacion: ', transformacion);
       // transformacion = {
-      //   per_email: '',
-      //   per_id: '',
+      //   per_email: 'nestor.paguay@espoch.edu.ec',
+      //   per_id: '11418',
       //   newLogin: '',
-      //   cedula: '',
-      //   nombres: '',
-      //   apellidos: '',
+      //   cedula: '0604104596',
+      //   nombres: 'NESTOR JHOVANY',
+      //   apellidos: 'PAGUAY LLAMUCA',
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
+      // transformacion = {
+      //   per_email: 'paola.cuello@espoch.edu.ec',
+      //   per_id: '81862',
+      //   newLogin: '',
+      //   cedula: '0650183924',
+      //   nombres: 'PAOLA NATALY',
+      //   apellidos: 'CUELLO LEON',
+      //   periodoAcademico: '',
+      //   procesoEvaluacion: '',
+      // };
+      // transformacion = {
+      //   per_email: 'bryan.baldeon@espoch.edu.ec',
+      //   per_id: '20959',
+      //   newLogin: '',
+      //   cedula: '0706705159',
+      //   nombres: 'BRYAN ALEXANDER',
+      //   apellidos: 'BALDEON HERMIDA',
+      //   periodoAcademico: '',
+      //   procesoEvaluacion: '',
+      // };
+      transformacion = {
+        per_email: '',
+        per_id: '212326',
+        newLogin: '',
+        cedula: '0606012888',
+        nombres: 'JOSE LUIS',
+        apellidos: 'VELASCO GAMARRA',
+        periodoAcademico: '',
+        procesoEvaluacion: '',
+      };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
       }

@@ -1,5 +1,5 @@
 <p-card header="" class="animate__animated animate__fadeIn animate__slow">
-  <div class="grid">
+  <div class="grid ancho">
     <div class="flex justify-content-center align-items-center md:col-6 col-12">
       <div class="shadow-3">
         <qr-code
@@ -13,19 +13,29 @@
     <div
       class="flex justify-content-center align-items-center animate__fadeIn animate__slow md:col-4 col-12"
     >
-      @if(foto.trim()==''){
-      <img
-        src="./avatar.png"
-        style="border: solid 1px rgb(37, 36, 36); width: 310px"
-      />
+      @if(!foto()){
+
+      <img src="./avatar.png" style="width: 310px" class="shadow-3" />
+
+      } @else { @if(foto().trim()==' '){
+      <img src="./avatar.png" style="width: 310px" class="shadow-3" />
       }@else {
-      <img class="shadow-3" [src]="foto" alt="" width="275px" height="300px" />
-      }
+      <!-- {{ foto() }} -->
+
+      <img
+        class="shadow-3"
+        [src]="foto()"
+        alt=""
+        width="275px"
+        height="300px"
+        style="object-fit: cover"
+      />
+      } }
     </div>
 
     <div class="mt-2 md:col-4 sm:col-12 w-full">
       <div class="flex flex-column gap-2 w-full">
-        <label for="username"> <h3>Nombres:</h3> </label>
+        <label for="username"> <h3>NOMBRES:</h3> </label>
         <input
           disabled="true"
           pInputText
@@ -34,7 +44,7 @@
         />
       </div>
       <div class="flex flex-column gap-2">
-        <label for="username"><h3>Apellidos</h3></label>
+        <label for="username"><h3>APELLIDOS</h3></label>
         <input
           disabled="true"
           pInputText
@@ -44,7 +54,7 @@
       </div>
 
       <div class="flex flex-column gap-2">
-        <label for="username"><h3>Documento</h3></label>
+        <label for="username"><h3>DOCUMENTO</h3></label>
         <input
           disabled="true"
           pInputText
@@ -54,7 +64,7 @@
       </div>
 
       <div class="flex flex-column gap-2">
-        <h3>Correo</h3>
+        <h3>CORREO</h3>
         <input
           disabled="true"
           pInputText
@@ -63,7 +73,7 @@
         />
       </div>
       <div class="flex flex-column gap-2">
-        <label for="username"><h3>Dependencia / Facultad</h3> </label>
+        <label for="username"><h3>DEPENDENCIA / FACULTAD</h3> </label>
         <input
           disabled="true"
           pInputText

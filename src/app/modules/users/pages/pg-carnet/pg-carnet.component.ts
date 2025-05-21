@@ -48,7 +48,9 @@ export class PgCarnetComponent {
 
     this.swEventosServices.rolCambiado.subscribe((rol: any) => {
       this.rol = rol;
-      if (rol != 6) this.obtenerCarnet(this.swCas.getUserInfo().per_id);
+      if (rol != 6) {
+      }
+      this.obtenerCarnet(this.swCas.getUserInfo().per_id);
       this.getTerminos(rol);
     });
   }

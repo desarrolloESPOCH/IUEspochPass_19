@@ -2,7 +2,7 @@
   height: 7px;
   width: 0px;
   background-color: #d31a2b;
-  animation: animacionBarra 2s ease-in-out;
+  animation: animacionBarra 0.8s ease-in-out;
 }
 
 .sello {
@@ -11,7 +11,7 @@
   align-items: center;
   width: 100%;
   height: calc(100vh - 7px);
-  animation: animacionSello 2s ease-in-out;
+  animation: animacionSello 0.8s ease-in-out;
 }
 
 img {

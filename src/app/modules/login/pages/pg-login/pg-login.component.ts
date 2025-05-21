@@ -29,7 +29,7 @@ export default class PgLoginComponent {
     if (this.wait()) {
       setTimeout(() => {
         this.wait.set(false);
-      }, 2500);
+      }, 1000);
     }
   }
 }

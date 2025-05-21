@@ -10,6 +10,9 @@
     <p-messages severity="error">
       <ng-template pTemplate>
         <div class="ml-2">El código QR no es valido.</div>
+        <div class="card flex justify-content-center">
+          <p-button label="Volver a Escanear" (onClick)="nativage()" />
+        </div>
       </ng-template>
     </p-messages>
   </div>

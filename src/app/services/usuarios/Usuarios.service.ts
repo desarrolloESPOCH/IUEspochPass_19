@@ -39,6 +39,23 @@ export class swUsuariosService {
     const validationUrl = `${environment.FOTO_TTHH}/${usuario}`;
     return this.serviceUser.get<IimagenEmpleado>(validationUrl);
   }
+
+  getFotoTTHHASYNC = async (perId: string): Promise<IimagenEmpleado> => {
+    const validationUrl = `${environment.FOTO_TTHH}/${perId}`;
+    try {
+      const response = await fetch(validationUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Error en la petición: ${response.status} ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al enviar los datos:', error);
+      throw error;
+    }
+  };
   //OBTENER EL TOKEN PARA EL CONSUMO DE SERVICIOS DE TTHH
   getAccesoTokenTTHH = () => {
     const vecPersona = {
@@ -54,6 +71,22 @@ export class swUsuariosService {
         }),
       }
     );
+  };
+
+  getAccesoTokenTTHH_SYNC = async () => {
+    const vecPersona = {
+      usuSerId: 26,
+      usuPassword: '0604508390',
+    };
+    const response = await fetch(`${environment.RUTA_TOKEN_TTHH}`, {
+      method: 'POST',
+      body: JSON.stringify(vecPersona),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    });
+    const data = await response.json();
+    return data;
   };
   //RETORNA INFORMACIÓN DE UN EMPLEADO
   getCargoDependenciaTTHH = (cedula: string, claveServicio: any) => {
@@ -71,6 +104,35 @@ export class swUsuariosService {
         }),
       }
     );
+  };
+
+  getCargoDependenciaTTHH_SYNC = async (cedula: string, claveServicio: any) => {
+    let vecPersona = {
+      perCedula: cedula,
+    };
+
+    try {
+      const response = await fetch(`${environment.CARGO_DEPENCENCIA}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          Authorization: `Bearer ${claveServicio}`,
+        },
+        body: JSON.stringify(vecPersona),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Error en la petición: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al enviar los datos:', error);
+      throw error;
+    }
   };
 
   //GUARDAR EL ENROLAMIENTO DEL USUARIO
@@ -94,6 +156,11 @@ export class swUsuariosService {
       }),
     });
   }
+  getInformacionEstudianteSYNC = async (usuario: string) => {
+    const validationUrl = `${environment.FOTO_ACADEMICO}/${usuario}`;
+    const data = await this.getFetch(validationUrl);
+    return data;
+  };
 
   getRolesByUser = (per_id: number) => {
     return this.serviceUser.get<IResponse<IRol>>(
@@ -144,8 +211,52 @@ export class swUsuariosService {
 
   validarMatriculaVigente = (cedula: string) => {
     return this.__http.get<IResponseRuben>(
-      `https://apisai.espoch.edu.ec/rutaAcademicoCarrera/matriculaestudianteperiodovigente/${cedula}`
+      `${this.URLSERVICIO}/matriculaestudianteperiodovigente/${cedula}`
     );
+  };
+  validarMatriculaVigenteSYNC = async (cedula: string) => {
+    const validationUrl = `${this.URLSERVICIO}/matriculaestudianteperiodovigente/${cedula}`;
+    try {
+      const response = await fetch(validationUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Error en la petición: ${response.status} ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al enviar los datos:', error);
+      throw error; //
+    }
+  };
+
+  validarMatriculaVigentePostGradoSYNC = async (cedula: string) => {
+    const validationUrl = `https://swipecacademico.espoch.edu.ec/sisipecSW/servicios/informacionmatriculadodadocedula/${cedula}`;
+    const data = await this.getFetch(validationUrl);
+    return data;
+  };
+
+  validarGuardia = async (perId: string): Promise<IResponse<IRol>> => {
+    const validationUrl = `${this.URLSERVICIO}/seguridad/user_roles/${perId}`;
+    const data = await this.getFetch(validationUrl);
+    return data;
+  };
+
+  getFetch = async (validationUrl: string) => {
+    try {
+      const response = await fetch(validationUrl);
+      if (!response.ok) {
+        throw new Error(
+          `Error en la petición: ${response.status} ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al enviar los datos:', error);
+      throw error; //
+    }
   };
 }
 

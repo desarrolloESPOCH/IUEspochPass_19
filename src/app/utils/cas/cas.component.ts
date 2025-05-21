@@ -83,16 +83,16 @@ export default class CasComponent {
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
-      transformacion = {
-        per_email: '',
-        per_id: '212326',
-        newLogin: '',
-        cedula: '0606012888',
-        nombres: 'JOSE LUIS',
-        apellidos: 'VELASCO GAMARRA',
-        periodoAcademico: '',
-        procesoEvaluacion: '',
-      };
+      // transformacion = {
+      //   per_email: '',
+      //   per_id: '212326',
+      //   newLogin: '',
+      //   cedula: '0606012888',
+      //   nombres: 'JOSE LUIS',
+      //   apellidos: 'VELASCO GAMARRA',
+      //   periodoAcademico: '',
+      //   procesoEvaluacion: '',
+      // };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
       }

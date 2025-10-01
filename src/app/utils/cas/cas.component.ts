@@ -5,10 +5,10 @@ import { SwCasService } from './sw-cas.service';
 import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { Base64 } from 'js-base64';
+// import { Base64 } from 'js-base64';
 import { firstValueFrom } from 'rxjs';
 import { swUsuariosService } from '../../services/usuarios/Usuarios.service';
-import { environment } from '../../../environments/environment';
+// import { environment } from '../../../environments/environment';
 
 //cspell:disable
 @Component({
@@ -23,7 +23,7 @@ export default class CasComponent {
   private router = inject(Router);
   private swCas = inject(SwCasService);
   private ticket = signal('');
-  private mensajeNotifica = inject(MessageService);
+  // private mensajeNotifica = inject(MessageService);
 
   private swUsuario = inject(swUsuariosService);
 
@@ -52,7 +52,7 @@ export default class CasComponent {
       let transformacion = await this.swCas.transformXmltoJson(
         validationResult
       );
-      // console.log('transformacion: ', transformacion);
+      console.log('transformacion: ', transformacion);
       // transformacion = {
       //   per_email: 'nestor.paguay@espoch.edu.ec',
       //   per_id: '11418',
@@ -83,16 +83,16 @@ export default class CasComponent {
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
-      // transformacion = {
-      //   per_email: '',
-      //   per_id: '212326',
-      //   newLogin: '',
-      //   cedula: '0606012888',
-      //   nombres: 'JOSE LUIS',
-      //   apellidos: 'VELASCO GAMARRA',
-      //   periodoAcademico: '',
-      //   procesoEvaluacion: '',
-      // };
+      transformacion = {
+        per_email: 'edison.abarca@espoch.edu.ec',
+        per_id: '24656',
+        newLogin: '',
+        cedula: '0603186750',
+        nombres: 'EDISON PATRICIO',
+        apellidos: 'ABARCA PEREZ',
+        periodoAcademico: '',
+        procesoEvaluacion: '',
+      };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
       }

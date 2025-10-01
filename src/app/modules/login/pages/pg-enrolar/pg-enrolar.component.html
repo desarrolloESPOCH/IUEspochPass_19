@@ -48,7 +48,7 @@
                 <div class="grid gap-5">
                   <div class="col-12 md:col-2">
                     <div class="flex justify-content-center w-full">
-                      @if(base64textString==''){
+                      @if(base64textString()==''){
 
                       <img
                         src="./avatar.png"
@@ -61,7 +61,7 @@
                       />
                       }@else {
                       <img
-                        [src]="base64textString"
+                        [src]="base64textString()"
                         style="
                           border: solid 1px rgb(37, 36, 36);
                           width: 175px;
@@ -88,7 +88,6 @@
                       <div class="field col-12 md:col-4">
                         <label for="firstname6">Nombres:</label>
                         <input
-                          [disabled]="true"
                           id="firstname6"
                           type="text"
                           formControlName="strNombres"
@@ -139,11 +138,14 @@
                 </div>
                 <div class="w-full mb-5">
                   <div class="flex justify-content-center w-full mb-5">
+                    @if(this.isloading()){
+
                     <p-button
                       label="Registrarse"
                       (click)="guardar()"
                       icon="pi pi-user"
                     ></p-button>
+                    }
                   </div>
                 </div>
                 <br /><br /><br /><br /><br />

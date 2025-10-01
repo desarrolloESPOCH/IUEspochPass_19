@@ -19,8 +19,8 @@ import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { CFooterComponent } from '../../components/c-footer/c-footer.component';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
-import { AccionPersonal } from '../../../../services/usuarios/interfaces/ITalentoHumano';
 import { IRol } from '../../interface/IRol.interface';
+import { obtenerToken } from '../../../../utils/tthh/tokens';
 
 @Component({
   selector: 'app-pg-enrolar',
@@ -47,44 +47,61 @@ export default class PgEnrolarComponent {
   private alerty = inject(MessageService);
   private router = inject(Router);
 
-  public base64textString: any = [];
+  isloading = signal(false);
+
+  public base64textString = signal<string>('');
   public dataEnrol: any;
-  public cargo: any;
-  public dependencia: any;
+
   conexion = signal('');
   public enrolado: Boolean = false;
   public sinMatricula: Boolean = false;
 
   frmRegistro: FormGroup = {} as FormGroup;
-  tokenTTHH = signal<string>('');
   rol: number = 2;
-  ngOnInit() {
+
+  async ngOnInit() {
+    this.isloading.set(false);
     this.dataEnrol = this.swCas.getUserInfo();
+    console.log('this.dataEnrol : ', this.dataEnrol);
 
     if (!this.dataEnrol.per_id) {
       console.log('No se loguea aun');
-    } else {
-      this.formBuilder(this.dataEnrol);
-      this.consultarDatos();
+      this.atras();
+      return;
     }
+    this.formBuilder(this.dataEnrol);
+    await this.getCargos(this.dataEnrol);
+    this.isloading.set(true);
   }
 
-  consultarDatos = async () => {
-    await this.obtenerToken();
-    await this.getCargos(this.dataEnrol);
-  };
+  IsDocenteOrFuncionario = (data: any) => {
+    let cargo = '';
+    let dependencia = '';
+    const { contrato, accionPersonal } = data;
 
-  obtenerToken = async () => {
-    const { token } = await this.swUser.getAccesoTokenTTHH_SYNC();
-    this.tokenTTHH.set(token);
+    if (contrato) {
+      // console.log('aqui: ');
+      const { conCargo } = contrato;
+      if (conCargo) {
+        conCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
+        cargo = contrato.conCargo;
+        dependencia = contrato.conDependenciaEspecifica;
+      }
+      return { cargo, dependencia };
+    }
+
+    const { apeCargo } = accionPersonal;
+
+    apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
+    cargo = accionPersonal.apeCargo;
+    dependencia = accionPersonal.apeDepedenciaEspecifica;
+    return { cargo, dependencia };
   };
 
   getCargos = async (usuario: any) => {
     const { cedula } = usuario;
-
     const res = await this.swUser.validarGuardia(this.dataEnrol.per_id);
     const { data: roles } = res;
-
     if (roles.some((item: IRol) => item.intIdRol == 6 && item.intEstado == 1)) {
       this.rol = 6;
       this.getFoto(usuario);
@@ -94,50 +111,33 @@ export default class PgEnrolarComponent {
       });
     }
 
+    const token = await obtenerToken(this.swUser);
+
+    if (!token) return;
+
     const { success, data } = await this.swUser.getCargoDependenciaTTHH_SYNC(
       cedula,
-      this.tokenTTHH()
+      token
     );
     if (!success) {
       this.rol = 3;
-      this.obtenerDataAcademico(usuario);
+      await this.obtenerDataAcademico(usuario);
       return;
     }
-
-    const { contrato, accionPersonal } = data;
-    this.getFoto(usuario);
-
-    if (contrato) {
-      console.log('aqui: ');
-      const { conCargo } = contrato;
-      if (conCargo) {
-        conCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        this.cargo = contrato.conCargo;
-        this.dependencia = contrato.conDependenciaEspecifica;
-      }
-    }
-    if (accionPersonal) {
-      const { apeCargo } = accionPersonal;
-      if (apeCargo) {
-        apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        this.cargo = accionPersonal.apeCargo;
-        this.dependencia = accionPersonal.apeDepedenciaEspecifica;
-      }
-    }
+    await this.getFoto(usuario);
+    const { cargo, dependencia } = await this.IsDocenteOrFuncionario(data);
 
     this.frmRegistro.patchValue({
-      cargo: this.cargo,
-      dependencia: this.dependencia,
+      cargo: cargo,
+      dependencia: dependencia,
       rolId: this.rol,
     });
   };
 
   getFoto = async (usuario: any) => {
     const { per_id } = usuario;
-    console.log('per_id: ', per_id);
     const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(per_id);
-    console.log('imgArchivo: ', imgArchivo);
-    this.base64textString = imgArchivo ?? this.base64textString;
+    this.base64textString.set(imgArchivo ?? this.base64textString());
   };
 
   obtenerDataAcademico = async (usuario: any) => {
@@ -164,7 +164,7 @@ export default class PgEnrolarComponent {
       return;
     }
 
-    this.base64textString = `${listado[0].strfoto ?? this.base64textString}`;
+    this.base64textString.set(`${listado[0].strfoto ?? this.base64textString}`);
     const { listado: listadoAcademico } =
       await this.swUser.validarMatriculaVigenteSYNC(cedula);
     this.frmRegistro.patchValue({
@@ -206,54 +206,49 @@ export default class PgEnrolarComponent {
       strCargo,
       conexion: this.conexion(),
     };
-
+    console.log('json', json);
     this.swUser.postRegistroEnrol(json).subscribe((objEnrol) => {
       console.log('objEnrol: ', objEnrol);
-      if (objEnrol.count > 0) {
-        this.alerty.add({
-          severity: 'success',
-          summary: 'Enrolamiento',
-          detail: 'Enrolamiento exitoso',
-        });
-        this.enrolado = true;
-        // this.r;
-      } else {
-        console.log('sin matricula  ');
+      // if (objEnrol.count > 0) {
+      this.alerty.add({
+        severity: 'success',
+        summary: 'Enrolamiento',
+        detail: 'Enrolamiento exitoso',
+      });
+      this.enrolado = true;
 
-        this.sinMatricula = true;
-        this.alerty.add({
-          severity: 'error',
-          summary: 'Enrolamiento fallido',
-          detail: objEnrol.message,
-        });
-      }
+      // this.r;
+      // } else {
+      // console.log('sin matricula  ');
+
+      // this.sinMatricula = true;
+      // this.alerty.add({
+      //   severity: 'error',
+      //   summary: 'Enrolamiento fallido',
+      //   detail: objEnrol.message,
+      // });
+      // }
     });
   };
 
   formBuilder = (datos: any) => {
     this.frmRegistro = this.fb.group({
-      intIdPersona: [datos.per_id],
-      strCedula: [datos.cedula],
-      strNombres: [datos.nombres],
-      strApellidos: [datos.apellidos],
-      strCorreo: [datos.per_email],
+      intIdPersona: [{ value: datos.per_id, disabled: true }],
+      strCedula: [{ value: datos.cedula, disabled: true }],
+      strNombres: [{ value: datos.nombres, disabled: true }],
+      strApellidos: [{ value: datos.apellidos, disabled: true }],
+      strCorreo: [{ value: datos.per_email, disabled: false }], // Este campo queda editable, cambia a true si quieres bloquearlo
       strTelefono: [''],
-      cargo: [this.cargo],
-      dependencia: [this.dependencia],
+      cargo: [{ value: '', disabled: true }],
+      dependencia: [{ value: '', disabled: true }],
       intEstado: [1],
       intIdTermino: [1],
       intAceptado: [1],
       rolId: this.rol,
       roles: [''],
     });
-
-    this.intIdPersona?.disable();
-    this.strCedula?.disable();
-    this.strNombres?.disable();
-    this.strApellidos?.disable();
-    this.strCargo?.disable();
-    this.strDependencia?.disable();
   };
+
   login = () => {
     this.router.navigate(['/dashboard/users']);
   };

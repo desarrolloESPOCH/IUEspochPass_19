@@ -52,14 +52,14 @@ export default class CasComponent {
       let transformacion = await this.swCas.transformXmltoJson(
         validationResult
       );
-      console.log('transformacion: ', transformacion);
+      // console.log('transformacion: ', transformacion);
       // transformacion = {
-      //   per_email: 'nestor.paguay@espoch.edu.ec',
-      //   per_id: '11418',
+      //   per_email: 'daniel.rodriguezg@espoch.edu.ec',
+      //   per_id: '222990',
       //   newLogin: '',
-      //   cedula: '0604104596',
-      //   nombres: 'NESTOR JHOVANY',
-      //   apellidos: 'PAGUAY LLAMUCA',
+      //   cedula: '2300922271',
+      //   nombres: 'DANIEL ALEXANDER',
+      //   apellidos: 'RODRIGUEZ GARCIA',
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
@@ -83,16 +83,16 @@ export default class CasComponent {
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
-      transformacion = {
-        per_email: 'edison.abarca@espoch.edu.ec',
-        per_id: '24656',
-        newLogin: '',
-        cedula: '0603186750',
-        nombres: 'EDISON PATRICIO',
-        apellidos: 'ABARCA PEREZ',
-        periodoAcademico: '',
-        procesoEvaluacion: '',
-      };
+      // transformacion = {
+      //   per_email: 'edison.abarca@espoch.edu.ec',
+      //   per_id: '24656',
+      //   newLogin: '',
+      //   cedula: '0603186750',
+      //   nombres: 'EDISON PATRICIO',
+      //   apellidos: 'ABARCA PEREZ',
+      //   periodoAcademico: '',
+      //   procesoEvaluacion: '',
+      // };
       if (!transformacion.per_id) {
         console.log('NO ES USUARIO DE LA ESPOCH');
       }

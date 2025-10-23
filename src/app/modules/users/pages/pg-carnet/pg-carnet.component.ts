@@ -68,36 +68,35 @@ export class PgCarnetComponent {
             summary: 'Información',
             detail: carnet.message,
           });
-          // if (this.rol != 1) this.router.navigate(['/enrolamiento']);
+          this.router.navigate(['/enrolamiento']);
+          return;
         }
 
         if (carnet.count < 0) {
+          console.log('aqui');
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
             detail: carnet.message,
           });
+          return;
         }
-        if (carnet.count > 0) {
-          let ff = new Date(carnet.data[0].dtFecha_Fin);
-          ff.setHours(ff.getHours() + 5); // Se le suma 5 horas para que la fecha sea la correcta en el calendario
 
-          this.fecha.set(ff);
-          console.log('fecha', ff);
-          if (new Date() < this.fecha()) {
-            this.infoCarnet = this.rol;
-            this.qrInfo.datos = carnet.data[0];
-            if (!this.mostrarCarnet)
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Éxito',
-                detail: carnet.message,
-              });
-            this.mostrarCarnet = true;
-          } else {
-            if (this.rol != 1) this.router.navigate(['/enrolamiento']);
-          }
-        }
+        let ff = new Date(carnet.data[0].dtFecha_Fin);
+        ff.setHours(ff.getHours() + 5); // Se le suma 5 horas para que la fecha sea la correcta en el calendario
+
+        this.fecha.set(ff);
+        console.log('fecha', ff);
+
+        this.infoCarnet = this.rol;
+        this.qrInfo.datos = carnet.data[0];
+        if (!this.mostrarCarnet)
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: carnet.message,
+          });
+        this.mostrarCarnet = true;
       });
   };
 

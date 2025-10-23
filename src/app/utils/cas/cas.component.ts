@@ -54,22 +54,22 @@ export default class CasComponent {
       );
       // console.log('transformacion: ', transformacion);
       // transformacion = {
-      //   per_email: 'daniel.rodriguezg@espoch.edu.ec',
-      //   per_id: '222990',
+      //   per_email: 'betsabe.vaca@espoch.edu.ec',
+      //   per_id: '182298',
       //   newLogin: '',
-      //   cedula: '2300922271',
-      //   nombres: 'DANIEL ALEXANDER',
-      //   apellidos: 'RODRIGUEZ GARCIA',
+      //   cedula: '0650007727',
+      //   nombres: 'BETSABE DE LOS ANGELES',
+      //   apellidos: 'VACA SANTILLAN',
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };
       // transformacion = {
-      //   per_email: 'paola.cuello@espoch.edu.ec',
-      //   per_id: '81862',
+      //   per_email: 'marcelod.orozco@espoch.edu.ec',
+      //   per_id: '81382',
       //   newLogin: '',
-      //   cedula: '0650183924',
-      //   nombres: 'PAOLA NATALY',
-      //   apellidos: 'CUELLO LEON',
+      //   cedula: '0606221349',
+      //   nombres: 'MARCELO DAVID',
+      //   apellidos: 'OROZCO HERNANDEZ',
       //   periodoAcademico: '',
       //   procesoEvaluacion: '',
       // };

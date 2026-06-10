@@ -11,11 +11,10 @@ import {
 import { BrowserMultiFormatReader } from '@zxing/browser';
 
 @Component({
-  selector: 'app-qr-scanner',
-  standalone: true,
-  imports: [],
-  templateUrl: './qr-scanner.component.html',
-  styleUrl: './qr-scanner.component.css',
+    selector: 'app-qr-scanner',
+    imports: [],
+    templateUrl: './qr-scanner.component.html',
+    styleUrl: './qr-scanner.component.css'
 })
 export class QrScannerComponent {
   @ViewChild('videoElement', { static: false })

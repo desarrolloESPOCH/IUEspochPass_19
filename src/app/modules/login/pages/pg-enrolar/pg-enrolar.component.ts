@@ -23,22 +23,21 @@ import { IRol } from '../../interface/IRol.interface';
 import { obtenerToken } from '../../../../utils/tthh/tokens';
 
 @Component({
-  selector: 'app-pg-enrolar',
-  standalone: true,
-  imports: [
-    CardModule,
-    ButtonModule,
-    InputTextModule,
-    FieldsetModule,
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    ToastModule,
-    CFooterComponent,
-  ],
-  templateUrl: './pg-enrolar.component.html',
-  styleUrl: './pg-enrolar.component.css',
-  providers: [MessageService],
+    selector: 'app-pg-enrolar',
+    imports: [
+        CardModule,
+        ButtonModule,
+        InputTextModule,
+        FieldsetModule,
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        ToastModule,
+        CFooterComponent,
+    ],
+    templateUrl: './pg-enrolar.component.html',
+    styleUrl: './pg-enrolar.component.css',
+    providers: [MessageService]
 })
 export default class PgEnrolarComponent {
   private swCas = inject(SwCasService);

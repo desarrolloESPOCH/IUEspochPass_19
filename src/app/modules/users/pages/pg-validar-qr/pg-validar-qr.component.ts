@@ -11,18 +11,17 @@ import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { MessagesModule } from 'primeng/messages';
 @Component({
-  selector: 'app-pg-validar-qr',
-  standalone: true,
-  imports: [
-    ProgressSpinnerModule,
-    SkeletonModule,
-    DividerModule,
-    FieldsetModule,
-    ButtonModule,
-    MessagesModule,
-  ],
-  templateUrl: './pg-validar-qr.component.html',
-  styleUrl: './pg-validar-qr.component.css',
+    selector: 'app-pg-validar-qr',
+    imports: [
+        ProgressSpinnerModule,
+        SkeletonModule,
+        DividerModule,
+        FieldsetModule,
+        ButtonModule,
+        MessagesModule,
+    ],
+    templateUrl: './pg-validar-qr.component.html',
+    styleUrl: './pg-validar-qr.component.css'
 })
 export default class PgValidarQrComponent {
   codigoQr = input.required<string>();

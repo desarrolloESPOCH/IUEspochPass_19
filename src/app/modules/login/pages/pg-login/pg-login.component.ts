@@ -6,11 +6,10 @@ import { CLandingComponent } from '../../components/c-landing/c-landing.componen
 import { ICarrusel } from '../../interface/ICarrusel.interfaces';
 
 @Component({
-  selector: 'app-pg-login',
-  standalone: true,
-  imports: [CommonModule, CSplashComponent, CLandingComponent],
-  templateUrl: './pg-login.component.html',
-  styleUrl: './pg-login.component.css',
+    selector: 'app-pg-login',
+    imports: [CommonModule, CSplashComponent, CLandingComponent],
+    templateUrl: './pg-login.component.html',
+    styleUrl: './pg-login.component.css'
 })
 export default class PgLoginComponent {
   wait = signal(true);

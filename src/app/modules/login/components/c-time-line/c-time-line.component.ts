@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { TimelineModule } from 'primeng/timeline';
 @Component({
-  selector: 'app-c-time-line',
-  standalone: true,
-  imports: [TimelineModule],
-  templateUrl: './c-time-line.component.html',
-  styleUrl: './c-time-line.component.css',
+    selector: 'app-c-time-line',
+    imports: [TimelineModule],
+    templateUrl: './c-time-line.component.html',
+    styleUrl: './c-time-line.component.css'
 })
 export class CTimeLineComponent {
   events!: any[];

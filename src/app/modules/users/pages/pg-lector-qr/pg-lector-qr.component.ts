@@ -7,12 +7,11 @@ import { QrScannerComponent } from '../../../shared/qr-scanner/qr-scanner.compon
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-pg-lector-qr',
-  standalone: true,
-  imports: [ToastModule, CommonModule, QrScannerComponent],
-  templateUrl: './pg-lector-qr.component.html',
-  styleUrl: './pg-lector-qr.component.css',
-  providers: [MessageService],
+    selector: 'app-pg-lector-qr',
+    imports: [ToastModule, CommonModule, QrScannerComponent],
+    templateUrl: './pg-lector-qr.component.html',
+    styleUrl: './pg-lector-qr.component.css',
+    providers: [MessageService]
 })
 export class PgLectorQrComponent {
   private swCas = inject(SwCasService);

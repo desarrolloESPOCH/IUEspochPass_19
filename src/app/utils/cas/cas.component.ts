@@ -12,11 +12,10 @@ import { swUsuariosService } from '../../services/usuarios/Usuarios.service';
 
 //cspell:disable
 @Component({
-  selector: 'app-cas',
-  standalone: true,
-  imports: [CommonModule, MessagesModule, ToastModule],
-  template: `<p-toast></p-toast>`,
-  providers: [MessageService],
+    selector: 'app-cas',
+    imports: [CommonModule, MessagesModule, ToastModule],
+    template: `<p-toast></p-toast>`,
+    providers: [MessageService]
 })
 export default class CasComponent {
   private route = inject(ActivatedRoute);

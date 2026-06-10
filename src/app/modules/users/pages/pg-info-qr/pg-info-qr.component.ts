@@ -13,18 +13,17 @@ import { QrInfo } from '../../../../services/otros/QrInfoService';
 import { QrService } from '../../../../services/qr/QrService';
 
 @Component({
-  selector: 'app-pg-info-qr',
-  standalone: true,
-  imports: [
-    CommonModule,
-    QrCodeModule,
-    CardModule,
-    InputGroupModule,
-    InputTextModule,
-    FormsModule,
-  ],
-  templateUrl: './pg-info-qr.component.html',
-  styleUrl: './pg-info-qr.component.css',
+    selector: 'app-pg-info-qr',
+    imports: [
+        CommonModule,
+        QrCodeModule,
+        CardModule,
+        InputGroupModule,
+        InputTextModule,
+        FormsModule,
+    ],
+    templateUrl: './pg-info-qr.component.html',
+    styleUrl: './pg-info-qr.component.css'
 })
 export class PgInfoQrComponent {
   nombre: any;

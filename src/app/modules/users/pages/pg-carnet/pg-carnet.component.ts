@@ -15,12 +15,11 @@ import { EventosService } from '../../../../services/otros/EventosService';
 import { QrInfo } from '../../../../services/otros/QrInfoService';
 
 @Component({
-  selector: 'app-pg-carnet',
-  standalone: true,
-  imports: [CommonModule, PanelModule, CardModule, ToastModule, SkeletonModule],
-  templateUrl: './pg-carnet.component.html',
-  styleUrl: './pg-carnet.component.css',
-  providers: [MessageService],
+    selector: 'app-pg-carnet',
+    imports: [CommonModule, PanelModule, CardModule, ToastModule, SkeletonModule],
+    templateUrl: './pg-carnet.component.html',
+    styleUrl: './pg-carnet.component.css',
+    providers: [MessageService]
 })
 export class PgCarnetComponent {
   infoCarnet: any;

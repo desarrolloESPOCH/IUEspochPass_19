@@ -14,11 +14,10 @@ import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { IResponse } from '../../../../services/usuarios/interfaces/IResponse.interface';
 
 @Component({
-  selector: 'app-c-sidebar',
-  standalone: true,
-  imports: [CommonModule, PanelMenuModule, SkeletonModule],
-  templateUrl: './c-sidebar.component.html',
-  styleUrl: './c-sidebar.component.css',
+    selector: 'app-c-sidebar',
+    imports: [CommonModule, PanelMenuModule, SkeletonModule],
+    templateUrl: './c-sidebar.component.html',
+    styleUrl: './c-sidebar.component.css'
 })
 export class CSidebarComponent {
   items: MenuItem[] = [];

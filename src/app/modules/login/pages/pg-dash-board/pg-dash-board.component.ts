@@ -11,24 +11,23 @@ import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
 
 @Component({
-  selector: 'app-pg-dash-board',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ButtonModule,
-    // CardModule,
-    BreadcrumbModule,
-    CHeaderDashComponent,
-    CSidebarComponent,
-    CFooterComponent,
-    SidebarModule,
-    // CTimeLineComponent,
-    // CaminoComponent,
-    // LoadingComponent,
-    // InformacionProcesoComponent,
-  ],
-  templateUrl: './pg-dash-board.component.html',
-  styleUrl: './pg-dash-board.component.css',
+    selector: 'app-pg-dash-board',
+    imports: [
+        CommonModule,
+        ButtonModule,
+        // CardModule,
+        BreadcrumbModule,
+        CHeaderDashComponent,
+        CSidebarComponent,
+        CFooterComponent,
+        SidebarModule,
+        // CTimeLineComponent,
+        // CaminoComponent,
+        // LoadingComponent,
+        // InformacionProcesoComponent,
+    ],
+    templateUrl: './pg-dash-board.component.html',
+    styleUrl: './pg-dash-board.component.css'
 })
 export class PgDashBoardComponent {
   items: MenuItem[] | undefined;

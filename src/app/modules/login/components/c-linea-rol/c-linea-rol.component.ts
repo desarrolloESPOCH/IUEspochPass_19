@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 // import { ROLES } from '../../../../enums/TipoRoles';
 
 @Component({
-  selector: 'app-c-linea-rol',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './c-linea-rol.component.html',
-  styleUrl: './c-linea-rol.component.css',
+    selector: 'app-c-linea-rol',
+    imports: [CommonModule],
+    templateUrl: './c-linea-rol.component.html',
+    styleUrl: './c-linea-rol.component.css'
 })
 export class CLineaRolComponent {
   @Input()

@@ -16,19 +16,18 @@ import { IRol } from '../../../../services/usuarios/interfaces/IRol.interface';
 import { swUsuariosService } from '../../../../services/usuarios/Usuarios.service';
 import { EventosService } from '../../../../services/otros/EventosService';
 @Component({
-  selector: 'app-c-header-dash',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MenubarModule,
-    InputTextModule,
-    CLineaRolComponent,
-    DropdownModule,
-    FormsModule,
-    SkeletonModule,
-  ],
-  templateUrl: './c-header-dash.component.html',
-  styleUrl: './c-header-dash.component.css',
+    selector: 'app-c-header-dash',
+    imports: [
+        CommonModule,
+        MenubarModule,
+        InputTextModule,
+        CLineaRolComponent,
+        DropdownModule,
+        FormsModule,
+        SkeletonModule,
+    ],
+    templateUrl: './c-header-dash.component.html',
+    styleUrl: './c-header-dash.component.css'
 })
 export class CHeaderDashComponent {
   private swCas = inject(SwCasService);

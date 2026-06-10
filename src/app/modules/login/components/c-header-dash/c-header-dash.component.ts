@@ -1,5 +1,5 @@
 // cspell:disable
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -15,6 +15,8 @@ import { IRol } from '../../../../services/usuarios/interfaces/IRol.interface';
 
 import { swUsuariosService } from '../../../../services/usuarios/Usuarios.service';
 import { EventosService } from '../../../../services/otros/EventosService';
+import { ThemeService } from '../../../../services/theme/theme.service';
+
 @Component({
     selector: 'app-c-header-dash',
     imports: [
@@ -34,36 +36,57 @@ export class CHeaderDashComponent {
   private router = inject(Router);
   private swUser = inject(swUsuariosService);
   private swEventosServices = inject(EventosService);
+  private themeService = inject(ThemeService);
 
   rolSeleccionado: any;
+  userEmail: string = '';
 
   lstRoles = signal<IRol[]>([] as IRol[]);
   themeDark = signal<boolean>(false);
   idRolSeleccionado = signal<number>(1);
 
-  items = signal<MenuItem[]>([
-    {
-      label: this.swCas.getUserInfo().per_email,
-      icon: 'pi pi-fw pi-bell',
-      items: [
-        {
-          label: 'No hay notificaciones',
-          icon: 'pi pi-fw pi-caret-down',
-        },
-      ],
-    },
-    {
-      label: 'Cerrar Sesión',
-      icon: 'pi pi-fw pi-power-off',
-      target: '_self',
-      url: `${environment.URL_MICROSOFT}=${environment.CAS_SERVER_URL}/logout?service=${environment.REDIRECT_URI}/logout`,
-    },
-  ]);
+  items = computed<MenuItem[]>(() => {
+    const isDark = this.themeDark();
+    return [
+      {
+        label: this.userEmail,
+        icon: 'pi pi-fw pi-bell',
+        items: [
+          {
+            label: 'No hay notificaciones',
+            icon: 'pi pi-fw pi-caret-down',
+          },
+          {
+            label: isDark ? 'Modo claro' : 'Modo oscuro',
+            icon: isDark ? 'pi pi-fw pi-sun' : 'pi pi-fw pi-moon',
+            command: () => this.toggleTheme()
+          }
+        ],
+      },
+      {
+        label: 'Cerrar Sesión',
+        icon: 'pi pi-fw pi-power-off',
+        command: () => this.logout()
+      },
+    ];
+  });
 
   constructor() {
-    // this.themeDark.set(JSON.parse(localStorage.getItem('darkTheme') || ''));
+    this.userEmail = this.swCas.getUserInfo().per_email;
+    const isDarkSaved = localStorage.getItem('darkTheme') === 'true';
+    this.themeDark.set(isDarkSaved);
     this.getRoles();
   }
+
+  toggleTheme = () => {
+    const nextValue = !this.themeDark();
+    this.themeDark.set(nextValue);
+    this.themeService.activeDarkTheme(nextValue);
+  };
+
+  logout = () => {
+    window.location.href = `${environment.URL_MICROSOFT}=${environment.CAS_SERVER_URL}/logout?service=${environment.REDIRECT_URI}/logout`;
+  };
 
   onChangeRol = (event: any) => {
     this.idRolSeleccionado.set(event.value.intIdRol);

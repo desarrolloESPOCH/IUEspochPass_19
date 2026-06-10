@@ -1,105 +1,345 @@
-video {
-  width: 400px;
-  height: 600px;
-  object-fit: none;
+:host {
+  display: block;
+  width: 100%;
+}
+
+.scanner-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  box-sizing: border-box;
+}
+
+.scanner-card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--text-color, #ffffff);
+}
+
+.dark .scanner-card {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scanner-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scanner-icon-badge {
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 8px 16px rgba(217, 119, 6, 0.35);
+}
+
+.scanner-icon-badge i {
+  font-size: 1.75rem;
+  color: #ffffff;
+}
+
+.scanner-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.025em;
+  color: #1e293b;
+}
+
+.dark .scanner-header h3 {
+  color: #ffffff;
+}
+
+.scanner-header p {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dark .scanner-header p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.scanner-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #000000;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.dark .scanner-viewport {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Resto de estilos del video, overlay y laser se mantienen porque el viewport es negro en ambos modos */
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .scanner-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 250px;
-  height: 250px;
   transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
-.scanner-overlay::before,
-.scanner-overlay::after,
-.scanner-overlay .bottom-left,
-.scanner-overlay .bottom-right {
-  content: "";
+.scanner-pulse {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+.scanner-corner {
   position: absolute;
-  width: 40px; /* Tamaño de las esquinas */
-  height: 60px;
-  border: 10px solid yellow; /* Color de las esquinas */
-  box-shadow: 0 0 10 0px rgba(255, 255, 0, 0.6);
-  transition: border-color 0.3s, box-shadow 0.3s; /* Animación */
+  width: 32px;
+  height: 32px;
+  border: 4px solid #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  transition: all 0.3s ease;
 }
 
-.scanner-overlay::before {
+.top-left {
   top: 0;
   left: 0;
   border-right: none;
   border-bottom: none;
+  border-top-left-radius: 12px;
 }
 
-.scanner-overlay::after {
+.top-right {
   top: 0;
   right: 0;
   border-left: none;
   border-bottom: none;
+  border-top-right-radius: 12px;
 }
 
-/* Esquinas inferiores */
-.scanner-overlay .bottom-left {
+.bottom-left {
   bottom: 0;
   left: 0;
   border-right: none;
   border-top: none;
+  border-bottom-left-radius: 12px;
 }
 
-.scanner-overlay .bottom-right {
+.bottom-right {
   bottom: 0;
   right: 0;
   border-left: none;
   border-top: none;
+  border-bottom-right-radius: 12px;
 }
 
-/* Cambia el color al escanear */
-.success::before,
-.success::after,
-.success .bottom-left,
-.success .bottom-right {
-  border-color: rgb(44, 243, 44) !important; /* 🟢 Cambia a verde */
-  box-shadow: 0 0 0 10 rgba(0, 255, 0, 0.8);
-}
-
-.scanner-overlay----------- {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80vw;
-  height: 80vw;
-  max-width: 300px;
-  max-height: 300px;
-  border: 4px solid yellow; /* 🔹 Amarillo por defecto */
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.6);
-  transition: border-color 0.3s, box-shadow 0.3s; /* Animación */
-}
-
-/* Clase cuando se detecta un código QR */
-.scanner-overlay.success-------------- {
-  border-color: rgb(44, 243, 44) !important; /* 🟢 Cambia a verde */
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
-}
-
-.scanner-text {
-  position: fixed;
-  top: 70%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 18px;
-  color: white;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 10px 15px;
-  border-radius: 5px;
-}
-
-.caja {
-  /* background-color: blue; */
+.scanner-laser {
+  position: absolute;
+  left: 0;
   width: 100%;
-  height: 74vh;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+  box-shadow: 0 0 8px #f59e0b;
+  animation: laser-movement 2.5s infinite linear;
+}
+
+@keyframes laser-movement {
+  0% {
+    top: 5%;
+  }
+  50% {
+    top: 95%;
+  }
+  100% {
+    top: 5%;
+  }
+}
+
+.scanner-overlay.success .scanner-corner {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.8) !important;
+}
+
+.scanner-overlay.success .scanner-laser {
+  background: linear-gradient(90deg, transparent, #10b981, transparent) !important;
+  box-shadow: 0 0 12px #10b981 !important;
+}
+
+.scanner-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+
+.dark .control-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.camera-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  color: #1e293b;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.2s ease;
+}
+
+.camera-select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dark .camera-select {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.dark .camera-select:focus {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.camera-select option {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.dark .camera-select option {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.select-wrapper::after {
+  content: "\e930";
+  font-family: "primeicons";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+.dark .select-wrapper::after {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.dark .status-badge {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+}
+
+.status-badge.scanning .status-dot {
+  background-color: #10b981;
+  animation: pulse-dot 1.5s infinite ease-in-out;
+}
+
+.status-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #1e293b;
+}
+
+.dark .status-text {
+  color: #ffffff;
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 8px #10b981;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
 }

@@ -1,0 +1,109 @@
+/* Contenedor del Carnet Interactuable */
+.carnet-wrapper {
+  perspective: 1000px;
+  position: relative;
+  cursor: pointer;
+}
+
+.carnet-interactive-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+  background-color: transparent;
+}
+
+/* Efecto hover: Levantar y rotar ligeramente */
+.carnet-wrapper:hover .carnet-interactive-container {
+  transform: translateY(-8px) rotateX(4deg) scale(1.02);
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25), 0 0 30px rgba(59, 130, 246, 0.2);
+}
+
+/* Superposición interactiva al hacer hover */
+.carnet-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0) 60%, rgba(15, 23, 42, 0.85) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 20px;
+  pointer-events: none;
+}
+
+.carnet-wrapper:hover .carnet-overlay {
+  opacity: 1;
+}
+
+.action-badge {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carnet-wrapper:hover .action-badge {
+  transform: translateY(0);
+}
+
+/* Contenedor de Expiración */
+.expiration-badge {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dark .expiration-badge {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+/* Contenedor Scrollable de Términos y Condiciones */
+.terms-scrollable {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 8px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.dark .terms-scrollable {
+  color: #94a3b8;
+}
+
+.terms-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terms-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 9999px;
+}
+
+.terms-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}

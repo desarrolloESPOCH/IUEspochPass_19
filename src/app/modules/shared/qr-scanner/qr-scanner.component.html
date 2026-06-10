@@ -1,26 +1,50 @@
-<!-- <div class="scanner-container">
- 
-</div> -->
+<div class="scanner-card-container">
+  <div class="scanner-card">
+    <div class="scanner-header">
+      <div class="scanner-icon-badge">
+        <i class="pi pi-qrcode"></i>
+      </div>
+      <h3>Lector de Credenciales</h3>
+      <p>Alinee el código QR de la credencial dentro del recuadro para realizar la lectura de acceso.</p>
+    </div>
 
-<div class="caja flex justify-center items-center">
-  <div
-    style="
-      width: 400px;
-      height: 600px;
-      min-height: 400px;
-      background-color: rgba(137, 43, 226, 0.596);
-    "
-  >
-    <video #videoElement autoplay playsinline></video>
-    <div #scannerOverlay class="scanner-overlay">
-      <div class="bottom-left"></div>
-      <div class="bottom-right"></div>
+    <div class="scanner-viewport">
+      <video #videoElement autoplay playsinline class="scanner-video"></video>
+      
+      <div #scannerOverlay class="scanner-overlay scanner-pulse">
+        <div class="scanner-corner top-left"></div>
+        <div class="scanner-corner top-right"></div>
+        <div class="scanner-corner bottom-left"></div>
+        <div class="scanner-corner bottom-right"></div>
+        <div class="scanner-laser"></div>
+      </div>
+    </div>
+
+    <div class="scanner-controls">
+      @if (videoDevices().length > 1) {
+        <div class="control-group">
+          <label for="cameraSelect" class="control-label">
+            <i class="pi pi-camera mr-1"></i> Seleccionar Cámara
+          </label>
+          <div class="select-wrapper">
+            <select id="cameraSelect" (change)="onCameraChange($event)" class="camera-select">
+              @for (device of videoDevices(); track device.deviceId) {
+                <option [value]="device.deviceId" [selected]="device.deviceId === selectedDeviceId()">
+                  {{ device.label || 'Cámara ' + ($index + 1) }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+      }
+
+      <div class="status-badge" [class.scanning]="isScanning()">
+        <span class="status-dot"></span>
+        <span class="status-text">
+          {{ isScanning() ? 'Escaneando activamente...' : 'Procesando lectura...' }}
+        </span>
+      </div>
     </div>
   </div>
-  <p class="scanner-text">Escanea un código QR</p>
-
-  @if(scannedCode){
-
-  <p>Código Escaneado: {{ scannedCode }}</p>
-  }
 </div>
+

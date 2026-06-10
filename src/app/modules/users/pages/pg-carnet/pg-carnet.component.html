@@ -1,43 +1,97 @@
-<div class="grid grid-cols-12 gap-4 w-full" style="max-width: 1000px">
-  <div class="col-span-12 md:col-span-6">
-    <p-card header="ESPOCH-PASS">
-      @if(!mostrarCarnet){
-      <p-skeleton width="100%" height="1rem"></p-skeleton>
-      <br />
-      <p-skeleton width="100%" height="1rem"></p-skeleton>
-      <br />
-      <p-skeleton width="300px" height="11rem"></p-skeleton>
-      }@else{
-      <p>Clic en el carnet para ver más detalles</p>
-      <div
-        class="animate__animated animate__pulse animate__delay-1s animate__repeat-3 flex justify-center items-center"
-      >
-        <img src="./carnet/{{ rol }}.svg" width="100%" (click)="opencarnet()" />
-        <!-- <app-carnet
-          [data]="infoCarnet"
-          class="animate__animated animate__fadeIn animate__slow"
-        /> -->
-      </div>
-      <p>Valido Hasta {{ fecha() | date : "d/M/yy, h:mm a" }}</p>
+<div class="grid grid-cols-12 gap-6 lg:gap-8 w-full max-w-5xl mx-auto p-2 md:p-6 animate__animated animate__fadeIn animate__slow">
+  
+  <!-- CARNET DIGITAL (Lado Izquierdo) -->
+  <div class="col-span-12 md:col-span-6 flex flex-col h-full">
+    <div class="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col justify-between h-full">
+      
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
+            <span class="pi pi-id-card text-blue-500 text-lg"></span>
+            Mi Credencial Digital
+          </h3>
+          <span class="px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full text-xs font-semibold uppercase tracking-wider">
+            espochPass
+          </span>
+        </div>
 
-      }
-    </p-card>
-  </div>
-
-  <div class="col-span-12 md:col-span-6">
-    <p-card header="Términos y condiciones">
-      <p>
         @if(!mostrarCarnet){
-        <p-skeleton class="mt-2" width="100%" height="1rem"></p-skeleton>
-        <br />
-        <p-skeleton class="mt-5" width="100%" height="1rem"></p-skeleton>
-        <br />
+          <div class="flex flex-col gap-4">
+            <p-skeleton width="80%" height="1.2rem"></p-skeleton>
+            <p-skeleton width="100%" height="1.2rem"></p-skeleton>
+            <p-skeleton width="100%" height="12rem" borderRadius="20px"></p-skeleton>
+          </div>
+        } @else {
+          <p class="text-sm text-slate-400 dark:text-zinc-500 mb-6">
+            Presiona tu credencial digital para acceder al código de escaneo QR y detalles de tu cuenta.
+          </p>
 
-        <p-skeleton class="mt-5" width="100%" height="1rem"></p-skeleton>
+          <div class="carnet-wrapper w-full flex justify-center items-center mb-6" (click)="opencarnet()">
+            <div class="carnet-interactive-container w-full max-w-sm">
+              <img 
+                src="./carnet/{{ rol }}.svg" 
+                alt="Carnet Digital" 
+                class="w-full h-auto object-contain block" 
+              />
+              <div class="carnet-overlay">
+                <div class="action-badge">
+                  <span class="pi pi-qrcode"></span>
+                  <span>Ver QR y Datos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
 
-        }@else{ {{ strTerminos() }} }
-      </p>
-    </p-card>
+      @if(mostrarCarnet){
+        <div class="border-t border-slate-100 dark:border-zinc-800 pt-4 flex justify-center">
+          <div class="expiration-badge">
+            <span class="pi pi-calendar-times"></span>
+            <span>Válido hasta: {{ fecha() | date : "dd/MM/yy, h:mm a" }}</span>
+          </div>
+        </div>
+      }
+
+    </div>
   </div>
+
+  <!-- TÉRMINOS Y CONDICIONES (Lado Derecho) -->
+  <div class="col-span-12 md:col-span-6 flex flex-col h-full">
+    <div class="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col h-full justify-between">
+      
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
+            <span class="pi pi-shield text-emerald-500 text-lg"></span>
+            Términos y Condiciones
+          </h3>
+        </div>
+
+        @if(!mostrarCarnet){
+          <div class="flex flex-col gap-4">
+            <p-skeleton width="100%" height="1rem"></p-skeleton>
+            <p-skeleton width="90%" height="1rem"></p-skeleton>
+            <p-skeleton width="95%" height="1rem"></p-skeleton>
+            <p-skeleton width="40%" height="1rem"></p-skeleton>
+          </div>
+        } @else {
+          <div class="terms-scrollable custom-scrollbar pr-2 mb-4">
+            {{ strTerminos() }}
+          </div>
+        }
+      </div>
+
+      <div class="border-t border-slate-100 dark:border-zinc-800 pt-4 flex items-center justify-between text-xs text-slate-400 dark:text-zinc-500">
+        <span class="flex items-center gap-2">
+          <span class="pi pi-lock"></span>
+          Uso seguro y personal
+        </span>
+        <span>espochPass © 2026</span>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 <p-toast></p-toast>

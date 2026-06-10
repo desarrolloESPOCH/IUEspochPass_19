@@ -1,79 +1,87 @@
-<div
-  class="w-full flex justify-center items-center flex-wrap"
-  style="height: 66vh"
->
-  @if((isLoading())){
-
-  <p-progressSpinner ariaLabel="loading" />
-  }@else{ @if(!isValid()){
-  <div class="flex">
-    <p-messages severity="error">
-      <ng-template pTemplate>
-        <div class="ml-2">El código QR no es valido.</div>
-        <div class="card flex justify-center">
-          <p-button label="Volver a Escanear" (onClick)="nativage()" />
+<div class="validation-container fadein animation-duration-250">
+  
+  <!-- ESTADO: CARGANDO -->
+  @if (isLoading()) {
+    <div class="state-card loading-state">
+      <p-progressSpinner strokeWidth="4" fill="transparent" ariaLabel="loading" />
+      <h3>Validando Credencial...</h3>
+      <p>Consultando los servidores de control de acceso de EspochPass.</p>
+    </div>
+  } @else {
+    
+    <!-- ESTADO: CÓDIGO INVÁLIDO -->
+    @if (!isValid()) {
+      <div class="state-card invalid-state">
+        <div class="error-badge">
+          <i class="pi pi-exclamation-triangle"></i>
         </div>
-      </ng-template>
-    </p-messages>
-  </div>
+        <h2>Acceso Denegado</h2>
+        <p class="error-desc">El código QR escaneado no es válido, ha expirado o no está registrado en el sistema.</p>
+        
+        <button class="btn-primary-custom" (click)="nativage()">
+          <i class="pi pi-refresh mr-2"></i> Volver a Escanear
+        </button>
+      </div>
+    } @else {
+      
+      <!-- ESTADO: ACCESO VÁLIDO / INFORMACIÓN DE USUARIO -->
+      <div class="state-card user-info-card">
+        <div class="success-badge-header">
+          <i class="pi pi-check-circle"></i> Acceso Autorizado
+        </div>
 
-  }@else{
+        <div class="profile-header">
+          <div class="avatar-container" (click)="foto() && foto().trim() !== '' ? showModal.set(true) : null" [style.cursor]="foto() && foto().trim() !== '' ? 'pointer' : 'default'" title="Ver foto ampliada">
+            @if (foto() && foto().trim() !== '') {
+              <img [src]="foto()" alt="Foto de usuario" class="user-avatar" />
+              <div class="avatar-overlay-hint">
+                <i class="pi pi-search-plus"></i>
+              </div>
+            } @else {
+              <div class="avatar-fallback">
+                <i class="pi pi-user"></i>
+              </div>
+            }
+          </div>
+          <h2 class="user-name">{{ User().Usuario || 'Nombre no disponible' }}</h2>
+          <span class="user-role-tag">{{ cargo() || 'FUNCIONARIO' }}</span>
+        </div>
 
-  <p-fieldset legend="Información del Usuario">
-    <div class="flex justify-center">
-      @defer(){ @if(foto().trim()==''){
-      <img
-        [src]="'./avatar.png'"
-        alt="foto del usuario"
-        style="
-          width: 250px;
-          height: 300px;
-          border: solid 1px rgba(219, 212, 212, 0.568);
-          border-radius: 12px;
-        "
-      />
-      }@else {
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Cédula de Identidad</span>
+            <span class="info-value">{{ User().strCedula }}</span>
+          </div>
 
-      <img
-        [src]="foto()"
-        alt="foto del usuario"
-        style="
-          width: 250px;
-          height: 300px;
-          border: solid 1px rgba(219, 212, 212, 0.568);
-          border-radius: 12px;
-        "
-      />
-      } }@placeholder (minimum 1000ms){
-      <p-skeleton size="21rem" styleClass="mr-2" />}
-    </div>
-    <p-divider />
+          <div class="info-item">
+            <span class="info-label">Dependencia / Facultad</span>
+            <span class="info-value">{{ dependencia() || 'No asignada' }}</span>
+          </div>
+        </div>
 
-    <div class="flex items-center flex-wrap">
-      <h4>Cédula:</h4>
-      <h4>{{ this.User().strCedula }}</h4>
-    </div>
-    <p-divider />
-    <div class="flex items-center flex-wrap">
-      <h4>Nombres:</h4>
-      <h4>{{ this.User().Usuario }}</h4>
-    </div>
-    <p-divider />
-
-    <div class="flex items-center flex-wrap">
-      <h4>DEPENDENCIA/FACULTAD:</h4>
-      <h4>{{ this.dependencia() }}</h4>
-    </div>
-    <p-divider />
-
-    <div class="flex items-center flex-wrap">
-      <h4>CARGO:</h4>
-      <h4>{{ this.cargo() }}</h4>
-    </div>
-    <p-divider />
-    <div class="card flex justify-center">
-      <p-button label="Volver a Escanear" (onClick)="nativage()" />
-    </div>
-  </p-fieldset>
-  } }
+        <div class="card-footer">
+          <button class="btn-primary-custom width-full" (click)="nativage()">
+            <i class="pi pi-qrcode mr-2"></i> Escanear Siguiente
+          </button>
+        </div>
+      </div>
+    }
+  }
 </div>
+
+<p-dialog 
+  header="Fotografía de {{ User().Usuario || 'Usuario' }}" 
+  [visible]="showModal()" 
+  (visibleChange)="showModal.set($event)"
+  [modal]="true" 
+  [dismissableMask]="true" 
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '90vw', maxWidth: '500px'}">
+  <div class="flex justify-center items-center" style="padding: 1rem;">
+    @if (foto() && foto().trim() !== '') {
+      <img [src]="foto()" alt="Foto Grande" style="width: 100%; border-radius: 12px; object-fit: contain; max-height: 70vh; box-shadow: 0 4px 20px rgba(0,0,0,0.15);" />
+    }
+  </div>
+</p-dialog>
+

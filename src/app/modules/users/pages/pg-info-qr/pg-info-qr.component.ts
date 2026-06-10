@@ -1,3 +1,4 @@
+// cspell:disable
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -61,14 +62,7 @@ export class PgInfoQrComponent {
       this.qr.generarQr(json).subscribe((obj) => {
         this.datos = JSON.stringify(obj.data[0]);
       });
-      if (this.rol == 3) {
-        const numeroConGuion =
-          this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
-        this.obtenerFotoAcademico(numeroConGuion);
-      } else {
-        this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
-        this.getRoles();
-      }
+      this.obtenerFotoGeneral();
     }
   }
 
@@ -79,6 +73,35 @@ export class PgInfoQrComponent {
         this.dependencia = obj.data[0].strDepencia;
       });
   };
+
+  obtenerFotoGeneral() {
+    this.swFoto.consultarDinardap(this.cedula).subscribe({
+      next: (res) => {
+        if (res && res.success && res.Informacion && res.Informacion.blProceso && res.Informacion.Datos && res.Informacion.Datos.valor && res.Informacion.Datos.valor.trim() !== '') {
+          const valor = res.Informacion.Datos.valor;
+          const imgUrl = valor.startsWith('data:') ? valor : 'data:image/jpeg;base64,' + valor;
+          this.foto.set(imgUrl);
+          this.getRoles();
+        } else {
+          this.obtenerFotoPorRoles();
+        }
+      },
+      error: () => {
+        this.obtenerFotoPorRoles();
+      }
+    });
+  }
+
+  obtenerFotoPorRoles() {
+    if (this.rol == 3) {
+      const numeroConGuion =
+        this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
+      this.obtenerFotoAcademico(numeroConGuion);
+    } else {
+      this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
+      this.getRoles();
+    }
+  }
 
   obtenerFotoTTHH(usuario: any) {
     this.swUser.getFotoTTHH(usuario).subscribe((objImg) => {
@@ -97,7 +120,6 @@ export class PgInfoQrComponent {
     } else {
       const [info] = listado;
       console.log('strfoto: ', info.strfoto);
-      // console.log('listado: ', listado[0].strfoto);
       this.foto.set(info.strfoto);
       console.log('si pasa', this.foto());
       this.getRoles();

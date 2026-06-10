@@ -14,4 +14,7 @@ export class FotoService {
   consultarAdministrativo = (per_id: number) => {
     return this._http.get(`${environment.FOTO_TTHH}/${per_id}`);
   };
+  consultarDinardap = (cedula: string) => {
+    return this._http.get<any>(`https://apigestioncupos.espoch.edu.ec/wsservicioscupos/procesosdinardap/ObtenerFotoPersona/${cedula}`);
+  };
 }

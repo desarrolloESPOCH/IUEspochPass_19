@@ -1,4 +1,4 @@
-<p-menubar [model]="this.items()">
+<p-menubar [model]="items()">
   <ng-template pTemplate="start">
     <div class="flex items-center">
       @if(themeDark()){
@@ -27,7 +27,7 @@
         [emptyMessage]="'No tiene roles asignados'"
       ></p-dropdown>
       }@placeholder(minimum 250ms) {
-      <p-skeleton height="2rem" width="200px" styleClass="mb-2" />
+      <p-skeleton height="2rem" width="160px" styleClass="mb-2" />
       }
     </div>
   </ng-template>

@@ -1,9 +1,28 @@
 :host ::ng-deep .p-menubar-start {
-  flex: 3;
+  flex: 1;
+  order: 1;
+}
+
+/* Forzar el orden de los elementos del header globalmente (Móvil y Escritorio) */
+:host ::ng-deep .p-menubar-end {
+  order: 2;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* Menú de escritorio (lista horizontal) */
+:host ::ng-deep p-menubarsub {
+  order: 3;
+}
+
+/* Botón de menú hamburguesa móvil */
+:host ::ng-deep .p-menubar-button {
+  order: 3;
+  margin-left: 10px; /* Separación sutil del combo de roles */
 }
 
 .fondo {
-  /* background-color: aqua; */
   width: 100%;
   display: flex;
   justify-content: space-between;

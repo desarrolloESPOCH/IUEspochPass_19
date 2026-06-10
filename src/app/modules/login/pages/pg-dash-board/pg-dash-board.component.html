@@ -4,12 +4,10 @@
 <div #lienzo class="lienzo">
   <app-c-header-dash class="header" />
 
-  @if (!isExpand) {
-
   <app-c-sidebar
+    [class.oculto]="isExpand"
     class="sidebar container-slider overflow-y-visible desaparece"
-  />
-  } @if (!sidebarVisible) {
+  /> @if (!sidebarVisible) {
   <p-button
     class="desaparece button"
     icon="pi pi-bars"

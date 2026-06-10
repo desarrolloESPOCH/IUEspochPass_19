@@ -1,6 +1,4 @@
-import { CardModule } from 'primeng/card';
-import { Component, ElementRef, inject } from '@angular/core';
-
+import { Component } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { CHeaderDashComponent } from '../../components/c-header-dash/c-header-dash.component';
 import { CSidebarComponent } from '../../components/c-sidebar/c-sidebar.component';
@@ -9,12 +7,14 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { SidebarModule } from 'primeng/sidebar';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
     selector: 'app-pg-dash-board',
     imports: [
         CommonModule,
         ButtonModule,
+        RouterOutlet,
         // CardModule,
         BreadcrumbModule,
         CHeaderDashComponent,

@@ -1,5 +1,5 @@
-<div class="grid w-full" style="max-width: 1000px">
-  <div class="col-12 md:col-6">
+<div class="grid grid-cols-12 gap-4 w-full" style="max-width: 1000px">
+  <div class="col-span-12 md:col-span-6">
     <p-card header="ESPOCH-PASS">
       @if(!mostrarCarnet){
       <p-skeleton width="100%" height="1rem"></p-skeleton>
@@ -10,7 +10,7 @@
       }@else{
       <p>Clic en el carnet para ver más detalles</p>
       <div
-        class="animate__animated animate__pulse animate__delay-1s animate__repeat-3 flex justify-content-center align-items-center"
+        class="animate__animated animate__pulse animate__delay-1s animate__repeat-3 flex justify-center items-center"
       >
         <img src="./carnet/{{ rol }}.svg" width="100%" (click)="opencarnet()" />
         <!-- <app-carnet
@@ -24,7 +24,7 @@
     </p-card>
   </div>
 
-  <div class="col-12 md:col-6">
+  <div class="col-span-12 md:col-span-6">
     <p-card header="Términos y condiciones">
       <p>
         @if(!mostrarCarnet){

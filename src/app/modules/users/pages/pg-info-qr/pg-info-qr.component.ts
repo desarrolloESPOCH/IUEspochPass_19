@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import { QrCodeModule } from 'ng-qrcode';
+import { QrCodeComponent } from 'ng-qrcode';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { FotoService } from '../../../../services/otros/FotoService';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
@@ -16,7 +16,7 @@ import { QrService } from '../../../../services/qr/QrService';
     selector: 'app-pg-info-qr',
     imports: [
         CommonModule,
-        QrCodeModule,
+        QrCodeComponent,
         CardModule,
         InputGroupModule,
         InputTextModule,

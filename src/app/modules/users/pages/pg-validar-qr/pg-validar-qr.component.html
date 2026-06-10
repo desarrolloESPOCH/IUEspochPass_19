@@ -1,5 +1,5 @@
 <div
-  class="w-full flex justify-content-center align-items-center flex-wrap"
+  class="w-full flex justify-center items-center flex-wrap"
   style="height: 66vh"
 >
   @if((isLoading())){
@@ -10,7 +10,7 @@
     <p-messages severity="error">
       <ng-template pTemplate>
         <div class="ml-2">El código QR no es valido.</div>
-        <div class="card flex justify-content-center">
+        <div class="card flex justify-center">
           <p-button label="Volver a Escanear" (onClick)="nativage()" />
         </div>
       </ng-template>
@@ -20,7 +20,7 @@
   }@else{
 
   <p-fieldset legend="Información del Usuario">
-    <div class="flex justify-content-center">
+    <div class="flex justify-center">
       @defer(){ @if(foto().trim()==''){
       <img
         [src]="'./avatar.png'"
@@ -49,29 +49,29 @@
     </div>
     <p-divider />
 
-    <div class="flex justify-items-center flex-wrap">
+    <div class="flex items-center flex-wrap">
       <h4>Cédula:</h4>
       <h4>{{ this.User().strCedula }}</h4>
     </div>
     <p-divider />
-    <div class="flex justify-items-center flex-wrap">
+    <div class="flex items-center flex-wrap">
       <h4>Nombres:</h4>
       <h4>{{ this.User().Usuario }}</h4>
     </div>
     <p-divider />
 
-    <div class="flex justify-items-center flex-wrap">
+    <div class="flex items-center flex-wrap">
       <h4>DEPENDENCIA/FACULTAD:</h4>
       <h4>{{ this.dependencia() }}</h4>
     </div>
     <p-divider />
 
-    <div class="flex justify-items-center flex-wrap">
+    <div class="flex items-center flex-wrap">
       <h4>CARGO:</h4>
       <h4>{{ this.cargo() }}</h4>
     </div>
     <p-divider />
-    <div class="card flex justify-content-center">
+    <div class="card flex justify-center">
       <p-button label="Volver a Escanear" (onClick)="nativage()" />
     </div>
   </p-fieldset>

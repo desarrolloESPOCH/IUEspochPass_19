@@ -1,10 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 /* You can add global styles to this file, and also import other style files */
 
-/* @import "primeng/resources/themes/lara-light-blue/theme.css"; */
-@import "primeng/resources/primeng.css";
+@import "tailwindcss";
+@plugin "tailwindcss-primeui";
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
 @import "primeicons/primeicons.css";
-@import "primeflex/primeflex.scss";
+@import "primeflex/primeflex.css";
 
 @import "../node_modules/quill/dist/quill.core.css";
 @import "../node_modules/quill/dist/quill.snow.css";
@@ -19,6 +21,11 @@ body {
   box-sizing: border-box;
   /* font-family: "Roboto", sans-serif; */
   background-color: var(--surface-ground);
+}
+
+app-root, app-pg-login, app-c-landing, app-c-splash {
+  display: block;
+  width: 100%;
 }
 
 @keyframes fadeIn {

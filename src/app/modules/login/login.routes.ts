@@ -20,7 +20,17 @@ export const routesLogin: Routes = [
         loadChildren: () =>
           import('./../users/users.routes').then((r) => r.routesUsers),
       },
+      {
+        path: 'changelog',
+        loadComponent: () =>
+          import('./pages/pg-changelog/pg-changelog.component'),
+      },
     ],
+  },
+  {
+    path: 'changelog',
+    loadComponent: () =>
+      import('./pages/pg-changelog/pg-changelog.component'),
   },
   {
     path: 'logout',

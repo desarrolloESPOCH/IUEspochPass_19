@@ -1,37 +1,23 @@
 // cspell:disable
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, inject } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ThemeService {
-  constructor(@Inject(DOCUMENT) private doc: Document) {}
-  activeDarkTheme = (option: boolean) => {
-    let theme: string;
-    theme = option ? THEME.DARK : THEME.LIGHT;
+  constructor(@Inject(DOCUMENT) private doc: Document) {
+    // Inicializar el tema en base a localStorage. Por defecto es falso (modo claro).
+    const isDarkSaved = localStorage.getItem('darkTheme') === 'true';
+    this.activeDarkTheme(isDarkSaved);
+  }
 
-    let themeLink = this.doc.getElementById('app-theme') as HTMLLinkElement;
+  activeDarkTheme = (option: boolean) => {
     localStorage.setItem('darkTheme', option.toString());
-    themeLink.href = `/assets/theme/${theme}/theme.css`;
+    if (option) {
+      this.doc.documentElement.classList.add('app-dark');
+    } else {
+      this.doc.documentElement.classList.remove('app-dark');
+    }
   };
-}
-//Diccionario
-const themes = [
-  {
-    DARK: 'vela-purple',
-    LIGHT: 'aura-light-cyan',
-  },
-  {
-    DARK: 'vela-purple',
-    LIGHT: 'saga-blue',
-  },
-  {
-    DARK: 'tailwind',
-    LIGHT: 'tailwind-light',
-  },
-];
-enum THEME {
-  DARK = 'vela-purple',
-  LIGHT = 'lara-light-blue',
 }

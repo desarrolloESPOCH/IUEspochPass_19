@@ -1,5 +1,5 @@
 // cspell:disable
-import { Component, inject, SimpleChanges } from '@angular/core';
+import { Component, inject, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
@@ -14,13 +14,12 @@ import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { IResponse } from '../../../../services/usuarios/interfaces/IResponse.interface';
 
 @Component({
-  selector: 'app-c-sidebar',
-  standalone: true,
-  imports: [CommonModule, PanelMenuModule, SkeletonModule],
-  templateUrl: './c-sidebar.component.html',
-  styleUrl: './c-sidebar.component.css',
+    selector: 'app-c-sidebar',
+    imports: [CommonModule, PanelMenuModule, SkeletonModule],
+    templateUrl: './c-sidebar.component.html',
+    styleUrl: './c-sidebar.component.css'
 })
-export class CSidebarComponent {
+export class CSidebarComponent implements OnInit {
   items: MenuItem[] = [];
   private swSidebar = inject(SideBarService);
   private router = inject(Router);
@@ -31,6 +30,13 @@ export class CSidebarComponent {
     this.swEventosServices.rolCambiado.subscribe((rol: number) => {
       this.getItemsMenu(rol);
     });
+  }
+
+  ngOnInit() {
+    const rolGuardado = sessionStorage.getItem('rol');
+    if (rolGuardado) {
+      this.getItemsMenu(Number(rolGuardado));
+    }
   }
 
   cargarDataMenu = () => {
@@ -45,6 +51,11 @@ export class CSidebarComponent {
         items.data,
         this.obtenerRutas
       );
+      menu.push({
+        label: 'Historial de Cambios',
+        icon: 'pi pi-history',
+        command: () => this.obtenerRutas('/dashboard/changelog')
+      });
       this.items = menu;
     });
   };

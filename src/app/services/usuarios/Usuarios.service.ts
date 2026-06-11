@@ -17,7 +17,7 @@ export class swUsuariosService {
   private serviceUser = inject(HttpClient);
   private __http = inject(HttpClient);
   private URLSERVICIO = environment.SERVICIO_WEB;
-  constructor() {}
+  constructor() { }
 
   getMenu = (idRol: number) => {
     return this.serviceUser.get<IResponse<IMenu>>(
@@ -58,10 +58,11 @@ export class swUsuariosService {
   };
   //OBTENER EL TOKEN PARA EL CONSUMO DE SERVICIOS DE TTHH
   getAccesoTokenTTHH = () => {
-    const vecPersona = {
-      usuSerId: 26,
-      usuPassword: '0604508390',
-    };
+    // const vecPersona = {
+    //   usuSerId: 26,
+    //   usuPassword: '0604508390',
+    // };
+    const vecPersona = { "apiKey": "4p1k3y_extDTH@" }
     return this.serviceUser.post<any>(
       `${environment.RUTA_TOKEN_TTHH}`,
       vecPersona,
@@ -74,10 +75,11 @@ export class swUsuariosService {
   };
 
   getAccesoTokenTTHH_SYNC = async () => {
-    const vecPersona = {
-      usuSerId: 26,
-      usuPassword: '0604508390',
-    };
+    // const vecPersona = {
+    //   usuSerId: 26,
+    //   usuPassword: '0604508390',
+    // };
+    const vecPersona = { "apiKey": "4p1k3y_extDTH@" }
     const response = await fetch(`${environment.RUTA_TOKEN_TTHH}`, {
       method: 'POST',
       body: JSON.stringify(vecPersona),

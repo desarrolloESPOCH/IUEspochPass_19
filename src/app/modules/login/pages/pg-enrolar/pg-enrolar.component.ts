@@ -21,10 +21,13 @@ import { CFooterComponent } from '../../components/c-footer/c-footer.component';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { IRol } from '../../interface/IRol.interface';
 import { obtenerToken } from '../../../../utils/tthh/tokens';
+import { FotoService } from '../../../../services/otros/FotoService';
+
+import { Select } from 'primeng/select';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-pg-enrolar',
-  standalone: true,
   imports: [
     CardModule,
     ButtonModule,
@@ -35,17 +38,39 @@ import { obtenerToken } from '../../../../utils/tthh/tokens';
     ReactiveFormsModule,
     ToastModule,
     CFooterComponent,
+    Select,
   ],
   templateUrl: './pg-enrolar.component.html',
   styleUrl: './pg-enrolar.component.css',
-  providers: [MessageService],
+  providers: [MessageService]
 })
 export default class PgEnrolarComponent {
   private swCas = inject(SwCasService);
   private fb = inject(FormBuilder);
   private swUser = inject(swUsuariosService);
+  private swFoto = inject(FotoService);
   private alerty = inject(MessageService);
   private router = inject(Router);
+
+  isDevMode = !environment.production;
+  selectedMockUser: any;
+  mockUsers = [
+    { label: 'ADMIN PRUEBA', value: { per_email: 'admin@espoch.edu.ec', per_id: '1', cedula: '0600000001', nombres: 'ADMIN', apellidos: 'PRUEBA' } },
+    { label: 'DOCENTE PRUEBA', value: { per_email: 'docente@espoch.edu.ec', per_id: '2', cedula: '0600000002', nombres: 'DOCENTE', apellidos: 'PRUEBA' } },
+    { label: 'JOSE LUIS CONDO LEON', value: { per_email: 'jose.condo@espoch.edu.ec', per_id: '16778', cedula: '0604172296', nombres: 'JOSE LUIS', apellidos: 'CONDO LEON' } },
+    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } }
+  ];
+
+  async suplantarUsuario(event: any) {
+    if (!this.isDevMode) {
+      console.warn('Suplantación de usuarios no permitida en producción');
+      return;
+    }
+    if (event.value) {
+      await this.swCas.saveInfo(event.value);
+      this.ngOnInit();
+    }
+  }
 
   isloading = signal(false);
 
@@ -62,7 +87,7 @@ export default class PgEnrolarComponent {
   async ngOnInit() {
     this.isloading.set(false);
     this.dataEnrol = this.swCas.getUserInfo();
-    console.log('this.dataEnrol : ', this.dataEnrol);
+    // console.log('this.dataEnrol : ', this.dataEnrol);
 
     if (!this.dataEnrol.per_id) {
       console.log('No se loguea aun');
@@ -134,10 +159,38 @@ export default class PgEnrolarComponent {
     });
   };
 
-  getFoto = async (usuario: any) => {
-    const { per_id } = usuario;
+  getFoto = (usuario: any) => {
+    const { cedula } = usuario;
+    this.swFoto.consultarDinardap(cedula).subscribe({
+      next: (res) => {
+        if (res && res.success && res.Informacion && res.Informacion.blProceso && res.Informacion.Datos && res.Informacion.Datos.valor && res.Informacion.Datos.valor.trim() !== '') {
+          const valor = res.Informacion.Datos.valor;
+          const imgUrl = valor.startsWith('data:') ? valor : 'data:image/jpeg;base64,' + valor;
+          this.base64textString.set(imgUrl);
+        } else {
+          this.obtenerFotoFallback(usuario);
+        }
+      },
+      error: () => {
+        this.obtenerFotoFallback(usuario);
+      }
+    });
+  };
+
+  obtenerFotoFallback = async (usuario: any) => {
+    const { per_id, cedula } = usuario;
+    if (this.rol === 3) {
+      let cedulaConGuion = cedula.slice(0, 9) + '-' + cedula.slice(9, 10);
+      const { listado } = await this.swUser.getInformacionEstudianteSYNC(cedulaConGuion);
+      if (listado.length > 0 && listado[0].strfoto) {
+        this.base64textString.set(listado[0].strfoto);
+        return;
+      }
+    }
     const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(per_id);
-    this.base64textString.set(imgArchivo ?? this.base64textString());
+    if (imgArchivo) {
+      this.base64textString.set(imgArchivo);
+    }
   };
 
   obtenerDataAcademico = async (usuario: any) => {
@@ -155,8 +208,8 @@ export default class PgEnrolarComponent {
       }
       this.getFoto(usuario);
       this.frmRegistro.patchValue({
-        cargo: 'ESTUDIANTE',
-        dependencia: 'POSTGRADO',
+        cargo: 'MAESTRANTE',
+        dependencia: 'POSGRADO',
       });
       // this.conexion.set();
       this.rol = 3;
@@ -164,7 +217,7 @@ export default class PgEnrolarComponent {
       return;
     }
 
-    this.base64textString.set(`${listado[0].strfoto ?? this.base64textString}`);
+    this.getFoto(usuario);
     const { listado: listadoAcademico } =
       await this.swUser.validarMatriculaVigenteSYNC(cedula);
     this.frmRegistro.patchValue({
@@ -177,7 +230,7 @@ export default class PgEnrolarComponent {
     this.frmRegistro.patchValue({
       roles: [
         {
-          intPersona: this.dataEnrol.per_id,
+          intPersona: Number(this.dataEnrol.per_id),
           intRol: this.rol,
           intDepencia: 1,
           strDepencia: this.strDependencia!.value,
@@ -187,7 +240,7 @@ export default class PgEnrolarComponent {
       ],
     });
 
-    const intIdPersona = this.intIdPersona!.value;
+    const intIdPersona = Number(this.intIdPersona!.value);
     let strCedula = this.strCedula!.value;
     const strNombres = this.strNombres!.value;
     const strApellidos = this.strApellidos!.value;
@@ -196,7 +249,7 @@ export default class PgEnrolarComponent {
     const strCargo = this.strCargo!.value;
     strCedula = strCedula.replace('-', '');
     const json = {
-      ...this.frmRegistro.value,
+      ...this.frmRegistro.getRawValue(),
       intIdPersona,
       strCedula,
       strNombres,
@@ -206,28 +259,25 @@ export default class PgEnrolarComponent {
       strCargo,
       conexion: this.conexion(),
     };
-    console.log('json', json);
-    this.swUser.postRegistroEnrol(json).subscribe((objEnrol) => {
-      console.log('objEnrol: ', objEnrol);
-      // if (objEnrol.count > 0) {
-      this.alerty.add({
-        severity: 'success',
-        summary: 'Enrolamiento',
-        detail: 'Enrolamiento exitoso',
-      });
-      this.enrolado = true;
-
-      // this.r;
-      // } else {
-      // console.log('sin matricula  ');
-
-      // this.sinMatricula = true;
-      // this.alerty.add({
-      //   severity: 'error',
-      //   summary: 'Enrolamiento fallido',
-      //   detail: objEnrol.message,
-      // });
-      // }
+    // console.log('json al guardar enrolamiento', json);
+    this.swUser.postRegistroEnrol(json).subscribe({
+      next: (objEnrol) => {
+        // console.log('objEnrol: ', objEnrol);
+        this.alerty.add({
+          severity: 'success',
+          summary: 'Enrolamiento',
+          detail: 'Enrolamiento exitoso',
+        });
+        this.enrolado = true;
+      },
+      error: (err) => {
+        console.error('Error al registrar enrolamiento', err);
+        this.alerty.add({
+          severity: 'error',
+          summary: 'Error de Enrolamiento',
+          detail: err.error?.message || err.message || 'Ocurrió un error en el servidor al intentar registrar sus datos de enrolamiento.',
+        });
+      }
     });
   };
 

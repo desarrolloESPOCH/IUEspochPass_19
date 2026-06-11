@@ -8,5 +8,6 @@
   /* font-size: 0.9em; */
   /* z-index: 1000; */
   color: white;
-  padding: 2px;
+  padding: 12px;
+  font-weight: bold;
 }

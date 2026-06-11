@@ -23,7 +23,12 @@ export class SwCasService {
   private datosDeSesionSubject = new BehaviorSubject<any>(null);
   datosDeSesion$ = this.datosDeSesionSubject.asObservable();
 
-  constructor() {}
+  constructor() {
+    const info = this.getUserInfo();
+    if (info && info.per_id) {
+      this.datosDeSesionSubject.next(info);
+    }
+  }
 
   loginLocal() {
     window.location.href = `https://seguridad.espoch.edu.ec/cas/login?service=${environment.REDIRECT_URI}/cas`;
@@ -46,9 +51,9 @@ export class SwCasService {
   getUserInfo = (): IJsonUser => {
     let userSession = sessionStorage.getItem('user');
     if (!userSession) return {} as IJsonUser;
-    this.user.set(userSession);
     const decryptedUserString = Base64.decode(userSession);
     let infoUser = JSON.parse(decryptedUserString);
+    this.user.set(infoUser);
     return infoUser;
   };
 
@@ -56,7 +61,6 @@ export class SwCasService {
     // let user = await this.transformXmltoJson(res);
     sessionStorage.setItem('user', Base64.encode(JSON.stringify(user)));
     this.datosDeSesionSubject.next(this.getUserInfo());
-    this.user.set(this.getUserInfo());
   }
 
   async transformXmltoJson(xmlString: string) {

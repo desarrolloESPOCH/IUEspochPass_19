@@ -1,10 +1,37 @@
 .ll {
   height: var(--contenido);
-  overflow-y: scroll;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.ll::-webkit-scrollbar {
+  width: 6px;
+}
+.ll {
+  height: var(--contenido);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.ll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ll::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 10px;
 }
 
 .total {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
-  grid-template-rows: 1fr auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+:host-context(.app-dark) .total,
+:host-context(.dark) .total {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }

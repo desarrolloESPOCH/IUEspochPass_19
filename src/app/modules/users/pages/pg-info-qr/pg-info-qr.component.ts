@@ -1,9 +1,10 @@
+// cspell:disable
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import { QrCodeModule } from 'ng-qrcode';
+import { QrCodeComponent } from 'ng-qrcode';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { FotoService } from '../../../../services/otros/FotoService';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
@@ -14,17 +15,16 @@ import { QrService } from '../../../../services/qr/QrService';
 
 @Component({
   selector: 'app-pg-info-qr',
-  standalone: true,
   imports: [
     CommonModule,
-    QrCodeModule,
+    QrCodeComponent,
     CardModule,
     InputGroupModule,
     InputTextModule,
     FormsModule,
   ],
   templateUrl: './pg-info-qr.component.html',
-  styleUrl: './pg-info-qr.component.css',
+  styleUrl: './pg-info-qr.component.css'
 })
 export class PgInfoQrComponent {
   nombre: any;
@@ -34,6 +34,7 @@ export class PgInfoQrComponent {
   dependencia: any;
   rol: any;
   datos: any;
+  cargo: string = '';
 
   foto = signal<string>('');
   public base64textString: any = [];
@@ -62,14 +63,7 @@ export class PgInfoQrComponent {
       this.qr.generarQr(json).subscribe((obj) => {
         this.datos = JSON.stringify(obj.data[0]);
       });
-      if (this.rol == 3) {
-        const numeroConGuion =
-          this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
-        this.obtenerFotoAcademico(numeroConGuion);
-      } else {
-        this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
-        this.getRoles();
-      }
+      this.obtenerFotoGeneral();
     }
   }
 
@@ -77,9 +71,41 @@ export class PgInfoQrComponent {
     this.swUser
       .getRolesByUser(Number(this.swCas.getUserInfo().per_id))
       .subscribe((obj) => {
-        this.dependencia = obj.data[0].strDepencia;
+        if (obj && obj.data && obj.data.length > 0) {
+          this.dependencia = obj.data[0].strDepencia;
+          this.cargo = obj.data[0].strCargo;
+        }
       });
   };
+
+  obtenerFotoGeneral() {
+    this.swFoto.consultarDinardap(this.cedula).subscribe({
+      next: (res) => {
+        if (res && res.success && res.Informacion && res.Informacion.blProceso && res.Informacion.Datos && res.Informacion.Datos.valor && res.Informacion.Datos.valor.trim() !== '') {
+          const valor = res.Informacion.Datos.valor;
+          const imgUrl = valor.startsWith('data:') ? valor : 'data:image/jpeg;base64,' + valor;
+          this.foto.set(imgUrl);
+          this.getRoles();
+        } else {
+          this.obtenerFotoPorRoles();
+        }
+      },
+      error: () => {
+        this.obtenerFotoPorRoles();
+      }
+    });
+  }
+
+  obtenerFotoPorRoles() {
+    if (this.rol == 3) {
+      const numeroConGuion =
+        this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
+      this.obtenerFotoAcademico(numeroConGuion);
+    } else {
+      this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
+      this.getRoles();
+    }
+  }
 
   obtenerFotoTTHH(usuario: any) {
     this.swUser.getFotoTTHH(usuario).subscribe((objImg) => {
@@ -97,10 +123,9 @@ export class PgInfoQrComponent {
       this.getRoles();
     } else {
       const [info] = listado;
-      console.log('strfoto: ', info.strfoto);
-      // console.log('listado: ', listado[0].strfoto);
+      // console.log('strfoto: ', info.strfoto);
       this.foto.set(info.strfoto);
-      console.log('si pasa', this.foto());
+      // console.log('si pasa', this.foto());
       this.getRoles();
     }
   };

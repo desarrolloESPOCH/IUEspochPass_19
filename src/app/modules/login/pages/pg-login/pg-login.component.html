@@ -1,10 +1,10 @@
-<div style="overflow: hidden">
+<div class="w-full overflow-hidden">
   @if(wait()){
-  <app-c-splash />
+  <app-c-splash class=" w-full" />
   } @else {
-  <div class="animate__animated animate__fadeIn animate__slow">
+  <div class="animate__animated animate__fadeIn animate__slow w-full">
     @defer () {
-    <app-c-landing />
+    <app-c-landing class="block w-full" />
     }
   </div>
   }

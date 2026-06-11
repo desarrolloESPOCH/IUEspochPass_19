@@ -7,21 +7,20 @@ import { ICarrusel } from '../../interface/ICarrusel.interfaces';
 
 @Component({
   selector: 'app-pg-login',
-  standalone: true,
   imports: [CommonModule, CSplashComponent, CLandingComponent],
   templateUrl: './pg-login.component.html',
-  styleUrl: './pg-login.component.css',
+  styleUrl: './pg-login.component.css'
 })
 export default class PgLoginComponent {
   wait = signal(true);
   imgs: ICarrusel[] = [
     { src: 'https://oficina.espoch.edu.ec/dtic/images/1.jpg', class: 'slide' },
     {
-      src: 'https://oficina.espoch.edu.ec/dtic/images/7.jpg',
+      src: 'https://oficina.espoch.edu.ec/dtic/images/2.jpg',
       class: 'slide-2',
     },
     {
-      src: 'https://oficina.espoch.edu.ec/dtic/images/9.jpg',
+      src: 'https://oficina.espoch.edu.ec/dtic/images/1.jpg',
       class: 'slide-3',
     },
   ];

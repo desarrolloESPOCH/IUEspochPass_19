@@ -1,8 +1,8 @@
 .barra {
   height: 7px;
-  width: 0px;
+  width: 100%;
   background-color: #d31a2b;
-  animation: animacionBarra 0.8s ease-in-out;
+  animation: animacionBarra 0.8s ease-in-out forwards;
 }
 
 .sello {
@@ -18,18 +18,22 @@ img {
   max-width: 400px;
   min-width: 300px;
 }
+
 @keyframes animacionBarra {
   from {
     width: 0px;
   }
+
   to {
     width: 100%;
   }
 }
+
 @keyframes animacionSello {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 100;
   }

@@ -10,6 +10,7 @@
 .eslogan {
   color: #b49f61;
 }
+
 @keyframes fondo {
   0% {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -31,46 +32,47 @@
   44% {
     transform: scale(1.2);
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/7.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/2.jpg");
   }
 
   55% {
     transform: scale(1);
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/7.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/2.jpg");
   }
 
   66% {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/7.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/2.jpg");
     transform: scale(1.2);
   }
 
   77% {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/9.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/1.jpg");
     transform: scale(1);
   }
 
   88% {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/9.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/1.jpg");
 
     transform: scale(1.2);
   }
 
   100% {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url("https://oficina.espoch.edu.ec/dtic/images/9.jpg");
+      url("https://oficina.espoch.edu.ec/dtic/images/1.jpg");
     transform: scale(1);
   }
 }
 
-.container {
+.landing-container {
   width: 100%;
   min-height: 100dvh;
   position: absolute;
   top: 0;
+  left: 0;
   display: grid;
   /* grid-template-areas:
     "header header header header"
@@ -99,12 +101,12 @@
   flex-wrap: wrap;
   text-align: left;
   border-left: 10px solid red;
-  line-height: 0.1;
 }
 
 @media only screen and (max-width: 900px) {
   .case {
-    font-size: 1em; /* Cambiar el tamaño de fuente para pantallas más pequeñas */
+    font-size: 1em;
+    /* Cambiar el tamaño de fuente para pantallas más pequeñas */
   }
 
   .content {
@@ -114,7 +116,8 @@
 
 @media only screen and (max-height: 768px) {
   .case {
-    font-size: 1em; /* Cambiar el tamaño de fuente para pantallas más pequeñas */
+    font-size: 1em;
+    /* Cambiar el tamaño de fuente para pantallas más pequeñas */
   }
 }
 

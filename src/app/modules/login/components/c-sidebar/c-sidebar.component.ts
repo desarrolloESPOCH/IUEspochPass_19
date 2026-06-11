@@ -51,6 +51,11 @@ export class CSidebarComponent implements OnInit {
         items.data,
         this.obtenerRutas
       );
+      menu.push({
+        label: 'Historial de Cambios',
+        icon: 'pi pi-history',
+        command: () => this.obtenerRutas('/dashboard/changelog')
+      });
       this.items = menu;
     });
   };

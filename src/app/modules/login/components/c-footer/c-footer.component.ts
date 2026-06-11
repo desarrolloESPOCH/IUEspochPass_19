@@ -1,11 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../../../services/theme/theme.service';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 
 @Component({
     selector: 'app-c-footer',
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     templateUrl: './c-footer.component.html',
     styleUrl: './c-footer.component.css'
 })

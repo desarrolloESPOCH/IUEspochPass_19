@@ -1,0 +1,174 @@
+<!-- cspell:disable -->
+<div class="changelog-container">
+  <!-- Cabecera de Navegación -->
+  <header class="changelog-header flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="logo-box">
+        <i class="pi pi-history text-2xl text-primary animate-pulse"></i>
+      </div>
+      <div>
+        <h1 class="gradient-text font-bold text-2xl m-0 tracking-tight">Historial de Cambios</h1>
+        <p class="subtitle text-sm text-muted">Registro de actualizaciones de ESPOCH PASS</p>
+      </div>
+    </div>
+
+    <button pButton (click)="volver()" icon="pi pi-arrow-left"
+      [label]="hasSession() ? 'Volver al Dashboard' : 'Volver al Inicio'"
+      class="p-button-outlined p-button-secondary back-button">
+    </button>
+  </header>
+
+  <!-- Selector de Vista (Tabs) -->
+  <div class="tab-selector-container flex justify-center mb-6">
+    <div class="tab-selector flex p-1 rounded-full shadow-inner bg-ground-tab">
+      <button class="tab-btn flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-all duration-300"
+        [class.active]="activeTab() === 'front'" (click)="setTab('front')">
+        <i class="pi pi-desktop"></i>
+        <span>Aplicación (UI)</span>
+      </button>
+      <!-- <button class="tab-btn flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold transition-all duration-300"
+              [class.active]="activeTab() === 'back'"
+              (click)="setTab('back')">
+        <i class="pi pi-server"></i>
+        <span>Servicios (API)</span>
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Contenido de la Línea de Tiempo -->
+  <main class="changelog-timeline">
+
+    <!-- Renderizado de cambios del Frontend -->
+    @if (activeTab() === 'front') {
+    <div class="timeline fadeIn">
+      @for (item of frontChanges(); track item.version) {
+      <article class="timeline-item">
+        <div class="timeline-marker">
+          <div class="marker-dot"></div>
+          <div class="marker-line"></div>
+        </div>
+
+        <div class="timeline-content card shadow-lg p-5 rounded-2xl transition-all hover-glow">
+          <header class="flex flex-wrap justify-between items-center gap-2 mb-4 border-b border-border pb-3">
+            <div class="flex items-center gap-2">
+              <span class="version-badge px-3 py-1 rounded-full font-bold text-sm">v{{ item.version }}</span>
+              <h3 class="date text-sm font-semibold text-muted">{{ item.fecha }}</h3>
+            </div>
+            <span class="system-badge text-xs px-2 py-0.5 rounded font-medium bg-front-badge">Frontend</span>
+          </header>
+
+          <!-- Sección de Nuevas Funciones -->
+          @if (item.nuevasFunciones.length > 0) {
+          <div class="change-section mb-4">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-success">
+              <span>✨</span> Nuevas funciones
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (feature of item.nuevasFunciones; track feature) {
+              <li class="change-list-item py-1">{{ feature }}</li>
+              }
+            </ul>
+          </div>
+          }
+
+          <!-- Sección de Correcciones -->
+          @if (item.correcciones.length > 0) {
+          <div class="change-section mb-4">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-danger">
+              <span>🐞</span> Correcciones
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (fix of item.correcciones; track fix) {
+              <li class="change-list-item py-1">{{ fix }}</li>
+              }
+            </ul>
+          </div>
+          }
+
+          <!-- Sección de Mejoras -->
+          @if (item.mejoras.length > 0) {
+          <div class="change-section">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-warning">
+              <span>⚡</span> Mejoras
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (improvement of item.mejoras; track improvement) {
+              <li class="change-list-item py-1">{{ improvement }}</li>
+              }
+            </ul>
+          </div>
+          }
+        </div>
+      </article>
+      }
+    </div>
+    }
+
+    <!-- Renderizado de cambios del Backend -->
+    @if (activeTab() === 'back') {
+    <div class="timeline fadeIn">
+      @for (item of backChanges(); track item.version) {
+      <article class="timeline-item">
+        <div class="timeline-marker">
+          <div class="marker-dot"></div>
+          <div class="marker-line"></div>
+        </div>
+
+        <div class="timeline-content card shadow-lg p-5 rounded-2xl transition-all hover-glow">
+          <header class="flex flex-wrap justify-between items-center gap-2 mb-4 border-b border-border pb-3">
+            <div class="flex items-center gap-2">
+              <span class="version-badge px-3 py-1 rounded-full font-bold text-sm bg-accent-color">v{{ item.version
+                }}</span>
+              <h3 class="date text-sm font-semibold text-muted">{{ item.fecha }}</h3>
+            </div>
+            <span class="system-badge text-xs px-2 py-0.5 rounded font-medium bg-back-badge">Backend</span>
+          </header>
+
+          <!-- Sección de Nuevas Funciones -->
+          @if (item.nuevasFunciones.length > 0) {
+          <div class="change-section mb-4">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-success">
+              <span>✨</span> Nuevas funciones
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (feature of item.nuevasFunciones; track feature) {
+              <li class="change-list-item py-1">{{ feature }}</li>
+              }
+            </ul>
+          </div>
+          }
+
+          <!-- Sección de Correcciones -->
+          @if (item.correcciones.length > 0) {
+          <div class="change-section mb-4">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-danger">
+              <span>🐞</span> Correcciones
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (fix of item.correcciones; track fix) {
+              <li class="change-list-item py-1">{{ fix }}</li>
+              }
+            </ul>
+          </div>
+          }
+
+          <!-- Sección de Mejoras -->
+          @if (item.mejoras.length > 0) {
+          <div class="change-section">
+            <h4 class="section-title text-sm font-bold flex items-center gap-2 text-warning">
+              <span>⚡</span> Mejoras
+            </h4>
+            <ul class="change-list mt-2 pl-5 list-disc text-sm">
+              @for (improvement of item.mejoras; track improvement) {
+              <li class="change-list-item py-1">{{ improvement }}</li>
+              }
+            </ul>
+          </div>
+          }
+        </div>
+      </article>
+      }
+    </div>
+    }
+  </main>
+</div>

@@ -16,5 +16,6 @@ export const environment: IEnvironment = {
   URL_CENTRAL: 'https://centralizada2.espoch.edu.ec/rutaCentral',
   CARGO_DEPENCENCIA:
     'https://apitalentohumano2.espoch.edu.ec/api_v1/m_servidor/servidor/estado_vinculacion',
-  RUTA_TOKEN_TTHH: 'https://apitalentohumano2.espoch.edu.ec/api_v1/auth/login',
+  // RUTA_TOKEN_TTHH: 'https://apitalentohumano2.espoch.edu.ec/api_v1/auth/login',
+  RUTA_TOKEN_TTHH: 'https://apitalentohumano2.espoch.edu.ec/api_v1/auth/login_external',
 };

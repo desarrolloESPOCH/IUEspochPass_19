@@ -27,22 +27,22 @@ import { Select } from 'primeng/select';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
-    selector: 'app-pg-enrolar',
-    imports: [
-        CardModule,
-        ButtonModule,
-        InputTextModule,
-        FieldsetModule,
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        ToastModule,
-        CFooterComponent,
-        Select,
-    ],
-    templateUrl: './pg-enrolar.component.html',
-    styleUrl: './pg-enrolar.component.css',
-    providers: [MessageService]
+  selector: 'app-pg-enrolar',
+  imports: [
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    FieldsetModule,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    ToastModule,
+    CFooterComponent,
+    Select,
+  ],
+  templateUrl: './pg-enrolar.component.html',
+  styleUrl: './pg-enrolar.component.css',
+  providers: [MessageService]
 })
 export default class PgEnrolarComponent {
   private swCas = inject(SwCasService);
@@ -208,8 +208,8 @@ export default class PgEnrolarComponent {
       }
       this.getFoto(usuario);
       this.frmRegistro.patchValue({
-        cargo: 'ESTUDIANTE',
-        dependencia: 'POSTGRADO',
+        cargo: 'MAESTRANTE',
+        dependencia: 'POSGRADO',
       });
       // this.conexion.set();
       this.rol = 3;

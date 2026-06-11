@@ -1,5 +1,5 @@
 // cspell:disable
-import { Component, inject, SimpleChanges } from '@angular/core';
+import { Component, inject, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { MenuItem } from 'primeng/api';
@@ -19,7 +19,7 @@ import { IResponse } from '../../../../services/usuarios/interfaces/IResponse.in
     templateUrl: './c-sidebar.component.html',
     styleUrl: './c-sidebar.component.css'
 })
-export class CSidebarComponent {
+export class CSidebarComponent implements OnInit {
   items: MenuItem[] = [];
   private swSidebar = inject(SideBarService);
   private router = inject(Router);
@@ -30,6 +30,13 @@ export class CSidebarComponent {
     this.swEventosServices.rolCambiado.subscribe((rol: number) => {
       this.getItemsMenu(rol);
     });
+  }
+
+  ngOnInit() {
+    const rolGuardado = sessionStorage.getItem('rol');
+    if (rolGuardado) {
+      this.getItemsMenu(Number(rolGuardado));
+    }
   }
 
   cargarDataMenu = () => {

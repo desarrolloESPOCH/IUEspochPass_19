@@ -87,7 +87,7 @@ export default class PgEnrolarComponent {
   async ngOnInit() {
     this.isloading.set(false);
     this.dataEnrol = this.swCas.getUserInfo();
-    console.log('this.dataEnrol : ', this.dataEnrol);
+    // console.log('this.dataEnrol : ', this.dataEnrol);
 
     if (!this.dataEnrol.per_id) {
       console.log('No se loguea aun');
@@ -259,10 +259,10 @@ export default class PgEnrolarComponent {
       strCargo,
       conexion: this.conexion(),
     };
-    console.log('json al guardar enrolamiento', json);
+    // console.log('json al guardar enrolamiento', json);
     this.swUser.postRegistroEnrol(json).subscribe({
       next: (objEnrol) => {
-        console.log('objEnrol: ', objEnrol);
+        // console.log('objEnrol: ', objEnrol);
         this.alerty.add({
           severity: 'success',
           summary: 'Enrolamiento',

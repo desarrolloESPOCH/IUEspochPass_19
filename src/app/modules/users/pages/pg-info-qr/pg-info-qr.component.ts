@@ -14,17 +14,17 @@ import { QrInfo } from '../../../../services/otros/QrInfoService';
 import { QrService } from '../../../../services/qr/QrService';
 
 @Component({
-    selector: 'app-pg-info-qr',
-    imports: [
-        CommonModule,
-        QrCodeComponent,
-        CardModule,
-        InputGroupModule,
-        InputTextModule,
-        FormsModule,
-    ],
-    templateUrl: './pg-info-qr.component.html',
-    styleUrl: './pg-info-qr.component.css'
+  selector: 'app-pg-info-qr',
+  imports: [
+    CommonModule,
+    QrCodeComponent,
+    CardModule,
+    InputGroupModule,
+    InputTextModule,
+    FormsModule,
+  ],
+  templateUrl: './pg-info-qr.component.html',
+  styleUrl: './pg-info-qr.component.css'
 })
 export class PgInfoQrComponent {
   nombre: any;
@@ -123,9 +123,9 @@ export class PgInfoQrComponent {
       this.getRoles();
     } else {
       const [info] = listado;
-      console.log('strfoto: ', info.strfoto);
+      // console.log('strfoto: ', info.strfoto);
       this.foto.set(info.strfoto);
-      console.log('si pasa', this.foto());
+      // console.log('si pasa', this.foto());
       this.getRoles();
     }
   };

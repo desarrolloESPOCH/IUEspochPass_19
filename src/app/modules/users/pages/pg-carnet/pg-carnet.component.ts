@@ -15,11 +15,11 @@ import { EventosService } from '../../../../services/otros/EventosService';
 import { QrInfo } from '../../../../services/otros/QrInfoService';
 
 @Component({
-    selector: 'app-pg-carnet',
-    imports: [CommonModule, PanelModule, CardModule, ToastModule, SkeletonModule],
-    templateUrl: './pg-carnet.component.html',
-    styleUrl: './pg-carnet.component.css',
-    providers: [MessageService]
+  selector: 'app-pg-carnet',
+  imports: [CommonModule, PanelModule, CardModule, ToastModule, SkeletonModule],
+  templateUrl: './pg-carnet.component.html',
+  styleUrl: './pg-carnet.component.css',
+  providers: [MessageService]
 })
 export class PgCarnetComponent {
   infoCarnet: any;
@@ -48,7 +48,7 @@ export class PgCarnetComponent {
 
     this.swEventosServices.rolCambiado.subscribe((rol: any) => {
       this.rol = rol;
-      console.log('this.rol: ', this.rol);
+      // console.log('this.rol: ', this.rol);
       if (rol != 6) {
       }
       this.obtenerCarnet(this.swCas.getUserInfo().per_id);
@@ -67,7 +67,7 @@ export class PgCarnetComponent {
       .buscarCarnet(per_id)
       .subscribe({
         next: (carnet) => {
-          console.log('carnet', carnet);
+          // console.log('carnet', carnet);
           if (carnet.count == 0) {
             this.messageService.add({
               severity: 'info',
@@ -79,7 +79,6 @@ export class PgCarnetComponent {
           }
 
           if (carnet.count < 0) {
-            console.log('aqui');
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
@@ -93,7 +92,6 @@ export class PgCarnetComponent {
 
           this.fecha.set(ff);
           this.isCaducado.set(new Date() > ff);
-          console.log('fecha', ff, 'caducado?', this.isCaducado());
 
           this.infoCarnet = this.rol;
           this.qrInfo.datos = carnet.data[0];

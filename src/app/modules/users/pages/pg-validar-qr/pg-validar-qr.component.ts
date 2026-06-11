@@ -14,18 +14,18 @@ import { Router } from '@angular/router';
 import { MessagesModule } from 'primeng/messages';
 
 @Component({
-    selector: 'app-pg-validar-qr',
-    imports: [
-        ProgressSpinnerModule,
-        SkeletonModule,
-        DividerModule,
-        FieldsetModule,
-        ButtonModule,
-        MessagesModule,
-        DialogModule,
-    ],
-    templateUrl: './pg-validar-qr.component.html',
-    styleUrl: './pg-validar-qr.component.css'
+  selector: 'app-pg-validar-qr',
+  imports: [
+    ProgressSpinnerModule,
+    SkeletonModule,
+    DividerModule,
+    FieldsetModule,
+    ButtonModule,
+    MessagesModule,
+    DialogModule,
+  ],
+  templateUrl: './pg-validar-qr.component.html',
+  styleUrl: './pg-validar-qr.component.css'
 })
 export default class PgValidarQrComponent {
   codigoQr = input.required<string>();
@@ -41,7 +41,7 @@ export default class PgValidarQrComponent {
   foto = signal<string>('');
   dependencia = signal<string>('');
   cargo = signal<string>('');
-  
+
   showModal = signal<boolean>(false);
 
   ngOnInit() {
@@ -92,7 +92,7 @@ export default class PgValidarQrComponent {
         },
         error: (e) => {
           this.isValid.set(false);
-          console.log('e: ', e);
+          // console.log('e: ', e);
           this.isLoading.set(false);
         },
       });
@@ -127,11 +127,11 @@ export default class PgValidarQrComponent {
       );
       if (estudiante && estudiante.listado && estudiante.listado.length > 0) {
         if (!this.foto() || this.foto().trim() === '') {
-           this.foto.set(estudiante.listado[0].strfoto);
+          this.foto.set(estudiante.listado[0].strfoto);
         }
       }
     } catch (e) {
-      console.log('error: ', e);
+      console.error('error: ', e);
     }
   };
 

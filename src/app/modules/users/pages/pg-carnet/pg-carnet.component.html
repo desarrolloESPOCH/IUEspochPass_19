@@ -46,7 +46,7 @@
 
       @if(mostrarCarnet){
         <div class="border-t border-slate-100 dark:border-zinc-800 pt-4 flex justify-center">
-          <div class="expiration-badge">
+          <div class="expiration-badge" [class.expired]="isCaducado()">
             <span class="pi pi-calendar-times"></span>
             <span>Válido hasta: {{ fecha() | date : "dd/MM/yy, h:mm a" }}</span>
           </div>

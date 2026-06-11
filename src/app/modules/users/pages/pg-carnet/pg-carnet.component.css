@@ -61,11 +61,11 @@
   transform: translateY(0);
 }
 
-/* Contenedor de Expiración */
+/* Contenedor de Expiración (Verde por defecto, Rojo al caducar) */
 .expiration-badge {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.18);
-  color: #ef4444;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  color: #22c55e;
   padding: 6px 12px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -76,6 +76,18 @@
 }
 
 .dark .expiration-badge {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.expiration-badge.expired {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+}
+
+.dark .expiration-badge.expired {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #fca5a5;

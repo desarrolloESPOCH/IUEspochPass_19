@@ -34,6 +34,7 @@ export class PgCarnetComponent {
 
   strTerminos = signal('');
   fecha = signal(new Date());
+  isCaducado = signal(false);
   rol = 0;
   private router = inject(Router);
 
@@ -56,46 +57,64 @@ export class PgCarnetComponent {
   }
 
   obtenerCarnet = (per_id: string) => {
+    if (!per_id || per_id === 'undefined') {
+      console.log('ID de persona no válido para obtener carnet');
+      this.router.navigate(['/enrolamiento']);
+      return;
+    }
+
     this.qr
       .buscarCarnet(per_id)
+      .subscribe({
+        next: (carnet) => {
+          console.log('carnet', carnet);
+          if (carnet.count == 0) {
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Información',
+              detail: carnet.message,
+            });
+            this.router.navigate(['/enrolamiento']);
+            return;
+          }
 
-      .subscribe((carnet) => {
-        console.log('carnet', carnet);
-        if (carnet.count == 0) {
+          if (carnet.count < 0) {
+            console.log('aqui');
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: carnet.message,
+            });
+            return;
+          }
+
+          let ff = new Date(carnet.data[0].dtFecha_Fin);
+          ff.setHours(ff.getHours() + 5); // Se le suma 5 horas para que la fecha sea la correcta en el calendario
+
+          this.fecha.set(ff);
+          this.isCaducado.set(new Date() > ff);
+          console.log('fecha', ff, 'caducado?', this.isCaducado());
+
+          this.infoCarnet = this.rol;
+          this.qrInfo.datos = carnet.data[0];
+          if (!this.mostrarCarnet)
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: carnet.message,
+            });
+          this.mostrarCarnet = true;
+        },
+        error: (err) => {
+          console.error('Error al buscar carnet o usuario no enrolado', err);
           this.messageService.add({
-            severity: 'info',
-            summary: 'Información',
-            detail: carnet.message,
+            severity: 'warn',
+            summary: 'Sin carnet',
+            detail: 'No se encontró un carnet activo para este usuario.',
           });
+          // Redirigir a enrolamiento si no tiene carnet o da error el servicio
           this.router.navigate(['/enrolamiento']);
-          return;
         }
-
-        if (carnet.count < 0) {
-          console.log('aqui');
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: carnet.message,
-          });
-          return;
-        }
-
-        let ff = new Date(carnet.data[0].dtFecha_Fin);
-        ff.setHours(ff.getHours() + 5); // Se le suma 5 horas para que la fecha sea la correcta en el calendario
-
-        this.fecha.set(ff);
-        console.log('fecha', ff);
-
-        this.infoCarnet = this.rol;
-        this.qrInfo.datos = carnet.data[0];
-        if (!this.mostrarCarnet)
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: carnet.message,
-          });
-        this.mostrarCarnet = true;
       });
   };
 

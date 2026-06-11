@@ -15,9 +15,22 @@
     </div>
   </ng-template>
   <ng-template pTemplate="end">
-    <div class="mr-3">
+    <div class="mr-3 flex items-center gap-3">
+      @if (isDevMode) {
+        <p-select
+          [options]="mockUsers"
+          [(ngModel)]="selectedMockUser"
+          (onChange)="suplantarUsuario($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Suplantar Usuario"
+          [appendTo]="'body'"
+          styleClass="w-full"
+        ></p-select>
+      }
+
       @defer () {
-      <p-dropdown
+      <p-select
         opción="Roles"
         [(ngModel)]="rolSeleccionado"
         (onChange)="onChangeRol($event)"
@@ -25,7 +38,7 @@
         [options]="lstRoles()"
         [appendTo]="'body'"
         [emptyMessage]="'No tiene roles asignados'"
-      ></p-dropdown>
+      ></p-select>
       }@placeholder(minimum 250ms) {
       <p-skeleton height="2rem" width="160px" styleClass="mb-2" />
       }

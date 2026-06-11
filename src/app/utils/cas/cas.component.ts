@@ -11,11 +11,12 @@ import { swUsuariosService } from '../../services/usuarios/Usuarios.service';
 // import { environment } from '../../../environments/environment';
 
 //cspell:disable
+
 @Component({
-    selector: 'app-cas',
-    imports: [CommonModule, MessagesModule, ToastModule],
-    template: `<p-toast></p-toast>`,
-    providers: [MessageService]
+  selector: 'app-cas',
+  imports: [CommonModule, MessagesModule, ToastModule],
+  template: `<p-toast></p-toast>`,
+  providers: [MessageService]
 })
 export default class CasComponent {
   private route = inject(ActivatedRoute);
@@ -45,59 +46,41 @@ export default class CasComponent {
 
   validate = async (ticketSession: any) => {
     try {
-      const validationResult = await firstValueFrom(
-        this.swCas.validateTicketLocal(ticketSession)
-      );
-      let transformacion = await this.swCas.transformXmltoJson(
-        validationResult
-      );
-      // console.log('transformacion: ', transformacion);
-      // transformacion = {
-      //   per_email: 'betsabe.vaca@espoch.edu.ec',
-      //   per_id: '182298',
-      //   newLogin: '',
-      //   cedula: '0650007727',
-      //   nombres: 'BETSABE DE LOS ANGELES',
-      //   apellidos: 'VACA SANTILLAN',
-      //   periodoAcademico: '',
-      //   procesoEvaluacion: '',
-      // };
-      // transformacion = {
-      //   per_email: 'marcelod.orozco@espoch.edu.ec',
-      //   per_id: '81382',
-      //   newLogin: '',
-      //   cedula: '0606221349',
-      //   nombres: 'MARCELO DAVID',
-      //   apellidos: 'OROZCO HERNANDEZ',
-      //   periodoAcademico: '',
-      //   procesoEvaluacion: '',
-      // };
-      // transformacion = {
-      //   per_email: 'bryan.baldeon@espoch.edu.ec',
-      //   per_id: '20959',
-      //   newLogin: '',
-      //   cedula: '0706705159',
-      //   nombres: 'BRYAN ALEXANDER',
-      //   apellidos: 'BALDEON HERMIDA',
-      //   periodoAcademico: '',
-      //   procesoEvaluacion: '',
-      // };
-      // transformacion = {
-      //   per_email: 'edison.abarca@espoch.edu.ec',
-      //   per_id: '24656',
-      //   newLogin: '',
-      //   cedula: '0603186750',
-      //   nombres: 'EDISON PATRICIO',
-      //   apellidos: 'ABARCA PEREZ',
-      //   periodoAcademico: '',
-      //   procesoEvaluacion: '',
-      // };
-      if (!transformacion.per_id) {
-        console.log('NO ES USUARIO DE LA ESPOCH');
+      let transformacion: any;
+
+      let roles: any;
+      
+      // Si estamos suplantando (solo desarrollo), saltar la validacion real del ticket y roles
+      const suplantarData = localStorage.getItem('suplantar_usuario');
+      if (suplantarData) {
+        transformacion = JSON.parse(suplantarData);
+        // Mockear roles según el ID del usuario suplantado
+        roles = {
+          count: 1,
+          data: [
+            {
+              intIdRol: transformacion.per_id === '1' ? 1 : (transformacion.per_id === '2' ? 2 : 3),
+              strNombres: transformacion.nombres,
+              strApellidos: transformacion.apellidos,
+              strNombre: transformacion.per_id === '1' ? 'ADMINISTRADOR' : (transformacion.per_id === '2' ? 'DOCENTE' : 'ESTUDIANTE'),
+              intEstado: 1
+            }
+          ]
+        };
+      } else {
+        const validationResult = await firstValueFrom(
+          this.swCas.validateTicketLocal(ticketSession)
+        );
+        transformacion = await this.swCas.transformXmltoJson(validationResult);
+        
+        if (!transformacion.per_id) {
+          console.log('NO ES USUARIO DE LA ESPOCH');
+        }
+        
+        roles = await firstValueFrom(
+          this.swUsuario.validateRoles(Number(transformacion.per_id))
+        );
       }
-      const roles = await firstValueFrom(
-        this.swUsuario.validateRoles(Number(transformacion.per_id))
-      );
 
       if (roles.count == 0) {
         await this.swCas.saveInfo(transformacion);
@@ -112,8 +95,6 @@ export default class CasComponent {
       this.router.navigate(['/dashboard/users']);
     } catch (e) {
       console.log('Error de validación', e);
-      // window.location.href =
-      //   'http://evaluacion.espoch.edu.ec/2/index.php?option=com_content&view=article&id=46&Itemid=59';
     }
   };
 }

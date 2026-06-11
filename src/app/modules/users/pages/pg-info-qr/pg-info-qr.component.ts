@@ -34,6 +34,7 @@ export class PgInfoQrComponent {
   dependencia: any;
   rol: any;
   datos: any;
+  cargo: string = '';
 
   foto = signal<string>('');
   public base64textString: any = [];
@@ -70,7 +71,10 @@ export class PgInfoQrComponent {
     this.swUser
       .getRolesByUser(Number(this.swCas.getUserInfo().per_id))
       .subscribe((obj) => {
-        this.dependencia = obj.data[0].strDepencia;
+        if (obj && obj.data && obj.data.length > 0) {
+          this.dependencia = obj.data[0].strDepencia;
+          this.cargo = obj.data[0].strCargo;
+        }
       });
   };
 

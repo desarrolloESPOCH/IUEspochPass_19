@@ -7,8 +7,9 @@
         <div class="text-center p-4">
           <i class="pi pi-exclamation-triangle text-orange-500 text-6xl mb-4"></i>
           <p class="text-lg text-gray-700 dark:text-slate-300">
-            No tiene acceso al sistema, por favor comuniquese a 
-            <a href="mailto:soporte@espoch.edu.ec" class="text-blue-600 dark:text-blue-400 font-medium hover:underline">soporte&#64;espoch.edu.ec</a>, 
+            No tiene acceso al sistema, por favor comuniquese a
+            <a href="mailto:soporte@espoch.edu.ec"
+              class="text-blue-600 dark:text-blue-400 font-medium hover:underline">soporte&#64;espoch.edu.ec</a>,
             reportando el inconveniente con su número de cédula y captura de pantalla.
           </p>
         </div>
@@ -18,42 +19,32 @@
     <div class="container-slider ll flex flex-col justify-center items-center w-full">
       <div class="w-full flex flex-col gap-4 mt-6 mb-8" style="max-width: 900px">
         @if (isDevMode) {
-          <div class="w-full flex justify-end">
-            <p-select
-              [options]="mockUsers"
-              [(ngModel)]="selectedMockUser"
-              (onChange)="suplantarUsuario($event)"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Suplantar Usuario en Enrolamiento"
-              [appendTo]="'body'"
-              styleClass="w-full md:w-80"
-            ></p-select>
-          </div>
+        <div class="w-full flex justify-end">
+          <p-select [options]="mockUsers" [(ngModel)]="selectedMockUser" (onChange)="suplantarUsuario($event)"
+            optionLabel="label" optionValue="value" placeholder="Suplantar Usuario en Enrolamiento" [appendTo]="'body'"
+            styleClass="w-full md:w-80"></p-select>
+        </div>
         }
         <p-card styleClass="shadow-lg border-round-xl w-full surface-overlay text-center p-4">
           @if (enrolado) {
-            <i class="pi pi-check-circle text-green-500 text-6xl mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-2">¡Registro Exitoso!</h2>
-            <p class="text-gray-600 dark:text-slate-400 mb-6">
-              Ahora usted ya está registrado en nuestro sistema. Por favor, 
-              diríjase a la entrada institucional e inicie sesión con su usuario y contraseña.
-            </p>
-            <div class="flex justify-center">
-              <p-button
-                label="Iniciar sesión"
-                (click)="login()"
-                icon="pi pi-user"
-                styleClass="p-button-rounded p-button-primary px-5 py-3"
-              ></p-button>
-            </div>
+          <i class="pi pi-check-circle text-green-500 text-6xl mb-4"></i>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-2">¡Registro Exitoso!</h2>
+          <p class="text-gray-600 dark:text-slate-400 mb-6">
+            Ahora usted ya está registrado en nuestro sistema. Por favor,
+            diríjase a la entrada institucional e inicie sesión con su usuario y contraseña.
+          </p>
+          <div class="flex justify-center">
+            <p-button label="Iniciar sesión" (click)="login()" icon="pi pi-user"
+              styleClass="p-button-rounded p-button-primary px-5 py-3"></p-button>
+          </div>
           }@else {
-            <div class="flex flex-col items-center">
-              <h2 class="text-2xl font-semibold text-gray-800 dark:text-slate-100 mb-2"><i class="pi pi-shield text-blue-600 dark:text-blue-400 mr-2 text-3xl"></i> Bienvenido a ESPOCH-PASS</h2>
-              <p class="text-gray-600 dark:text-slate-400 text-center">
-                Por favor, compruebe los siguientes datos para su registro en el sistema institucional.
-              </p>
-            </div>
+          <div class="flex flex-col items-center">
+            <h2 class="text-2xl font-semibold text-gray-800 dark:text-slate-100 mb-2"><i
+                class="pi pi-shield text-blue-600 dark:text-blue-400 mr-2 text-3xl"></i> Bienvenido a ESPOCH-PASS</h2>
+            <p class="text-gray-600 dark:text-slate-400 text-center">
+              Por favor, compruebe los siguientes datos para su registro en el sistema institucional.
+            </p>
+          </div>
           }
         </p-card>
 
@@ -62,23 +53,25 @@
           <p-card styleClass="shadow-2xl border-round-xl w-full">
             @if(!sinMatricula){
             <form [formGroup]="frmRegistro" class="p-2 md:p-6">
-              <h3 class="text-xl font-bold text-gray-800 dark:text-slate-100 border-b dark:border-slate-700 pb-3 mb-6 flex items-center gap-2">
+              <h3
+                class="text-xl font-bold text-gray-800 dark:text-slate-100 border-b dark:border-slate-700 pb-3 mb-6 flex items-center gap-2">
                 <i class="pi pi-id-card text-blue-600 dark:text-blue-400"></i>
                 Datos de Registro
               </h3>
-              
+
               <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
                 <!-- Avatar Section -->
                 <div class="col-span-1 md:col-span-4 flex flex-col items-center justify-center">
                   <div class="relative group">
-                    <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-red-600 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                    <img
-                      [src]="base64textString() == '' ? './avatar.png' : base64textString()"
+                    <div
+                      class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-red-600 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200">
+                    </div>
+                    <img [src]="base64textString() == '' ? './avatar.png' : base64textString()"
                       class="relative w-48 h-48 object-contain rounded-full border-4 border-white dark:border-slate-800 shadow-[0_0_20px_rgba(14,165,233,0.6)] bg-white"
-                      alt="Foto de perfil"
-                    />
+                      alt="Foto de perfil" />
                   </div>
-                  <span class="mt-4 px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-sm font-medium rounded-full shadow-sm text-center">
+                  <span
+                    class="mt-4 px-3 py-1 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-sm font-medium rounded-full shadow-sm text-center">
                     {{ strCargo?.value || 'Cargando...' }}
                   </span>
                 </div>
@@ -87,30 +80,36 @@
                 <div class="col-span-1 md:col-span-8 flex flex-col gap-5 justify-center">
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div class="flex flex-col gap-2">
-                      <label for="strCedula" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Cédula</label>
+                      <label for="strCedula"
+                        class="font-medium text-gray-700 dark:text-slate-300 text-sm">Cédula</label>
                       <input pInputText id="strCedula" type="text" formControlName="strCedula" class="w-full" />
                     </div>
                     <div class="flex flex-col gap-2">
-                      <label for="strCorreo" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Correo Electrónico</label>
+                      <label for="strCorreo" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Correo
+                        Electrónico</label>
                       <input pInputText id="strCorreo" type="text" formControlName="strCorreo" class="w-full" />
                     </div>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div class="flex flex-col gap-2">
-                      <label for="strNombres" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Nombres</label>
+                      <label for="strNombres"
+                        class="font-medium text-gray-700 dark:text-slate-300 text-sm">Nombres</label>
                       <input pInputText id="strNombres" type="text" formControlName="strNombres" class="w-full" />
                     </div>
                     <div class="flex flex-col gap-2">
-                      <label for="strApellidos" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Apellidos</label>
+                      <label for="strApellidos"
+                        class="font-medium text-gray-700 dark:text-slate-300 text-sm">Apellidos</label>
                       <input pInputText id="strApellidos" type="text" formControlName="strApellidos" class="w-full" />
                     </div>
                   </div>
 
                   <div class="grid grid-cols-1 gap-5">
                     <div class="flex flex-col gap-2">
-                      <label for="dependencia" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Dependencia / Facultad</label>
-                      <input pInputText id="dependencia" type="text" formControlName="dependencia" class="w-full bg-gray-50 dark:bg-slate-800 dark:text-slate-100" />
+                      <label for="dependencia" class="font-medium text-gray-700 dark:text-slate-300 text-sm">Dependencia
+                        / Facultad</label>
+                      <input pInputText id="dependencia" type="text" formControlName="dependencia"
+                        class="w-full bg-gray-50 dark:bg-slate-800 dark:text-slate-100" />
                     </div>
                   </div>
                 </div>
@@ -118,12 +117,8 @@
 
               <div class="w-full mt-8 pt-6 border-t dark:border-slate-700 flex justify-end">
                 @if(this.isloading()){
-                  <p-button
-                    label="Confirmar Registro"
-                    (click)="guardar()"
-                    icon="pi pi-check"
-                    styleClass="p-button-rounded p-button-success px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all"
-                  ></p-button>
+                <p-button label="Confirmar Registro" (click)="guardar()" icon="pi pi-check"
+                  styleClass="p-button-rounded p-button-success px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all"></p-button>
                 }
               </div>
             </form>
@@ -133,15 +128,11 @@
               <i class="pi pi-times-circle text-red-500 text-6xl mb-4"></i>
               <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-4">Inscripción Requerida</h2>
               <p class="text-gray-600 dark:text-slate-400 mb-8">
-                Usted no se encuentra matriculado en la ESPOCH. Por favor, 
+                Usted no se encuentra matriculado en la ESPOCH. Por favor,
                 primero necesita realizar el proceso de inscripción.
               </p>
-              <p-button
-                label="Volver atrás"
-                (click)="atras()"
-                icon="pi pi-arrow-left"
-                styleClass="p-button-outlined p-button-secondary"
-              ></p-button>
+              <p-button label="Volver atrás" (click)="atras()" icon="pi pi-arrow-left"
+                styleClass="p-button-outlined p-button-secondary"></p-button>
             </div>
             }
           </p-card>

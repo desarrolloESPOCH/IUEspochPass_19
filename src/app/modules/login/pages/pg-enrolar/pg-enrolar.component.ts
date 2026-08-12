@@ -200,10 +200,12 @@ export default class PgEnrolarComponent {
       const { listado: listadoPostgrado } =
         await this.swUser.validarMatriculaVigentePostGradoSYNC(usuario.cedula);
       if (listadoPostgrado.length == 0) {
+        this.sinMatricula = true;
         return;
       }
 
       if (listadoPostgrado[0].graduado) {
+        this.sinMatricula = true;
         return;
       }
       this.getFoto(usuario);
@@ -220,6 +222,12 @@ export default class PgEnrolarComponent {
     this.getFoto(usuario);
     const { listado: listadoAcademico } =
       await this.swUser.validarMatriculaVigenteSYNC(cedula);
+
+    if (!listadoAcademico || listadoAcademico.length == 0) {
+      this.sinMatricula = true;
+      return;
+    }
+
     this.frmRegistro.patchValue({
       cargo: 'ESTUDIANTE',
       dependencia: listadoAcademico[0].carreraSelecionadaFacultad,

@@ -133,9 +133,10 @@ export class CHeaderDashComponent {
   selectedMockUser: any;
   mockUsers = [
     { label: 'ADMIN PRUEBA', value: { per_email: 'admin@espoch.edu.ec', per_id: '1', cedula: '0600000001', nombres: 'ADMIN', apellidos: 'PRUEBA' } },
-    { label: 'DOCENTE PRUEBA', value: { per_email: 'docente@espoch.edu.ec', per_id: '2', cedula: '0600000002', nombres: 'DOCENTE', apellidos: 'PRUEBA' } },
+    { label: 'ALEXANDER BALDEON', value: { per_email: 'bryan.baldeon@espoch.edu.ec', per_id: '20959', cedula: '0706705159', nombres: 'BRYAN ALEXNDER', apellidos: 'BALDEON HERMIDA' } },
     { label: 'JOSE LUIS CONDO LEON', value: { per_email: 'jose.condo@espoch.edu.ec', per_id: '16778', cedula: '0604172296', nombres: 'JOSE LUIS', apellidos: 'CONDO LEON' } },
-    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } }
+    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } },
+    { label: 'ANAHI MAGALY ANDRADE PINO', value: { per_email: 'anahi.andrade@espoch.edu.ec', per_id: '80299', cedula: '0350212940', nombres: 'ANAHI MAGALY', apellidos: 'ANDRADE PINO' } }
   ];
 
   async suplantarUsuario(event: any) {

@@ -12,7 +12,7 @@
 }
 
 /* Menú de escritorio (lista horizontal) */
-:host ::ng-deep p-menubarsub {
+:host ::ng-deep .p-menubar-root-list {
   order: 3;
 }
 

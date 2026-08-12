@@ -6,7 +6,7 @@ import { CFooterComponent } from '../../components/c-footer/c-footer.component';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { SidebarModule } from 'primeng/sidebar';
+import { DrawerModule } from 'primeng/drawer';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -20,7 +20,7 @@ import { RouterOutlet } from '@angular/router';
         CHeaderDashComponent,
         CSidebarComponent,
         CFooterComponent,
-        SidebarModule,
+        DrawerModule,
         // CTimeLineComponent,
         // CaminoComponent,
         // LoadingComponent,

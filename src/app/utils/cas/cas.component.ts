@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SwCasService } from './sw-cas.service';
-import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 // import { Base64 } from 'js-base64';
@@ -14,7 +13,7 @@ import { swUsuariosService } from '../../services/usuarios/Usuarios.service';
 
 @Component({
   selector: 'app-cas',
-  imports: [CommonModule, MessagesModule, ToastModule],
+  imports: [CommonModule, ToastModule],
   template: `<p-toast></p-toast>`,
   providers: [MessageService]
 })

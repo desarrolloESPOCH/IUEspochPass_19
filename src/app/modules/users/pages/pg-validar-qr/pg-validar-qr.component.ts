@@ -11,7 +11,6 @@ import { FieldsetModule } from 'primeng/fieldset';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { Router } from '@angular/router';
-import { MessagesModule } from 'primeng/messages';
 
 @Component({
   selector: 'app-pg-validar-qr',
@@ -21,7 +20,6 @@ import { MessagesModule } from 'primeng/messages';
     DividerModule,
     FieldsetModule,
     ButtonModule,
-    MessagesModule,
     DialogModule,
   ],
   templateUrl: './pg-validar-qr.component.html',

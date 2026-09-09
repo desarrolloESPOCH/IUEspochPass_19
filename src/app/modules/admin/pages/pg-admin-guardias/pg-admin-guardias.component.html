@@ -1,0 +1,230 @@
+<!-- cspell:disable -->
+<div class="p-4 md:p-6 flex flex-col gap-6 max-w-7xl mx-auto">
+
+  <!-- Encabezado de la página -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+        <i class="pi pi-shield text-blue-600 dark:text-blue-400 text-3xl"></i>
+        Gestión de Guardias de Seguridad
+      </h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+        Administre el personal de seguridad institucional: agregue nuevos guardias por cédula y habilite o deshabilite sus permisos de acceso y escaneo QR.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <p-button label="Refrescar" icon="pi pi-refresh" [loading]="loading()" (click)="cargarGuardias()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+      <p-button label="Agregar Guardia" icon="pi pi-user-plus" (click)="abrirModalAgregar()" styleClass="p-button-success p-button-sm"></p-button>
+    </div>
+  </div>
+
+  <!-- Métricas / Tarjetas KPIs -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Total Guardias -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Guardias</span>
+        <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
+          {{ totalGuardias() }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl shadow-inner">
+        <i class="pi pi-shield"></i>
+      </div>
+    </div>
+
+    <!-- Habilitados / Activos -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Guardias Activos</span>
+        <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+          {{ activosCount() }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
+        <i class="pi pi-check-circle"></i>
+      </div>
+    </div>
+
+    <!-- Inactivos / Deshabilitados -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-rose-500 uppercase tracking-wider">Guardias Inactivos</span>
+        <h3 class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
+          {{ desactivadosCount() }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400 text-xl shadow-inner">
+        <i class="pi pi-ban"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Guardias con Filtros -->
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+    
+    <!-- Filtros de búsqueda -->
+    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+      <div class="flex-1">
+        <p-iconfield iconPosition="left" class="w-full">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input pInputText type="text" [(ngModel)]="filtroBusqueda" (keyup.enter)="cargarGuardias()" placeholder="Buscar guardia por cédula, nombres o correo..." class="w-full" />
+        </p-iconfield>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <p-select [options]="estadosList" [(ngModel)]="filtroEstado" (onChange)="cargarGuardias()" optionLabel="label" optionValue="value" placeholder="Filtrar por Estado" [appendTo]="'body'" styleClass="w-full sm:w-56"></p-select>
+        <p-button label="Buscar" icon="pi pi-search" (click)="cargarGuardias()" styleClass="p-button-primary p-button-sm"></p-button>
+        <p-button label="Limpiar" icon="pi pi-filter-slash" (click)="limpiarFiltros()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+      </div>
+    </div>
+
+    <!-- Tabla PrimeNG -->
+    <p-table
+      [value]="guardias()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="15"
+      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [tableStyle]="{ 'min-width': '50rem' }">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Cédula</th>
+          <th>Nombre del Guardia</th>
+          <th>Correo Electrónico</th>
+          <th>Teléfono</th>
+          <th>Dependencia / Cargo</th>
+          <th>Estado del Rol</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-g>
+        <tr>
+          <td>
+            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ g.strCedula }}</span>
+          </td>
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs">
+                {{ g.strNombres?.charAt(0) }}{{ g.strApellidos?.charAt(0) }}
+              </div>
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ g.strNombres }} {{ g.strApellidos }}</span>
+            </div>
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-400">
+            {{ g.strCorreo || 'Sin correo registrado' }}
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-400">
+            {{ g.strTelefono || 'N/A' }}
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-400">
+            <span class="font-medium">{{ g.strDepencia || 'ESPOCH' }}</span>
+          </td>
+          <td>
+            <p-tag [value]="g.estadoTexto" [severity]="g.estadoGuardia === 1 ? 'success' : 'danger'"></p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-2">
+              @if (g.estadoGuardia === 1) {
+              <p-button label="Deshabilitar" icon="pi pi-ban" [pTooltip]="'Deshabilitar permisos de guardia'" tooltipPosition="top" (click)="cambiarEstado(g)" styleClass="p-button-outlined p-button-danger p-button-xs"></p-button>
+              }@else {
+              <p-button label="Habilitar" icon="pi pi-check" [pTooltip]="'Habilitar permisos de guardia'" tooltipPosition="top" (click)="cambiarEstado(g)" styleClass="p-button-outlined p-button-success p-button-xs"></p-button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center p-6 text-slate-400">
+            <i class="pi pi-inbox text-4xl mb-2 block"></i>
+            No se encontraron guardias registrados.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</div>
+
+<!-- Modal para Agregar Nuevo Guardia -->
+<p-dialog
+  header="Agregar Nuevo Guardia de Seguridad"
+  [(visible)]="dialogAgregar"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '520px' }"
+  [draggable]="false"
+  [resizable]="false">
+  
+  <div class="flex flex-col gap-4 py-2">
+    <p class="text-xs text-slate-500 dark:text-slate-400">
+      Ingrese la cédula de la persona. Si ya existe en la base de datos institucional o local, sus datos se cargarán automáticamente.
+    </p>
+
+    <!-- Buscador de Cédula -->
+    <div class="flex flex-col gap-2">
+      <label class="font-bold text-sm text-slate-700 dark:text-slate-300">Número de Cédula</label>
+      <div class="flex gap-2">
+        <input pInputText type="text" [(ngModel)]="cedulaNuevoGuardia" (keyup.enter)="buscarPersonaPorCedula()" placeholder="Ej. 0604172296" class="w-full" />
+        <p-button label="Buscar" icon="pi pi-search" [loading]="searchingPersona()" (click)="buscarPersonaPorCedula()" styleClass="p-button-primary"></p-button>
+      </div>
+    </div>
+
+    <!-- Vista previa de Persona Encontrada -->
+    @if (personaPreview) {
+    <div class="p-4 bg-blue-50 dark:bg-slate-900 rounded-xl border border-blue-200 dark:border-slate-700 text-sm">
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase">Usuario Encontrado</span>
+      </div>
+      <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">
+        {{ personaPreview.strNombres }} {{ personaPreview.strApellidos }}
+      </h4>
+      <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">
+        Correo: <strong>{{ personaPreview.strCorreo || 'N/A' }}</strong> | Rol actual: <strong>{{ personaPreview.rol || 'Sin Rol' }}</strong>
+      </p>
+    </div>
+    }
+
+    <!-- Campos manuales si no existe -->
+    @if (mostrarCamposManuales()) {
+    <div class="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+      <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Complete los datos de la persona:</span>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium">Nombres</label>
+          <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres" class="w-full" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium">Apellidos</label>
+          <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos" class="w-full" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium">Correo Electrónico</label>
+          <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="correo@espoch.edu.ec" class="w-full" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium">Teléfono</label>
+          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999" class="w-full" />
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Habilitar como Guardia" icon="pi pi-check" [loading]="saving()" (click)="guardarNuevoGuardia()" styleClass="p-button-success"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

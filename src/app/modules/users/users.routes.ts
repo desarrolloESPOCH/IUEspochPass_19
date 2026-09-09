@@ -22,4 +22,9 @@ export const routesUsers: Routes = [
     path: 'validarQr/:codigoQr',
     component: PgValidarQrComponent,
   },
+  {
+    path: 'gestion-carnets',
+    loadComponent: () =>
+      import('../admin/pages/pg-admin-carnets/pg-admin-carnets.component'),
+  },
 ];

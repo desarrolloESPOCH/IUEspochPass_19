@@ -56,7 +56,7 @@ export default class PgEnrolarComponent {
   selectedMockUser: any;
   mockUsers = [
     { label: 'ADMIN PRUEBA', value: { per_email: 'admin@espoch.edu.ec', per_id: '1', cedula: '0600000001', nombres: 'ADMIN', apellidos: 'PRUEBA' } },
-    { label: 'DOCENTE PRUEBA', value: { per_email: 'docente@espoch.edu.ec', per_id: '2', cedula: '0600000002', nombres: 'DOCENTE', apellidos: 'PRUEBA' } },
+    { label: 'DIEGO BENJAMIN ORTIZ PICO', value: { per_email: 'benjamin.ortiz@espoch.edu.ec', per_id: '66434', cedula: '1850575133', nombres: 'DIEGO BENJAMIN', apellidos: 'ORTIZ PICO' } },
     { label: 'JOSE LUIS CONDO LEON', value: { per_email: 'jose.condo@espoch.edu.ec', per_id: '16778', cedula: '0604172296', nombres: 'JOSE LUIS', apellidos: 'CONDO LEON' } },
     { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } }
   ];

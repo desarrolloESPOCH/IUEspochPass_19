@@ -1,0 +1,329 @@
+<!-- cspell:disable -->
+<div class="p-4 md:p-6 flex flex-col gap-6 max-w-7xl mx-auto">
+
+  <!-- Encabezado de la página -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+        <i class="pi pi-id-card text-blue-600 dark:text-blue-400 text-3xl"></i>
+        Gestión Administrativa de Carnets
+      </h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+        Consulta, activa, desactiva y prorroga la vigencia de carnets institucionales por rol o número de cédula.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <p-button label="Refrescar" icon="pi pi-refresh" [loading]="loading()" (click)="cargarCarnets(); cargarEstadisticas();" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+    </div>
+  </div>
+
+  <!-- Métricas / Tarjetas KPIs -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Carnets</span>
+        <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
+          {{ estadisticas().resumen.totalCarnets | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl shadow-inner">
+        <i class="pi pi-id-card"></i>
+      </div>
+    </div>
+
+    <!-- Activos -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Carnets Activos</span>
+        <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+          {{ estadisticas().resumen.carnetsActivos | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
+        <i class="pi pi-check-circle"></i>
+      </div>
+    </div>
+
+    <!-- Vencidos -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-rose-500 uppercase tracking-wider">Carnets Vencidos</span>
+        <h3 class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
+          {{ estadisticas().resumen.carnetsVencidos | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400 text-xl shadow-inner">
+        <i class="pi pi-clock"></i>
+      </div>
+    </div>
+
+    <!-- Desactivados -->
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desactivados</span>
+        <h3 class="text-2xl font-black text-slate-600 dark:text-slate-300 mt-1">
+          {{ estadisticas().resumen.carnetsDesactivados | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-xl shadow-inner">
+        <i class="pi pi-ban"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador Específico por Cédula -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 p-6 rounded-2xl border border-blue-100 dark:border-slate-700">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <i class="pi pi-search text-blue-600 dark:text-blue-400"></i>
+          Búsqueda Rápida y Activación Directa por Cédula
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-xs mt-1">
+          Consulte de forma individual el estado de un estudiante (graduado/activo) o funcionario para habilitar o prorrogar su vigencia.
+        </p>
+      </div>
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <input pInputText type="text" [(ngModel)]="cedulaConsulta" (keyup.enter)="consultarPorCedula()" placeholder="Ej. 1850575133" class="w-full md:w-64" />
+        <p-button label="Consultar" icon="pi pi-search" [loading]="loadingPersona()" (click)="consultarPorCedula()" styleClass="p-button-primary"></p-button>
+      </div>
+    </div>
+
+    <!-- Panel de Resultado de Búsqueda de Persona -->
+    @if (mostrarPanelPersona() && personaEncontrada) {
+    <div class="mt-5 bg-white dark:bg-slate-950 p-5 rounded-xl border border-blue-200 dark:border-slate-700 shadow-md">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xl">
+            {{ personaEncontrada.strNombres?.charAt(0) }}{{ personaEncontrada.strApellidos?.charAt(0) }}
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+              {{ personaEncontrada.strNombres }} {{ personaEncontrada.strApellidos }}
+            </h3>
+            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <span><i class="pi pi-id-card mr-1"></i><strong>Cédula:</strong> {{ personaEncontrada.strCedula }}</span>
+              <span><i class="pi pi-envelope mr-1"></i><strong>Correo:</strong> {{ personaEncontrada.strCorreo }}</span>
+              <span><i class="pi pi-user mr-1"></i><strong>Rol:</strong> {{ personaEncontrada.rol || 'SIN ROL' }}</span>
+              <span><i class="pi pi-building mr-1"></i><strong>Dependencia:</strong> {{ personaEncontrada.strDepencia || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <p-tag [value]="personaEncontrada.estadoVigencia" [severity]="getSeverityVigencia(personaEncontrada.estadoVigencia)"></p-tag>
+          <p-button label="Renovar / Prorrogar Vigencia" icon="pi pi-calendar-plus" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
+          <p-button icon="pi pi-times" (click)="cerrarPanelPersona()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs text-slate-600 dark:text-slate-300">
+        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+          <span class="text-slate-400 block font-semibold uppercase">ID Carnet</span>
+          <span class="font-bold text-sm">{{ personaEncontrada.intIdCarnet || 'No registrado aún' }}</span>
+        </div>
+        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+          <span class="text-slate-400 block font-semibold uppercase">Fecha Inicio</span>
+          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'N/A' }}</span>
+        </div>
+        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+          <span class="text-slate-400 block font-semibold uppercase">Fecha Fin (Vigencia)</span>
+          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Tabla General con Filtros -->
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+    
+    <!-- Barra de Filtros de la Tabla -->
+    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+      <div class="flex-1">
+        <p-iconfield iconPosition="left" class="w-full">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input pInputText type="text" [(ngModel)]="filtroBusqueda" (keyup.enter)="onFilterChange()" placeholder="Buscar por cédula, nombres o correo..." class="w-full" />
+        </p-iconfield>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Selector de Rol -->
+        <p-select [options]="rolesList()" [(ngModel)]="filtroRol" (onChange)="onFilterChange()" optionLabel="label" optionValue="value" placeholder="Filtrar por Rol" [appendTo]="'body'" styleClass="w-full sm:w-48"></p-select>
+
+        <!-- Selector de Estado de Vigencia -->
+        <p-select [options]="estadosVigenciaList" [(ngModel)]="filtroVigencia" (onChange)="onFilterChange()" optionLabel="label" optionValue="value" placeholder="Estado Vigencia" [appendTo]="'body'" styleClass="w-full sm:w-44"></p-select>
+
+        <p-button label="Filtrar" icon="pi pi-filter" (click)="onFilterChange()" styleClass="p-button-primary p-button-sm"></p-button>
+        <p-button label="Limpiar" icon="pi pi-filter-slash" (click)="limpiarFiltros()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+      </div>
+    </div>
+
+    <!-- Tabla de Carnets -->
+    <p-table
+      [value]="carnets()"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="rows"
+      [totalRecords]="totalRecords()"
+      [loading]="loading()"
+      (onLazyLoad)="cargarCarnets($event)"
+      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [tableStyle]="{ 'min-width': '60rem' }">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Cédula</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Dependencia / Cargo</th>
+          <th>Vigencia Inicio</th>
+          <th>Vigencia Fin</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-c>
+        <tr>
+          <td>
+            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ c.strCedula }}</span>
+          </td>
+          <td>
+            <div class="flex flex-col">
+              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ c.strNombres }} {{ c.strApellidos }}</span>
+              <span class="text-xs text-slate-400">{{ c.strCorreo }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
+              {{ c.rol }}
+            </span>
+          </td>
+          <td>
+            <div class="flex flex-col text-xs">
+              <span class="font-medium text-slate-700 dark:text-slate-300">{{ c.strDepencia || 'N/A' }}</span>
+              <span class="text-slate-400">{{ c.strCargo }}</span>
+            </div>
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-400">
+            {{ c.dtFecha_Inicio | date:'dd/MM/yyyy' }}
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-400">
+            <span [class.text-rose-600]="c.estadoVigencia === 'VENCIDO'" [class.font-bold]="c.estadoVigencia === 'VENCIDO'">
+              {{ c.dtFecha_Fin | date:'dd/MM/yyyy' }}
+            </span>
+          </td>
+          <td>
+            <p-tag [value]="c.estadoVigencia" [severity]="getSeverityVigencia(c.estadoVigencia)"></p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <!-- Prorrogar / Renovar -->
+              <p-button icon="pi pi-calendar-plus" [pTooltip]="'Prorrogar / Renovar Vigencia'" tooltipPosition="top" (click)="abrirModalProrroga(c)" styleClass="p-button-rounded p-button-text p-button-success p-button-sm"></p-button>
+              
+              <!-- Desactivar / Activar -->
+              @if (c.estadoCarnet === 1) {
+              <p-button icon="pi pi-ban" [pTooltip]="'Deshabilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"></p-button>
+              }@else {
+              <p-button icon="pi pi-check" [pTooltip]="'Habilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-info p-button-sm"></p-button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center p-6 text-slate-400">
+            <i class="pi pi-inbox text-4xl mb-2 block"></i>
+            No se encontraron carnets con los criterios de búsqueda seleccionados.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</div>
+
+<!-- Modal de Prórroga / Renovación de Vigencia -->
+<p-dialog
+  header="Renovar y Prorrogar Vigencia de Carnet"
+  [(visible)]="dialogProrroga"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '520px' }"
+  [draggable]="false"
+  [resizable]="false">
+  
+  @if (carnetSeleccionado) {
+  <div class="flex flex-col gap-4 py-2">
+    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 text-sm">
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-slate-400 text-xs font-semibold uppercase">Beneficiario</span>
+        <span class="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 rounded font-medium">
+          {{ carnetSeleccionado.rol || 'USUARIO' }}
+        </span>
+      </div>
+      <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">
+        {{ carnetSeleccionado.strNombres }} {{ carnetSeleccionado.strApellidos }}
+      </h4>
+      <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+        Cédula: <strong>{{ carnetSeleccionado.strCedula }}</strong>
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-bold text-sm text-slate-700 dark:text-slate-300">
+        Seleccione el tiempo de extensión de vigencia:
+      </label>
+
+      <!-- Opción +1 Año -->
+      <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === '12'" [class.bg-blue-50/50]="tipoProrroga === '12'" [class.dark:bg-blue-950/20]="tipoProrroga === '12'">
+        <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="12" class="w-4 h-4 text-blue-600" />
+        <div class="flex flex-col">
+          <span class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+            +1 Año de Vigencia <span class="text-xs font-normal text-emerald-600 dark:text-emerald-400 font-semibold">(Recomendado para Graduados)</span>
+          </span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">Extiende el acceso institucional por 12 meses a partir de hoy.</span>
+        </div>
+      </label>
+
+      <!-- Opción +6 Meses -->
+      <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === '6'" [class.bg-blue-50/50]="tipoProrroga === '6'" [class.dark:bg-blue-950/20]="tipoProrroga === '6'">
+        <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="6" class="w-4 h-4 text-blue-600" />
+        <div class="flex flex-col">
+          <span class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+            +6 Meses de Vigencia (1 Semestre)
+          </span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">Extiende el acceso institucional por 6 meses a partir de hoy.</span>
+        </div>
+      </label>
+
+      <!-- Opción Fecha Personalizada -->
+      <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === 'custom'" [class.bg-blue-50/50]="tipoProrroga === 'custom'" [class.dark:bg-blue-950/20]="tipoProrroga === 'custom'">
+        <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="custom" class="w-4 h-4 text-blue-600" />
+        <div class="flex flex-col w-full">
+          <span class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+            Fecha de Vigencia Personalizada
+          </span>
+          <span class="text-xs text-slate-500 dark:text-slate-400 mb-2">Especifique una fecha límite exacta para la expiración.</span>
+          @if (tipoProrroga === 'custom') {
+          <input pInputText type="date" [(ngModel)]="fechaPersonalizada" class="w-full mt-1" />
+          }
+        </div>
+      </label>
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogProrroga.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Guardar y Habilitar" icon="pi pi-check" [loading]="saving()" (click)="guardarProrroga()" styleClass="p-button-success"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

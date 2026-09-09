@@ -41,17 +41,17 @@
         </div>
 
         <!-- Código QR con Línea de Escáner -->
-        <div class="qr-scanner-glow mb-6 text-black flex items-center justify-center">
+        <div class="qr-scanner-glow mb-6 text-black flex items-center justify-center p-2 bg-white rounded-2xl shadow-sm">
           @if(datos) {
             <qr-code
               [value]="datos"
-              size="200"
-              errorCorrectionLevel="M"
+              size="210"
+              errorCorrectionLevel="L"
               darkColor="#000000"
               lightColor="#ffffff"
             ></qr-code>
           } @else {
-            <div class="w-[200px] h-[200px] flex items-center justify-center text-slate-400">
+            <div class="w-[210px] h-[210px] flex items-center justify-center text-slate-400">
               <span class="pi pi-spin pi-spinner text-3xl"></span>
             </div>
           }

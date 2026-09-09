@@ -1,6 +1,6 @@
 // cspell:disable
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -26,7 +26,7 @@ import { QrService } from '../../../../services/qr/QrService';
   templateUrl: './pg-info-qr.component.html',
   styleUrl: './pg-info-qr.component.css'
 })
-export class PgInfoQrComponent {
+export class PgInfoQrComponent implements OnInit {
   nombre: any;
   apellidos: any;
   cedula: any;
@@ -47,10 +47,11 @@ export class PgInfoQrComponent {
   private qr = inject(QrService);
 
   ngOnInit() {
-    this.nombre = this.swCas.getUserInfo().nombres;
-    this.apellidos = this.swCas.getUserInfo().apellidos;
-    this.cedula = this.swCas.getUserInfo().cedula;
-    this.correo = this.swCas.getUserInfo().per_email;
+    const userInfo = this.swCas.getUserInfo();
+    this.nombre = userInfo?.nombres;
+    this.apellidos = userInfo?.apellidos;
+    this.cedula = userInfo?.cedula;
+    this.correo = userInfo?.per_email;
     this.rol = sessionStorage.getItem('rol');
 
     if (this.qrInfo.datos.intIdCarnet == undefined) {
@@ -61,7 +62,15 @@ export class PgInfoQrComponent {
         intRol: this.rol == 3 ? this.rol : 1,
       };
       this.qr.generarQr(json).subscribe((obj) => {
-        this.datos = JSON.stringify(obj.data[0]);
+        if (obj && obj.data && obj.data.length > 0) {
+          const item = obj.data[0];
+          // Enviamos únicamente los campos esenciales para reducir el tamaño del QR al mínimo
+          // Esto genera un código QR mucho más simple y de lectura instantánea
+          this.datos = JSON.stringify({
+            intIdQr: item.intIdQr,
+            strHash: item.strHash,
+          });
+        }
       });
       this.obtenerFotoGeneral();
     }
@@ -69,7 +78,7 @@ export class PgInfoQrComponent {
 
   getRoles = () => {
     this.swUser
-      .getRolesByUser(Number(this.swCas.getUserInfo().per_id))
+      .getRolesByUser(Number(this.swCas.getUserInfo()?.per_id))
       .subscribe((obj) => {
         if (obj && obj.data && obj.data.length > 0) {
           this.dependencia = obj.data[0].strDepencia;
@@ -81,9 +90,19 @@ export class PgInfoQrComponent {
   obtenerFotoGeneral() {
     this.swFoto.consultarDinardap(this.cedula).subscribe({
       next: (res) => {
-        if (res && res.success && res.Informacion && res.Informacion.blProceso && res.Informacion.Datos && res.Informacion.Datos.valor && res.Informacion.Datos.valor.trim() !== '') {
+        if (
+          res &&
+          res.success &&
+          res.Informacion &&
+          res.Informacion.blProceso &&
+          res.Informacion.Datos &&
+          res.Informacion.Datos.valor &&
+          res.Informacion.Datos.valor.trim() !== ''
+        ) {
           const valor = res.Informacion.Datos.valor;
-          const imgUrl = valor.startsWith('data:') ? valor : 'data:image/jpeg;base64,' + valor;
+          const imgUrl = valor.startsWith('data:')
+            ? valor
+            : 'data:image/jpeg;base64,' + valor;
           this.foto.set(imgUrl);
           this.getRoles();
         } else {
@@ -92,7 +111,7 @@ export class PgInfoQrComponent {
       },
       error: () => {
         this.obtenerFotoPorRoles();
-      }
+      },
     });
   }
 
@@ -102,7 +121,7 @@ export class PgInfoQrComponent {
         this.cedula.slice(0, 9) + '-' + this.cedula.slice(9);
       this.obtenerFotoAcademico(numeroConGuion);
     } else {
-      this.obtenerFotoTTHH(this.swCas.getUserInfo().per_id);
+      this.obtenerFotoTTHH(this.swCas.getUserInfo()?.per_id);
       this.getRoles();
     }
   }
@@ -117,15 +136,13 @@ export class PgInfoQrComponent {
     const { listado } = await this.swUser.getInformacionEstudianteSYNC(usuario);
     if (listado.length == 0) {
       const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(
-        this.swCas.getUserInfo().per_id
+        this.swCas.getUserInfo()?.per_id
       );
       this.foto.set(imgArchivo);
       this.getRoles();
     } else {
       const [info] = listado;
-      // console.log('strfoto: ', info.strfoto);
       this.foto.set(info.strfoto);
-      // console.log('si pasa', this.foto());
       this.getRoles();
     }
   };

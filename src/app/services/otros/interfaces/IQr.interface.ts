@@ -4,6 +4,9 @@ export interface IQr {
   dtFecha_Fin: string;
   intUsuario: number;
   intEstado: number;
+  intIdQr?: number;
+  strHash?: string;
+  intCarnet?: number;
 }
 
 export interface IQrValidarParams {

@@ -1,4 +1,4 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, inject, input, signal, OnInit } from '@angular/core';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { QrService } from '../../../../services/qr/QrService';
@@ -23,9 +23,9 @@ import { Router } from '@angular/router';
     DialogModule,
   ],
   templateUrl: './pg-validar-qr.component.html',
-  styleUrl: './pg-validar-qr.component.css'
+  styleUrl: './pg-validar-qr.component.css',
 })
-export default class PgValidarQrComponent {
+export default class PgValidarQrComponent implements OnInit {
   codigoQr = input.required<string>();
   private swCas = inject(SwCasService);
   private swQr = inject(QrService);
@@ -56,16 +56,45 @@ export default class PgValidarQrComponent {
   }
 
   validarQr = () => {
-    if (!this.esJsonValido(this.codigoQr())) {
+    let raw = this.codigoQr();
+    if (!raw) {
       this.isLoading.set(false);
       this.isValid.set(false);
       return;
     }
-    let infoQr = JSON.parse(this.codigoQr());
+
+    try {
+      raw = decodeURIComponent(raw);
+    } catch (e) {
+      // Ignorar si ya está decodificado
+    }
+
+    let intIdQr: any = null;
+    let strHash: string = '';
+
+    if (raw.includes('|')) {
+      const parts = raw.split('|');
+      if (parts.length >= 2) {
+        intIdQr = parts[0].trim();
+        strHash = parts[1].trim();
+      }
+    } else if (this.esJsonValido(raw)) {
+      const infoQr = JSON.parse(raw);
+      intIdQr = infoQr.intIdQr || infoQr.id || infoQr.i;
+      strHash = infoQr.strHash || infoQr.hash || infoQr.h;
+    }
+
+    if (!intIdQr || !strHash) {
+      this.isLoading.set(false);
+      this.isValid.set(false);
+      return;
+    }
+
+    const userInfo = this.swCas.getUserInfo();
     const datos: IQrValidarParams = {
-      strHash: infoQr.strHash,
-      intIdQr: infoQr.intIdQr,
-      strUsuarioRegitro: Number(this.swCas.getUserInfo().per_id),
+      strHash: strHash,
+      intIdQr: intIdQr,
+      strUsuarioRegitro: Number(userInfo?.per_id || 0),
       intTipoRegistro: 1,
       intEstado: 1,
     };
@@ -90,7 +119,6 @@ export default class PgValidarQrComponent {
         },
         error: (e) => {
           this.isValid.set(false);
-          // console.log('e: ', e);
           this.isLoading.set(false);
         },
       });
@@ -99,9 +127,19 @@ export default class PgValidarQrComponent {
   obtenerFotoDinardap = (cedula: string) => {
     this.swFoto.consultarDinardap(cedula).subscribe({
       next: (res) => {
-        if (res && res.success && res.Informacion && res.Informacion.blProceso && res.Informacion.Datos && res.Informacion.Datos.valor && res.Informacion.Datos.valor.trim() !== '') {
+        if (
+          res &&
+          res.success &&
+          res.Informacion &&
+          res.Informacion.blProceso &&
+          res.Informacion.Datos &&
+          res.Informacion.Datos.valor &&
+          res.Informacion.Datos.valor.trim() !== ''
+        ) {
           const valor = res.Informacion.Datos.valor;
-          const imgUrl = valor.startsWith('data:') ? valor : 'data:image/jpeg;base64,' + valor;
+          const imgUrl = valor.startsWith('data:')
+            ? valor
+            : 'data:image/jpeg;base64,' + valor;
           this.foto.set(imgUrl);
         } else {
           // Fallback a los servicios locales
@@ -113,7 +151,7 @@ export default class PgValidarQrComponent {
         // Fallback en caso de error
         this.obtenerDataAcademico(cedula);
         this.getFoto(this.User().intIdPersona);
-      }
+      },
     });
   };
 

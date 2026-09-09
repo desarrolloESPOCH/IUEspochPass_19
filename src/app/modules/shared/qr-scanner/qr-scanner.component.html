@@ -9,7 +9,7 @@
     </div>
 
     <div class="scanner-viewport">
-      <video #videoElement autoplay playsinline class="scanner-video"></video>
+      <video #videoElement autoplay playsinline muted class="scanner-video"></video>
       
       <div #scannerOverlay class="scanner-overlay scanner-pulse">
         <div class="scanner-corner top-left"></div>
@@ -24,7 +24,7 @@
       @if (videoDevices().length > 1) {
         <div class="control-group">
           <label for="cameraSelect" class="control-label">
-            <i class="pi pi-camera mr-1"></i> Seleccionar Cámara
+            <i class="pi pi-camera mr-1.5"></i> Seleccionar Cámara
           </label>
           <div class="select-wrapper">
             <select id="cameraSelect" (change)="onCameraChange($event)" class="camera-select">
@@ -47,4 +47,3 @@
     </div>
   </div>
 </div>
-

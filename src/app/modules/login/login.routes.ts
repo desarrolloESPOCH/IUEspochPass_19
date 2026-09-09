@@ -21,6 +21,16 @@ export const routesLogin: Routes = [
           import('./../users/users.routes').then((r) => r.routesUsers),
       },
       {
+        path: 'admin/carnets',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-carnets/pg-admin-carnets.component'),
+      },
+      {
+        path: 'admin/guardias',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-guardias/pg-admin-guardias.component'),
+      },
+      {
         path: 'changelog',
         loadComponent: () =>
           import('./pages/pg-changelog/pg-changelog.component'),

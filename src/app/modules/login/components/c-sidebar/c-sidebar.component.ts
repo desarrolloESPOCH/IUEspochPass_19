@@ -51,6 +51,18 @@ export class CSidebarComponent implements OnInit {
         items.data,
         this.obtenerRutas
       );
+      if (rol === 1) {
+        menu.push({
+          label: 'Gestión de Carnets',
+          icon: 'pi pi-id-card',
+          command: () => this.obtenerRutas('/dashboard/admin/carnets')
+        });
+        menu.push({
+          label: 'Gestión de Guardias',
+          icon: 'pi pi-shield',
+          command: () => this.obtenerRutas('/dashboard/admin/guardias')
+        });
+      }
       menu.push({
         label: 'Historial de Cambios',
         icon: 'pi pi-history',

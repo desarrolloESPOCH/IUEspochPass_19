@@ -62,6 +62,11 @@ export class CSidebarComponent implements OnInit {
           icon: 'pi pi-shield',
           command: () => this.obtenerRutas('/dashboard/admin/guardias')
         });
+        menu.push({
+          label: 'Gestión de Invitados',
+          icon: 'pi pi-users',
+          command: () => this.obtenerRutas('/dashboard/admin/invitados')
+        });
       }
       menu.push({
         label: 'Historial de Cambios',

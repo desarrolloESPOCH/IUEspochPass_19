@@ -19,6 +19,7 @@ import {
   ICarnetAdmin,
   IEstadisticasCarnet,
 } from '../../../../services/admin/AdminCarnets.service';
+import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 
 @Component({
   selector: 'app-pg-admin-carnets',
@@ -45,11 +46,13 @@ import {
 export default class PgAdminCarnetsComponent implements OnInit {
   private adminService = inject(AdminCarnetsService);
   private messageService = inject(MessageService);
+  private swCas = inject(SwCasService);
 
   // Estados
   loading = signal<boolean>(false);
   loadingPersona = signal<boolean>(false);
   saving = signal<boolean>(false);
+  savingRolDep = signal<boolean>(false);
 
   // Datos de tabla y estadísticas
   carnets = signal<ICarnetAdmin[]>([]);
@@ -87,11 +90,17 @@ export default class PgAdminCarnetsComponent implements OnInit {
   personaEncontrada: any = null;
   mostrarPanelPersona = signal<boolean>(false);
 
-  // Modal de Renovación / Prórroga
+  // Modal de Renovación / Prórroga (Por defecto 6 meses)
   dialogProrroga = signal<boolean>(false);
   carnetSeleccionado: any = null;
-  tipoProrroga: '12' | '6' | 'custom' = '12';
+  tipoProrroga: '6' | '12' | 'custom' = '6';
   fechaPersonalizada: string = '';
+
+  // Modal de Edición de Rol y Dependencia
+  dialogEditarRolDep = signal<boolean>(false);
+  rolSeleccionadoEdicion: any = null;
+  dependenciaEdicion: string = '';
+  cargoEdicion: string = '';
 
   ngOnInit() {
     this.cargarRoles();
@@ -215,12 +224,13 @@ export default class PgAdminCarnetsComponent implements OnInit {
     this.personaEncontrada = null;
   }
 
-  // Cambiar estado Activo / Desactivado
+  // Cambiar estado Activo / Desactivado con Auditoría
   cambiarEstado(carnet: ICarnetAdmin) {
     const nuevoEstado = carnet.estadoCarnet === 1 ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
+    const adminInfo = this.swCas.getUserInfo();
 
-    this.adminService.cambiarEstado(carnet.intIdCarnet, nuevoEstado).subscribe({
+    this.adminService.cambiarEstado(carnet.intIdCarnet, nuevoEstado, adminInfo).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
@@ -244,13 +254,12 @@ export default class PgAdminCarnetsComponent implements OnInit {
     });
   }
 
-  // Modal Prórroga
+  // Modal Prórroga / Activación (Por defecto 6 meses)
   abrirModalProrroga(carnet: any) {
     this.carnetSeleccionado = carnet;
-    this.tipoProrroga = '12';
-    // Inicializar fecha personalizada por defecto a 1 año desde hoy
+    this.tipoProrroga = '6'; // Por defecto 6 meses según especificación del usuario
     const fechaDefault = new Date();
-    fechaDefault.setFullYear(fechaDefault.getFullYear() + 1);
+    fechaDefault.setMonth(fechaDefault.getMonth() + 6);
     this.fechaPersonalizada = fechaDefault.toISOString().slice(0, 10);
     this.dialogProrroga.set(true);
   }
@@ -259,10 +268,13 @@ export default class PgAdminCarnetsComponent implements OnInit {
     if (!this.carnetSeleccionado) return;
 
     this.saving.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
     let payload: any = {
       intIdCarnet: this.carnetSeleccionado.intIdCarnet,
       intIdPersona: this.carnetSeleccionado.intUsuario || this.carnetSeleccionado.intIdPersona,
       strCedula: this.carnetSeleccionado.strCedula,
+      adminInfo: adminInfo,
     };
 
     if (this.tipoProrroga === 'custom') {
@@ -284,10 +296,13 @@ export default class PgAdminCarnetsComponent implements OnInit {
       next: (res) => {
         this.saving.set(false);
         this.dialogProrroga.set(false);
+        const esNuevo = !this.carnetSeleccionado.intIdCarnet;
         this.messageService.add({
           severity: 'success',
-          summary: 'Carnet Renovado',
-          detail: 'Se renovó y extendió la vigencia del carnet con éxito.',
+          summary: esNuevo ? 'Carnet Creado y Activado' : 'Carnet Renovado',
+          detail: esNuevo
+            ? 'Se generó y activó exitosamente el nuevo carnet institucional.'
+            : 'Se renovó y extendió la vigencia del carnet con éxito.',
         });
         this.cargarEstadisticas();
         this.cargarCarnets();
@@ -300,7 +315,73 @@ export default class PgAdminCarnetsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo renovar el carnet.',
+          detail: 'No se pudo procesar la activación o renovación del carnet.',
+        });
+      },
+    });
+  }
+
+  // Modal Edición de Rol y Dependencia
+  abrirModalEditarRolDep(persona: any) {
+    this.personaEncontrada = persona;
+    this.rolSeleccionadoEdicion = persona.intIdRol || null;
+    this.dependenciaEdicion = persona.strDepencia || '';
+    this.cargoEdicion = persona.strCargo || '';
+    this.dialogEditarRolDep.set(true);
+  }
+
+  guardarRolDependencia() {
+    if (!this.personaEncontrada || !this.personaEncontrada.intIdPersona) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atención',
+        detail: 'No hay información válida de la persona.',
+      });
+      return;
+    }
+
+    if (!this.rolSeleccionadoEdicion) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Rol requerido',
+        detail: 'Seleccione un rol institucional para la persona.',
+      });
+      return;
+    }
+
+    this.savingRolDep.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    const payload = {
+      intPersona: this.personaEncontrada.intIdPersona,
+      strCedula: this.personaEncontrada.strCedula,
+      intRol: this.rolSeleccionadoEdicion,
+      strDepencia: this.dependenciaEdicion.trim() || 'ESPOCH',
+      strCargo: this.cargoEdicion.trim() || '',
+      adminInfo: adminInfo,
+    };
+
+    this.adminService.actualizarRolDependencia(payload).subscribe({
+      next: (res) => {
+        this.savingRolDep.set(false);
+        this.dialogEditarRolDep.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Rol y Dependencia Actualizados',
+          detail: 'Se actualizaron correctamente el rol y la dependencia asignada.',
+        });
+
+        // Refrescar datos en el panel y en la tabla general
+        this.consultarPorCedula();
+        this.cargarEstadisticas();
+        this.cargarCarnets();
+      },
+      error: (err) => {
+        this.savingRolDep.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo actualizar el rol y la dependencia.',
         });
       },
     });

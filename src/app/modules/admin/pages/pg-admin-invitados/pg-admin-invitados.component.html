@@ -1,0 +1,483 @@
+<div class="flex flex-col gap-6 p-2 md:p-6 max-w-7xl mx-auto animate-fadein">
+  <!-- Encabezado de Página -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl shadow-inner">
+          <i class="pi pi-users"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+            Gestión de Invitados (Bares y Proveedores)
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+            Registro, habilitación de carnet y vigencias para personal externo sin correo institucional.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de Acción Superior -->
+    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+      <p-button
+        label="Descargar Plantilla"
+        icon="pi pi-download"
+        (click)="descargarPlantilla()"
+        styleClass="p-button-outlined p-button-secondary p-button-sm">
+      </p-button>
+      <p-button
+        label="Carga Masiva Excel"
+        icon="pi pi-file-excel"
+        (click)="abrirModalMasivo()"
+        styleClass="p-button-outlined p-button-success p-button-sm">
+      </p-button>
+      <p-button
+        label="Agregar Invitado"
+        icon="pi pi-user-plus"
+        (click)="abrirModalAgregar()"
+        styleClass="p-button-primary p-button-sm">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Métricas Rápidas -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invitados</span>
+        <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
+          {{ totalInvitados() | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shadow-inner">
+        <i class="pi pi-users"></i>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Habilitados / Activos</span>
+        <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+          {{ activosCount() | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
+        <i class="pi pi-check-circle"></i>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desactivados / Inactivos</span>
+        <h3 class="text-2xl font-black text-slate-600 dark:text-slate-400 mt-1">
+          {{ desactivadosCount() | number }}
+        </h3>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-xl shadow-inner">
+        <i class="pi pi-ban"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla Principal de Invitados -->
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+    <!-- Barra de Filtros -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+      <div class="w-full md:w-80">
+        <p-iconfield iconPosition="left" styleClass="w-full">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            (keyup.enter)="cargarInvitados()"
+            placeholder="Buscar por cédula, nombre o local..."
+            class="w-full" />
+        </p-iconfield>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <p-select
+          [options]="estadosList"
+          [(ngModel)]="filtroEstado"
+          (onChange)="cargarInvitados()"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full md:w-56">
+        </p-select>
+
+        <p-button
+          icon="pi pi-filter-slash"
+          (click)="limpiarFiltros()"
+          pTooltip="Limpiar Filtros"
+          styleClass="p-button-outlined p-button-secondary">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          (click)="cargarInvitados()"
+          [loading]="loading()"
+          pTooltip="Recargar Listado"
+          styleClass="p-button-outlined p-button-primary">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Tabla PrimeNG -->
+    <p-table
+      [value]="invitados()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="15"
+      [rowsPerPageOptions]="[10, 15, 30, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} invitados"
+      styleClass="p-datatable-sm p-datatable-striped"
+      responsiveLayout="scroll">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Cédula</th>
+          <th>Nombres y Apellidos</th>
+          <th>Local / Bar / Proveedor</th>
+          <th>Cargo / Función</th>
+          <th>Contacto</th>
+          <th class="text-center">Estado Invitado</th>
+          <th class="text-center">Vigencia Carnet</th>
+          <th class="text-center">Acción</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-inv>
+        <tr>
+          <td>
+            <span class="font-bold text-slate-800 dark:text-slate-100">{{ inv.strCedula }}</span>
+          </td>
+          <td>
+            <div class="font-semibold text-slate-800 dark:text-slate-100">
+              {{ inv.strNombres }} {{ inv.strApellidos }}
+            </div>
+          </td>
+          <td>
+            <div class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-medium rounded inline-block">
+              <i class="pi pi-building mr-1"></i>{{ inv.strDepencia || 'BAR / PROVEEDOR' }}
+            </div>
+          </td>
+          <td>
+            <span class="text-xs text-slate-600 dark:text-slate-300">{{ inv.strCargo || 'INVITADO' }}</span>
+          </td>
+          <td>
+            <div class="text-xs text-slate-500 flex flex-col">
+              <span><i class="pi pi-phone mr-1"></i>{{ inv.strTelefono || 'N/A' }}</span>
+              <span *ngIf="inv.strCorreo"><i class="pi pi-envelope mr-1"></i>{{ inv.strCorreo }}</span>
+            </div>
+          </td>
+          <td class="text-center">
+            <p-tag
+              [value]="inv.estadoInvitado === 1 ? 'Habilitado' : 'Desactivado'"
+              [severity]="inv.estadoInvitado === 1 ? 'success' : 'secondary'">
+            </p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-0.5">
+              <p-tag
+                [value]="inv.estadoVigencia || 'ACTIVO'"
+                [severity]="getSeverityVigencia(inv.estadoVigencia || 'ACTIVO')">
+              </p-tag>
+              <span class="text-[10px] text-slate-400" *ngIf="inv.dtFecha_Fin">
+                Hasta: {{ inv.dtFecha_Fin | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </td>
+          <td class="text-center">
+            <p-button
+              [icon]="inv.estadoInvitado === 1 ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="inv.estadoInvitado === 1 ? 'danger' : 'success'"
+              [pTooltip]="inv.estadoInvitado === 1 ? 'Deshabilitar Invitado' : 'Habilitar Invitado'"
+              (click)="cambiarEstado(inv)"
+              [rounded]="true"
+              [text]="true">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-8 text-slate-400">
+            <i class="pi pi-inbox text-3xl mb-2 block"></i>
+            No se encontraron invitados registrados con los criterios seleccionados.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: AGREGAR INVITADO INDIVIDUAL         -->
+<!-- ========================================== -->
+<p-dialog
+  [(visible)]="dialogAgregar"
+  [modal]="true"
+  header="Registrar Nuevo Invitado (Bar / Proveedor)"
+  [style]="{ width: '90vw', maxWidth: '580px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Campo Cédula con Búsqueda -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Número de Cédula: <span class="text-rose-500">*</span>
+      </label>
+      <div class="flex gap-2">
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="cedulaNuevo"
+          (keyup.enter)="buscarPersonaPorCedula()"
+          placeholder="Ej. 1850575133"
+          class="w-full" />
+        <p-button
+          label="Buscar"
+          icon="pi pi-search"
+          [loading]="searchingPersona()"
+          (click)="buscarPersonaPorCedula()"
+          styleClass="p-button-outlined p-button-primary">
+        </p-button>
+      </div>
+      <span class="text-[11px] text-slate-400">El sistema buscará automáticamente los nombres en la base institucional / DINARDAP.</span>
+    </div>
+
+    <!-- Preview si se encontró la persona -->
+    @if (personaPreview) {
+    <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow">
+        {{ personaPreview.strNombres?.charAt(0) }}{{ personaPreview.strApellidos?.charAt(0) }}
+      </div>
+      <div class="flex-1">
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+          {{ personaPreview.strNombres }} {{ personaPreview.strApellidos }}
+        </h4>
+        <span class="text-xs text-slate-500">Cédula: {{ personaPreview.strCedula }}</span>
+      </div>
+    </div>
+    }
+
+    <!-- Campos Manuales si no consta en DINARDAP -->
+    @if (mostrarCamposManuales()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700">Nombres:</label>
+        <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres completos" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700">Apellidos:</label>
+        <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos completos" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700">Teléfono:</label>
+        <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="099..." class="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700">Correo Personal (Opcional):</label>
+        <input pInputText type="text" [(ngModel)]="nuevoCorreo" placeholder="correo@ejemplo.com" class="w-full" />
+      </div>
+    </div>
+    }
+
+    <!-- Campo Local / Bar / Proveedor -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Local, Bar o Empresa Proveedora: <span class="text-rose-500">*</span>
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="nuevoDependencia"
+        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro"
+        class="w-full" />
+    </div>
+
+    <!-- Campo Cargo -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="nuevoCargo"
+        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo"
+        class="w-full" />
+    </div>
+
+    <!-- Vigencia del Carnet (Por defecto 6 meses) -->
+    <div class="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl flex flex-col gap-2">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Vigencia de Acceso y Carnet:
+      </label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="6" class="text-purple-600" />
+          <span><strong>6 Meses (Recomendado)</strong></span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="12" class="text-purple-600" />
+          <span>12 Meses (1 Año)</span>
+        </label>
+      </div>
+      <span class="text-[11px] text-slate-400">Se generará y activará automáticamente el carnet con esta vigencia en el sistema de torniquetes.</span>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Registrar y Activar Carnet" icon="pi pi-check" [loading]="savingIndividual()" (click)="guardarNuevoInvitado()" styleClass="p-button-success"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ========================================== -->
+<!-- MODAL: CARGA MASIVA VÍA EXCEL             -->
+<!-- ========================================== -->
+<p-dialog
+  [(visible)]="dialogMasivo"
+  [modal]="true"
+  header="Carga Masiva de Invitados vía Excel (.xlsx)"
+  [style]="{ width: '92vw', maxWidth: '820px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Instrucciones y Descarga de Plantilla -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800 rounded-xl">
+      <div>
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Plantilla Oficial de Carga</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Descargue la plantilla oficial con el formato de columnas requerido (<code class="bg-purple-100 px-1 py-0.5 rounded text-purple-700">CEDULA</code>, <code class="bg-purple-100 px-1 py-0.5 rounded text-purple-700">LOCAL_O_EMPRESA</code>, etc.).
+        </p>
+      </div>
+      <p-button
+        label="Descargar Plantilla (.xlsx)"
+        icon="pi pi-download"
+        (click)="descargarPlantilla()"
+        styleClass="p-button-sm p-button-outlined p-button-purple">
+      </p-button>
+    </div>
+
+    <!-- Zona Drag & Drop / Selección de Archivo -->
+    <div
+      class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-purple-400 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()">
+      <input #fileInput type="file" (change)="onArchivoSeleccionado($event)" accept=".xlsx, .xls" class="hidden" />
+      <i class="pi pi-upload text-3xl text-purple-500 mb-2"></i>
+      <span class="font-bold text-slate-700 dark:text-slate-200 text-sm">
+        Haga clic aquí o arrastre su archivo Excel (.xlsx)
+      </span>
+      <span class="text-xs text-slate-400 mt-1" *ngIf="!nombreArchivo">
+        Se procesarán todas las filas y se activarán sus carnets automáticamente.
+      </span>
+      <span class="text-xs font-bold text-purple-600 mt-1" *ngIf="nombreArchivo">
+        Archivo cargado: {{ nombreArchivo }}
+      </span>
+    </div>
+
+    <!-- Previsualización de Datos si hay filas -->
+    @if (filasPrevia().length > 0) {
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300">
+        <span>Previsualización del Lote ({{ filasPrevia().length }} registros):</span>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">
+            {{ totalValidos() }} válidos
+          </span>
+          <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold" *ngIf="totalInvalidos() > 0">
+            {{ totalInvalidos() }} con error
+          </span>
+        </div>
+      </div>
+
+      <div class="max-h-56 overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0">
+            <tr>
+              <th class="p-2">#</th>
+              <th class="p-2">Cédula</th>
+              <th class="p-2">Local / Empresa</th>
+              <th class="p-2">Cargo</th>
+              <th class="p-2 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            @for (fila of filasPrevia(); track fila.fila) {
+            <tr [class.bg-rose-50/40]="!fila.valido">
+              <td class="p-2 text-slate-400">{{ fila.fila }}</td>
+              <td class="p-2 font-bold">{{ fila.cedula }}</td>
+              <td class="p-2">{{ fila.dependencia }}</td>
+              <td class="p-2">{{ fila.cargo }}</td>
+              <td class="p-2 text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                  [class.bg-emerald-100]="fila.valido" [class.text-emerald-800]="fila.valido"
+                  [class.bg-rose-100]="!fila.valido" [class.text-rose-800]="!fila.valido">
+                  {{ fila.motivo }}
+                </span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Barra de Progreso durante la Carga -->
+      @if (processingMasivo()) {
+      <div class="flex flex-col gap-1 mt-2">
+        <span class="text-xs text-purple-600 font-semibold flex items-center gap-2">
+          <i class="pi pi-spin pi-spinner"></i> Procesando registros y activando carnets en lote...
+        </span>
+        <p-progressbar [value]="progresoMasivo()" styleClass="h-2 rounded-full"></p-progressbar>
+      </div>
+      }
+
+      <!-- Resumen Posterior a la Carga -->
+      @if (resultadoLote()) {
+      <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col md:flex-row justify-between items-center gap-3 mt-2">
+        <div>
+          <h4 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">
+            <i class="pi pi-check-circle mr-1"></i> Proceso completado
+          </h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+            Se registraron {{ resultadoLote().exitosos }} de {{ resultadoLote().total }} invitados exitosamente con carnet activo por 6 meses.
+          </p>
+        </div>
+        <p-button
+          label="Descargar Reporte (.xlsx)"
+          icon="pi pi-file-excel"
+          (click)="descargarReporteResultados()"
+          styleClass="p-button-sm p-button-success">
+        </p-button>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cerrar" icon="pi pi-times" (click)="dialogMasivo.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button
+        label="Procesar Carga Masiva"
+        icon="pi pi-play"
+        [loading]="processingMasivo()"
+        [disabled]="totalValidos() === 0 || processingMasivo()"
+        (click)="ejecutarCargaMasiva()"
+        styleClass="p-button-success">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

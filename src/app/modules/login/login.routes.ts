@@ -31,6 +31,11 @@ export const routesLogin: Routes = [
           import('./../admin/pages/pg-admin-guardias/pg-admin-guardias.component'),
       },
       {
+        path: 'admin/invitados',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-invitados/pg-admin-invitados.component'),
+      },
+      {
         path: 'changelog',
         loadComponent: () =>
           import('./pages/pg-changelog/pg-changelog.component'),

@@ -111,9 +111,16 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-2">
           <p-tag [value]="personaEncontrada.estadoVigencia" [severity]="getSeverityVigencia(personaEncontrada.estadoVigencia)"></p-tag>
-          <p-button label="Renovar / Prorrogar Vigencia" icon="pi pi-calendar-plus" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
+          
+          @if (personaEncontrada.estadoVigencia === 'SIN_CARNET') {
+            <p-button label="Crear y Activar Carnet" icon="pi pi-plus-circle" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
+          } @else {
+            <p-button label="Renovar / Prorrogar Vigencia" icon="pi pi-calendar-plus" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
+          }
+
+          <p-button label="Editar Rol / Dependencia" icon="pi pi-user-edit" (click)="abrirModalEditarRolDep(personaEncontrada)" styleClass="p-button-info p-button-sm"></p-button>
           <p-button icon="pi pi-times" (click)="cerrarPanelPersona()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
         </div>
       </div>
@@ -121,15 +128,17 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs text-slate-600 dark:text-slate-300">
         <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
           <span class="text-slate-400 block font-semibold uppercase">ID Carnet</span>
-          <span class="font-bold text-sm">{{ personaEncontrada.intIdCarnet || 'No registrado aún' }}</span>
+          <span class="font-bold text-sm" [class.text-amber-600]="!personaEncontrada.intIdCarnet">
+            {{ personaEncontrada.intIdCarnet || 'No registrado (Requiere Creación)' }}
+          </span>
         </div>
         <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
           <span class="text-slate-400 block font-semibold uppercase">Fecha Inicio</span>
-          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'N/A' }}</span>
+          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}</span>
         </div>
         <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
           <span class="text-slate-400 block font-semibold uppercase">Fecha Fin (Vigencia)</span>
-          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'N/A' }}</span>
+          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}</span>
         </div>
       </div>
     </div>
@@ -250,9 +259,9 @@
 
 <!-- Modal de Prórroga / Renovación de Vigencia -->
 <p-dialog
-  header="Renovar y Prorrogar Vigencia de Carnet"
   [(visible)]="dialogProrroga"
   [modal]="true"
+  [header]="carnetSeleccionado?.intIdCarnet ? 'Renovación y Prórroga de Vigencia del Carnet' : 'Creación y Activación de Carnet Institucional'"
   [style]="{ width: '90vw', maxWidth: '520px' }"
   [draggable]="false"
   [resizable]="false">
@@ -276,28 +285,28 @@
 
     <div class="flex flex-col gap-2">
       <label class="font-bold text-sm text-slate-700 dark:text-slate-300">
-        Seleccione el tiempo de extensión de vigencia:
+        Seleccione el tiempo de vigencia del carnet:
+      </label>
+
+      <!-- Opción +6 Meses (Recomendada por defecto) -->
+      <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === '6'" [class.bg-blue-50/50]="tipoProrroga === '6'" [class.dark:bg-blue-950/20]="tipoProrroga === '6'">
+        <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="6" class="w-4 h-4 text-blue-600" />
+        <div class="flex flex-col">
+          <span class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+            +6 Meses de Vigencia <span class="text-xs font-normal text-emerald-600 dark:text-emerald-400 font-semibold">(Recomendado - 1 Semestre)</span>
+          </span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">Activa el acceso institucional por 6 meses a partir de la fecha.</span>
+        </div>
       </label>
 
       <!-- Opción +1 Año -->
       <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === '12'" [class.bg-blue-50/50]="tipoProrroga === '12'" [class.dark:bg-blue-950/20]="tipoProrroga === '12'">
         <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="12" class="w-4 h-4 text-blue-600" />
         <div class="flex flex-col">
-          <span class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
-            +1 Año de Vigencia <span class="text-xs font-normal text-emerald-600 dark:text-emerald-400 font-semibold">(Recomendado para Graduados)</span>
-          </span>
-          <span class="text-xs text-slate-500 dark:text-slate-400">Extiende el acceso institucional por 12 meses a partir de hoy.</span>
-        </div>
-      </label>
-
-      <!-- Opción +6 Meses -->
-      <label class="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="tipoProrroga === '6'" [class.bg-blue-50/50]="tipoProrroga === '6'" [class.dark:bg-blue-950/20]="tipoProrroga === '6'">
-        <input type="radio" name="tipoProrroga" [(ngModel)]="tipoProrroga" value="6" class="w-4 h-4 text-blue-600" />
-        <div class="flex flex-col">
           <span class="font-bold text-slate-800 dark:text-slate-100 text-sm">
-            +6 Meses de Vigencia (1 Semestre)
+            +1 Año de Vigencia (12 Meses)
           </span>
-          <span class="text-xs text-slate-500 dark:text-slate-400">Extiende el acceso institucional por 6 meses a partir de hoy.</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">Extiende el acceso institucional por 12 meses a partir de la fecha.</span>
         </div>
       </label>
 
@@ -321,7 +330,84 @@
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
       <p-button label="Cancelar" icon="pi pi-times" (click)="dialogProrroga.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
-      <p-button label="Guardar y Habilitar" icon="pi pi-check" [loading]="saving()" (click)="guardarProrroga()" styleClass="p-button-success"></p-button>
+      <p-button [label]="carnetSeleccionado?.intIdCarnet ? 'Renovar y Activar' : 'Crear y Activar Carnet'" icon="pi pi-check" [loading]="saving()" (click)="guardarProrroga()" styleClass="p-button-success"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo para Edición de Rol y Dependencia -->
+<p-dialog
+  [(visible)]="dialogEditarRolDep"
+  [modal]="true"
+  header="Editar Rol y Dependencia Institucional"
+  [style]="{ width: '90vw', maxWidth: '520px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  @if (personaEncontrada) {
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <div class="p-4 bg-blue-50/60 dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">
+          <i class="pi pi-user"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">
+            {{ personaEncontrada.strNombres }} {{ personaEncontrada.strApellidos }}
+          </h4>
+          <span class="text-xs text-slate-500">Cédula: <strong>{{ personaEncontrada.strCedula }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selección de Rol -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Rol Institucional: <span class="text-rose-500">*</span>
+      </label>
+      <p-select
+        [options]="rolesList()"
+        [(ngModel)]="rolSeleccionadoEdicion"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione un rol"
+        styleClass="w-full">
+      </p-select>
+    </div>
+
+    <!-- Campo Dependencia / Área -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Dependencia / Facultad / Local / Bar / Proveedor: <span class="text-rose-500">*</span>
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="dependenciaEdicion"
+        placeholder="Ej: Bar Facultad de Informática / Proveedor Alimentos / DTIC"
+        class="w-full" />
+      <span class="text-[11px] text-slate-400">Puede especificar libremente el nombre del local, empresa proveedora o unidad académica.</span>
+    </div>
+
+    <!-- Campo Cargo -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="cargoEdicion"
+        placeholder="Ej: Administrador de Bar / Distribuidor / Funcionario"
+        class="w-full" />
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogEditarRolDep.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Guardar Asignación" icon="pi pi-check" [loading]="savingRolDep()" (click)="guardarRolDependencia()" styleClass="p-button-primary"></p-button>
     </div>
   </ng-template>
 </p-dialog>

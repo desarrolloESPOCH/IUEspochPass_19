@@ -35,6 +35,7 @@ export class PgInfoQrComponent implements OnInit {
   rol: any;
   datos: any;
   cargo: string = '';
+  nombreRol: string = '';
 
   foto = signal<string>('');
   public base64textString: any = [];
@@ -83,6 +84,7 @@ export class PgInfoQrComponent implements OnInit {
         if (obj && obj.data && obj.data.length > 0) {
           this.dependencia = obj.data[0].strDepencia;
           this.cargo = obj.data[0].strCargo;
+          this.nombreRol = obj.data[0].strNombre || '';
         }
       });
   };

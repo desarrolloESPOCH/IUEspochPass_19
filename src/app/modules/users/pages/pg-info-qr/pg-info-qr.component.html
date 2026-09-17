@@ -36,7 +36,7 @@
             {{ nombre }} {{ apellidos }}
           </h2>
           <span class="px-3 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded-full text-xs font-semibold uppercase tracking-wider">
-            {{ cargo || (rol == 3 ? 'Estudiante' : 'Funcionario') }}
+            {{ cargo || nombreRol || (rol == 3 ? 'Estudiante' : 'Funcionario') }}
           </span>
         </div>
 

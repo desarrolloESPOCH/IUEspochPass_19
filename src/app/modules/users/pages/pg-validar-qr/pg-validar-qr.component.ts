@@ -39,6 +39,7 @@ export default class PgValidarQrComponent implements OnInit {
   foto = signal<string>('');
   dependencia = signal<string>('');
   cargo = signal<string>('');
+  nombreRol = signal<string>('');
 
   showModal = signal<boolean>(false);
 
@@ -178,6 +179,7 @@ export default class PgValidarQrComponent implements OnInit {
         if (response && response.data && response.data.length > 0) {
           this.cargo.set(response.data[0].strCargo);
           this.dependencia.set(response.data[0].strDepencia);
+          this.nombreRol.set(response.data[0].strNombre || '');
         }
       });
   };

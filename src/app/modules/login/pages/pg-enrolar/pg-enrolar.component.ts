@@ -102,24 +102,29 @@ export default class PgEnrolarComponent {
   IsDocenteOrFuncionario = (data: any) => {
     let cargo = '';
     let dependencia = '';
+    if (!data) return { cargo, dependencia };
     const { contrato, accionPersonal } = data;
 
     if (contrato) {
-      // console.log('aqui: ');
-      const { conCargo } = contrato;
-      if (conCargo) {
+      const { conCargo, conDependenciaEspecifica } = contrato;
+      if (conCargo && conCargo.trim() !== '') {
         conCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        cargo = contrato.conCargo;
-        dependencia = contrato.conDependenciaEspecifica;
+        cargo = conCargo;
+        dependencia = conDependenciaEspecifica || 'ESPOCH';
+        return { cargo, dependencia };
       }
-      return { cargo, dependencia };
     }
 
-    const { apeCargo } = accionPersonal;
+    if (accionPersonal) {
+      const { apeCargo, apeDepedenciaEspecifica } = accionPersonal;
+      if (apeCargo && apeCargo.trim() !== '') {
+        apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
+        cargo = apeCargo;
+        dependencia = apeDepedenciaEspecifica || 'ESPOCH';
+        return { cargo, dependencia };
+      }
+    }
 
-    apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-    cargo = accionPersonal.apeCargo;
-    dependencia = accionPersonal.apeDepedenciaEspecifica;
     return { cargo, dependencia };
   };
 
@@ -127,13 +132,15 @@ export default class PgEnrolarComponent {
     const { cedula } = usuario;
     const res = await this.swUser.validarGuardia(this.dataEnrol.per_id);
     const { data: roles } = res;
-    if (roles.some((item: IRol) => item.intIdRol == 6 && item.intEstado == 1)) {
+    if (roles && roles.some((item: IRol) => item.intIdRol == 6 && item.intEstado == 1)) {
       this.rol = 6;
       this.getFoto(usuario);
       this.frmRegistro.patchValue({
         cargo: 'GUARDIA',
         dependencia: 'ESPOCH',
+        rolId: 6,
       });
+      return;
     }
 
     const token = await obtenerToken(this.swUser);
@@ -144,14 +151,20 @@ export default class PgEnrolarComponent {
       cedula,
       token
     );
-    if (!success) {
+    if (!success || !data) {
       this.rol = 3;
       await this.obtenerDataAcademico(usuario);
       return;
     }
-    await this.getFoto(usuario);
-    const { cargo, dependencia } = await this.IsDocenteOrFuncionario(data);
 
+    const { cargo, dependencia } = await this.IsDocenteOrFuncionario(data);
+    if (!cargo && !dependencia) {
+      this.rol = 3;
+      await this.obtenerDataAcademico(usuario);
+      return;
+    }
+
+    await this.getFoto(usuario);
     this.frmRegistro.patchValue({
       cargo: cargo,
       dependencia: dependencia,
@@ -212,10 +225,9 @@ export default class PgEnrolarComponent {
       this.frmRegistro.patchValue({
         cargo: 'MAESTRANTE',
         dependencia: 'POSGRADO',
+        rolId: 3,
       });
-      // this.conexion.set();
       this.rol = 3;
-
       return;
     }
 
@@ -223,15 +235,17 @@ export default class PgEnrolarComponent {
     const { listado: listadoAcademico } =
       await this.swUser.validarMatriculaVigenteSYNC(cedula);
 
-    if (!listadoAcademico || listadoAcademico.length == 0) {
-      this.sinMatricula = true;
-      return;
-    }
+    const carreraNombre =
+      (listadoAcademico && listadoAcademico.length > 0 && listadoAcademico[0].carreraSelecionadaFacultad) ||
+      (listado && listado.length > 0 && (listado[0].carreraSelecionadaFacultad || listado[0].carreraSeleccionada)) ||
+      'ESPOCH';
 
     this.frmRegistro.patchValue({
       cargo: 'ESTUDIANTE',
-      dependencia: listadoAcademico[0].carreraSelecionadaFacultad,
+      dependencia: carreraNombre,
+      rolId: 3,
     });
+    this.rol = 3;
   };
 
   guardar = () => {

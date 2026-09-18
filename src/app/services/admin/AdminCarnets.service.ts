@@ -2,7 +2,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of, switchMap } from 'rxjs';
 
 export interface ICarnetAdmin {
   intIdCarnet: number;
@@ -109,10 +109,32 @@ export class AdminCarnetsService {
     );
   }
 
-  getPersonaCarnet(cedula: string): Observable<any> {
+  getPersonaCarnet(cedula: string, soloLocal: boolean = false): Observable<any> {
     const cedulaLimpia = cedula.replace(/-/g, '');
+    let params = new HttpParams();
+    if (soloLocal) {
+      params = params.set('soloLocal', 'true');
+    }
     return this.http.get<any>(
-      `${this.URLSERVICIO}/admin/carnet/persona/${cedulaLimpia}`
+      `${this.URLSERVICIO}/admin/carnet/persona/${cedulaLimpia}`,
+      { params }
+    );
+  }
+
+  obtenerPersonaCentralizada(cedula: string): Observable<any> {
+    const cedulaLimpia = (cedula || '').replace(/[\s-]/g, '').replace(/['"]/g, '').trim();
+    return this.http.get<any>(
+      `https://centralizada2.espoch.edu.ec/rutadinardap/obtenerpersona/${cedulaLimpia}`
+    ).pipe(
+      catchError(() => of(null)),
+      switchMap((res) => {
+        if (res && typeof res === 'object' && ('success' in res || 'listado' in res)) {
+          return of(res);
+        }
+        return this.http.get<any>(
+          `${this.URLSERVICIO}/admin/centralizada/persona/${cedulaLimpia}`
+        );
+      })
     );
   }
 

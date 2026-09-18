@@ -1,8 +1,8 @@
 <!-- cspell:disable -->
-<div class="p-4 md:p-6 flex flex-col gap-6 max-w-7xl mx-auto">
+<div class="w-full p-2 sm:p-4 md:p-6 flex flex-col gap-4 sm:gap-6 max-w-[1650px] mx-auto">
 
   <!-- Encabezado de la página -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
     <div>
       <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
         <i class="pi pi-shield text-blue-600 dark:text-blue-400 text-3xl"></i>
@@ -115,7 +115,7 @@
             </div>
           </td>
           <td class="text-xs text-slate-600 dark:text-slate-400">
-            {{ g.strCorreo || 'Sin correo registrado' }}
+            {{ g.strCorreo || 'N/A' }}
           </td>
           <td class="text-xs text-slate-600 dark:text-slate-400">
             {{ g.strTelefono || 'N/A' }}
@@ -178,21 +178,25 @@
     @if (personaPreview) {
     <div class="p-4 bg-blue-50 dark:bg-slate-900 rounded-xl border border-blue-200 dark:border-slate-700 text-sm">
       <div class="flex justify-between items-center mb-1">
-        <span class="text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase">Usuario Encontrado</span>
+        <span class="text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase">
+          {{ personaPreview.origen === 'centralizada' ? 'Persona Encontrada en Centralizada' : 'Usuario Encontrado' }}
+        </span>
       </div>
       <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">
-        {{ personaPreview.strNombres }} {{ personaPreview.strApellidos }}
+        {{ (nuevoNombres && nuevoNombres.trim() !== '' ? nuevoNombres.trim() : personaPreview.strNombres) }} {{ (nuevoApellidos && nuevoApellidos.trim() !== '' ? nuevoApellidos.trim() : personaPreview.strApellidos) }}
       </h4>
       <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">
-        Correo: <strong>{{ personaPreview.strCorreo || 'N/A' }}</strong> | Rol actual: <strong>{{ personaPreview.rol || 'Sin Rol' }}</strong>
+        Correo: <strong>{{ (nuevoCorreo && nuevoCorreo.trim() !== '' ? nuevoCorreo.trim() : 'N/A') }}</strong> | Teléfono: <strong>{{ (nuevoTelefono && nuevoTelefono.trim() !== '' ? nuevoTelefono.trim() : 'N/A') }}</strong> | Rol actual: <strong>{{ personaPreview.rol || 'Sin Rol' }}</strong>
       </p>
     </div>
     }
 
-    <!-- Campos manuales si no existe -->
+    <!-- Campos de datos de la persona -->
     @if (mostrarCamposManuales()) {
     <div class="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-      <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Complete los datos de la persona:</span>
+      <span class="text-xs font-bold text-amber-600 dark:text-amber-400">
+        {{ personaPreview?.origen === 'centralizada' ? 'Datos autocompletados desde la Centralizada institucional:' : (personaPreview ? 'Datos de la persona:' : 'Complete los datos de la persona:') }}
+      </span>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
@@ -208,11 +212,11 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium">Correo Electrónico</label>
-          <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="correo@espoch.edu.ec" class="w-full" />
+          <input pInputText type="text" [(ngModel)]="nuevoCorreo" placeholder="correo@espoch.edu.ec o N/A" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium">Teléfono</label>
-          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999" class="w-full" />
+          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999 o N/A" class="w-full" />
         </div>
       </div>
     </div>

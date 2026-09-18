@@ -1,14 +1,14 @@
-<div class="animate__animated animate__fadeIn animate__slow max-w-6xl mx-auto p-2 md:p-6">
-  <div class="grid grid-cols-12 gap-6 lg:gap-8">
+<div class="animate__animated animate__fadeIn animate__slow w-full max-w-6xl mx-auto p-1 sm:p-2 md:p-6">
+  <div class="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
     
     <!-- CREDENCIAL DIGITAL (Lado Izquierdo / Central en móvil) - TEMA CLARO -->
-    <div class="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col items-center pass-container">
-      <div class="pass-card w-full max-w-sm p-6 flex flex-col items-center h-full">
+    <div class="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col items-center pass-container w-full">
+      <div class="pass-card w-full md:max-w-sm p-4 sm:p-6 flex flex-col items-center h-full">
         <!-- Encabezado de la Credencial -->
-        <div class="flex justify-between items-center w-full mb-6 border-b border-slate-100 dark:border-zinc-800 pb-4">
+        <div class="flex justify-between items-center w-full mb-4 sm:mb-6 border-b border-slate-100 dark:border-zinc-800 pb-3 sm:pb-4">
           <div class="flex items-center gap-2">
-            <span class="pi pi-shield text-blue-600 dark:text-blue-400 text-xl"></span>
-            <span class="font-bold tracking-wider text-sm text-blue-600 dark:text-blue-400">ESPOCH PASS</span>
+            <span class="pi pi-shield text-blue-600 dark:text-blue-400 text-lg sm:text-xl"></span>
+            <span class="font-bold tracking-wider text-xs sm:text-sm text-blue-600 dark:text-blue-400">ESPOCH PASS</span>
           </div>
           <div class="pass-badge">
             <span class="pass-badge-dot"></span>
@@ -17,41 +17,41 @@
         </div>
 
         <!-- Foto de Perfil Premium -->
-        <div class="relative mb-6">
-          <div class="w-52 h-52 rounded-full overflow-hidden border-4 border-blue-500/20 dark:border-blue-500/40 shadow-md flex justify-center items-center bg-white">
+        <div class="relative mb-4 sm:mb-6">
+          <div class="w-44 h-44 sm:w-48 sm:h-48 md:w-52 md:h-52 rounded-full overflow-hidden border-4 border-blue-500/20 dark:border-blue-500/40 shadow-md flex justify-center items-center bg-white">
             @if(!foto() || foto().trim() === ''){
               <img src="./avatar.png" alt="Avatar" class="w-full h-full object-contain" />
             } @else {
-              <img [src]="foto()" alt="Foto de perfil" class="w-full h-full object-contain" />
+              <img [src]="foto()" (error)="onFotoError()" alt="Foto de perfil" class="w-full h-full object-contain" />
             }
           </div>
-          <div class="absolute -bottom-1 -right-1 bg-blue-600 text-white rounded-full p-2 shadow-md border border-white/20 flex items-center justify-center">
+          <div class="absolute -bottom-1 -right-1 bg-blue-600 text-white rounded-full p-1.5 sm:p-2 shadow-md border border-white/20 flex items-center justify-center">
             <span class="pi pi-verified text-xs"></span>
           </div>
         </div>
 
         <!-- Información Rápida -->
-        <div class="text-center mb-6">
-          <h2 class="text-xl font-extrabold tracking-wide uppercase text-slate-800 dark:text-zinc-100 mb-1">
+        <div class="text-center mb-4 sm:mb-6 px-2">
+          <h2 class="text-lg sm:text-xl font-extrabold tracking-wide uppercase text-slate-800 dark:text-zinc-100 mb-1 break-words">
             {{ nombre }} {{ apellidos }}
           </h2>
-          <span class="px-3 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded-full text-xs font-semibold uppercase tracking-wider">
+          <span class="inline-block px-3 py-1 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 rounded-full text-xs font-semibold uppercase tracking-wider">
             {{ cargo || nombreRol || (rol == 3 ? 'Estudiante' : 'Funcionario') }}
           </span>
         </div>
 
         <!-- Código QR con Línea de Escáner -->
-        <div class="qr-scanner-glow mb-6 text-black flex items-center justify-center p-2 bg-white rounded-2xl shadow-sm">
+        <div class="qr-scanner-glow mb-4 sm:mb-6 text-black flex items-center justify-center p-2 bg-white rounded-2xl shadow-sm">
           @if(datos) {
             <qr-code
               [value]="datos"
-              size="210"
+              size="200"
               errorCorrectionLevel="L"
               darkColor="#000000"
               lightColor="#ffffff"
             ></qr-code>
           } @else {
-            <div class="w-[210px] h-[210px] flex items-center justify-center text-slate-400">
+            <div class="w-[200px] h-[200px] flex items-center justify-center text-slate-400">
               <span class="pi pi-spin pi-spinner text-3xl"></span>
             </div>
           }
@@ -66,69 +66,69 @@
     </div>
 
     <!-- DETALLES DE USUARIO (Lado Derecho / Abajo en móvil) - TEMA CLARO -->
-    <div class="col-span-12 md:col-span-6 lg:col-span-7 flex flex-col">
-      <div class="p-6 md:p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl h-full flex flex-col justify-between">
+    <div class="col-span-12 md:col-span-6 lg:col-span-7 flex flex-col w-full">
+      <div class="p-4 sm:p-6 md:p-8 bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl h-full flex flex-col justify-between w-full">
         <div>
-          <h3 class="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-6 flex items-center gap-3">
+          <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-zinc-100 mb-4 sm:mb-6 flex items-center gap-3">
             <span class="pi pi-user text-blue-500 text-lg"></span>
             Información del Titular
           </h3>
 
           <!-- Grid de Detalles con Tailwind CSS Grid Puro -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             
             <!-- Item Nombres -->
-            <div class="info-item-card p-4 rounded-2xl flex items-center gap-4">
-              <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex-shrink-0">
-                <span class="pi pi-id-card text-lg"></span>
+            <div class="info-item-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex-shrink-0">
+                <span class="pi pi-id-card text-base sm:text-lg"></span>
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Nombres</span>
-                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 block truncate">{{ nombre }}</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Nombres</span>
+                <span class="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 block truncate">{{ nombre }}</span>
               </div>
             </div>
 
             <!-- Item Apellidos -->
-            <div class="info-item-card p-4 rounded-2xl flex items-center gap-4">
-              <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex-shrink-0">
-                <span class="pi pi-id-card text-lg"></span>
+            <div class="info-item-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex-shrink-0">
+                <span class="pi pi-id-card text-base sm:text-lg"></span>
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Apellidos</span>
-                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 block truncate">{{ apellidos }}</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Apellidos</span>
+                <span class="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 block truncate">{{ apellidos }}</span>
               </div>
             </div>
 
             <!-- Item Cédula / Documento -->
-            <div class="info-item-card p-4 rounded-2xl flex items-center gap-4">
-              <div class="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
-                <span class="pi pi-file text-lg"></span>
+            <div class="info-item-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                <span class="pi pi-file text-base sm:text-lg"></span>
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Documento</span>
-                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 block">{{ cedula }}</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Documento</span>
+                <span class="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 block">{{ cedula }}</span>
               </div>
             </div>
 
             <!-- Item Correo -->
-            <div class="info-item-card p-4 rounded-2xl flex items-center gap-4">
-              <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex-shrink-0">
-                <span class="pi pi-envelope text-lg"></span>
+            <div class="info-item-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex-shrink-0">
+                <span class="pi pi-envelope text-base sm:text-lg"></span>
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Correo Electrónico</span>
-                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 block break-all">{{ correo }}</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Correo Electrónico</span>
+                <span class="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 block break-all">{{ correo }}</span>
               </div>
             </div>
 
             <!-- Item Dependencia o Facultad (Ancho completo en md) -->
-            <div class="info-item-card p-4 rounded-2xl flex items-center gap-4 md:col-span-2">
-              <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex-shrink-0">
-                <span class="pi pi-building text-lg"></span>
+            <div class="info-item-card p-3.5 sm:p-4 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4 md:col-span-2">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex-shrink-0">
+                <span class="pi pi-building text-base sm:text-lg"></span>
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Dependencia / Facultad</span>
-                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 block">{{ dependencia || 'N/A' }}</span>
+                <span class="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Dependencia / Facultad</span>
+                <span class="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 block break-words">{{ dependencia || 'N/A' }}</span>
               </div>
             </div>
             

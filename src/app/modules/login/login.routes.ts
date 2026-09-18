@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { PgDashBoardComponent } from './pages/pg-dash-board/pg-dash-board.component';
+import { authGuard } from '../../utils/guards/auth.guard';
 
 // cspell:disable
 export const routesLogin: Routes = [
@@ -14,6 +15,7 @@ export const routesLogin: Routes = [
   {
     path: 'dashboard',
     component: PgDashBoardComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'users',

@@ -35,6 +35,8 @@ export class PgCarnetComponent {
   strTerminos = signal('');
   fecha = signal(new Date());
   isCaducado = signal(false);
+  imagenCargada = signal<boolean>(false);
+  imagenError = signal<boolean>(false);
   rol = 0;
   private router = inject(Router);
 
@@ -43,24 +45,93 @@ export class PgCarnetComponent {
   }
 
   ngOnInit() {
-    // this.obtenerCarnet(this.swCas.getUserInfo().per_id);
+    const userInfo = this.swCas.getUserInfo();
+    if (userInfo && userInfo.per_id) {
+      this.obtenerCarnet(userInfo.per_id);
+    }
     this.getTerminos(this.rol);
 
     this.swEventosServices.rolCambiado.subscribe((rol: any) => {
       this.rol = rol;
+      this.imagenCargada.set(false);
+      this.imagenError.set(false);
       // console.log('this.rol: ', this.rol);
-      if (rol != 6) {
+      const user = this.swCas.getUserInfo();
+      if (user && user.per_id) {
+        this.obtenerCarnet(user.per_id);
       }
-      this.obtenerCarnet(this.swCas.getUserInfo().per_id);
       this.getTerminos(rol);
     });
+  }
+
+  getCarnetImgSrc(): string {
+    const r = Number(this.rol);
+    if ([1, 2, 3, 4, 5, 6].includes(r)) {
+      return `./carnet/${r}.svg`;
+    }
+    // Para roles de gestión (11), vinculación (13) u otros, se utiliza la credencial institucional 1.svg
+    return './carnet/1.svg';
+  }
+
+  onImageLoad() {
+    this.imagenCargada.set(true);
+    this.imagenError.set(false);
+  }
+
+  onImageError(event?: any) {
+    const target = event?.target as HTMLImageElement;
+    if (target && !target.src.endsWith('1.svg')) {
+      target.src = './carnet/1.svg';
+    } else {
+      this.imagenError.set(true);
+      this.imagenCargada.set(false);
+    }
+  }
+
+  getNombreRol(): string {
+    switch (this.rol) {
+      case 1:
+        return 'Docente';
+      case 2:
+        return 'Funcionario / Administrativo';
+      case 3:
+        return 'Estudiante';
+      case 4:
+        return 'Invitado / Visitante';
+      case 5:
+        return 'Proveedor';
+      case 6:
+        return 'Guardia de Seguridad';
+      case 11:
+        return 'Gestión Institucional';
+      case 13:
+        return 'Vinculación';
+      default:
+        return 'Miembro Institucional';
+    }
   }
 
   obtenerCarnet = (per_id: string) => {
     if (!per_id || per_id === 'undefined') {
       console.log('ID de persona no válido para obtener carnet');
-      this.router.navigate(['/enrolamiento']);
       return;
+    }
+
+    // Intentar leer de caché local para respuesta instantánea en conexiones lentas
+    try {
+      const cached = localStorage.getItem('espochpass_carnet_data');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        this.qrInfo.datos = parsed;
+        if (parsed.dtFecha_Fin) {
+          let ff = new Date(parsed.dtFecha_Fin);
+          ff.setHours(ff.getHours() + 5);
+          this.fecha.set(ff);
+          this.isCaducado.set(new Date() > ff);
+        }
+      }
+    } catch (e) {
+      console.error('Error al leer caché local de carnet', e);
     }
 
     this.qr
@@ -95,23 +166,18 @@ export class PgCarnetComponent {
 
           this.infoCarnet = this.rol;
           this.qrInfo.datos = carnet.data[0];
-          if (!this.mostrarCarnet)
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: carnet.message,
-            });
+          try {
+            localStorage.setItem('espochpass_carnet_data', JSON.stringify(carnet.data[0]));
+          } catch (e) {}
+
           this.mostrarCarnet = true;
         },
         error: (err) => {
-          console.error('Error al buscar carnet o usuario no enrolado', err);
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Sin carnet',
-            detail: 'No se encontró un carnet activo para este usuario.',
-          });
-          // Redirigir a enrolamiento si no tiene carnet o da error el servicio
-          this.router.navigate(['/enrolamiento']);
+          console.error('Error al buscar carnet o usuario sin conexión', err);
+          if (this.qrInfo.datos?.intIdCarnet) {
+            this.mostrarCarnet = true;
+            return;
+          }
         }
       });
   };

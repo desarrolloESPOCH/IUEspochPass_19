@@ -1,68 +1,148 @@
-<div class="grid grid-cols-12 gap-6 lg:gap-8 w-full max-w-5xl mx-auto p-2 md:p-6 animate__animated animate__fadeIn animate__slow">
+<div class="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8 w-full max-w-5xl mx-auto p-1 sm:p-2 md:p-6 animate__animated animate__fadeIn animate__slow">
   
   <!-- CARNET DIGITAL (Lado Izquierdo) -->
-  <div class="col-span-12 md:col-span-6 flex flex-col h-full">
-    <div class="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col justify-between h-full">
+  <div class="col-span-12 md:col-span-6 flex flex-col h-full w-full">
+    <div class="p-4 sm:p-6 bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col justify-between h-full w-full">
       
       <div>
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
+        <div class="flex justify-between items-center mb-4 sm:mb-6">
+          <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
             <span class="pi pi-id-card text-blue-500 text-lg"></span>
             Mi Credencial Digital
           </h3>
-          <span class="px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full text-xs font-semibold uppercase tracking-wider">
+          <span class="px-2.5 sm:px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full text-xs font-semibold uppercase tracking-wider">
             espochPass
           </span>
         </div>
 
-        @if(!mostrarCarnet){
-          <div class="flex flex-col gap-4">
-            <p-skeleton width="80%" height="1.2rem"></p-skeleton>
-            <p-skeleton width="100%" height="1.2rem"></p-skeleton>
-            <p-skeleton width="100%" height="12rem" borderRadius="20px"></p-skeleton>
-          </div>
-        } @else {
-          <p class="text-sm text-slate-400 dark:text-zinc-500 mb-6">
-            Presiona tu credencial digital para acceder al código de escaneo QR y detalles de tu cuenta.
-          </p>
+        <p class="text-xs sm:text-sm text-slate-400 dark:text-zinc-500 mb-4 sm:mb-6">
+          Presiona tu credencial digital para acceder al código de escaneo QR y detalles de tu cuenta.
+        </p>
 
-          <div class="carnet-wrapper w-full flex justify-center items-center mb-6" (click)="opencarnet()">
-            <div class="carnet-interactive-container w-full max-w-sm">
-              <img 
-                src="./carnet/{{ rol }}.svg" 
-                alt="Carnet Digital" 
-                class="w-full h-auto object-contain block" 
-              />
+        <div class="carnet-wrapper w-full flex justify-center items-center mb-4 sm:mb-6" (click)="opencarnet()" role="button" tabindex="0" (keyup.enter)="opencarnet()">
+          <div class="carnet-interactive-container w-full md:max-w-sm aspect-[354/213]">
+            
+            <!-- ESQUELETO CLICKEABLE (Muestra mientras carga la imagen o datos sin saltos de interfaz) -->
+            @if (!imagenCargada() && !imagenError()) {
+              <div class="carnet-skeleton-card">
+                <!-- Cabecera Skeleton -->
+                <div class="flex justify-between items-center w-full">
+                  <div class="flex items-center gap-2">
+                    <p-skeleton width="24px" height="24px" shape="circle"></p-skeleton>
+                    <p-skeleton width="85px" height="12px" borderRadius="6px"></p-skeleton>
+                  </div>
+                  <p-skeleton width="55px" height="16px" borderRadius="12px"></p-skeleton>
+                </div>
+
+                <!-- Centro Skeleton con avatar simulado y textos -->
+                <div class="flex items-center gap-3 my-auto">
+                  <p-skeleton width="58px" height="58px" shape="circle"></p-skeleton>
+                  <div class="flex flex-col gap-1.5 flex-1">
+                    <p-skeleton width="80%" height="12px" borderRadius="6px"></p-skeleton>
+                    <p-skeleton width="50%" height="10px" borderRadius="6px"></p-skeleton>
+                    <p-skeleton width="65%" height="10px" borderRadius="6px"></p-skeleton>
+                  </div>
+                </div>
+
+                <!-- Pie Skeleton con botón clickeable -->
+                <div class="w-full flex items-center justify-between border-t border-slate-200 dark:border-zinc-700/60 pt-2">
+                  <span class="text-[10px] text-slate-400 dark:text-zinc-400 flex items-center gap-1">
+                    <span class="pi pi-spin pi-spinner text-xs text-blue-500"></span>
+                    Cargando...
+                  </span>
+                  <div class="px-2.5 py-1 bg-blue-600/90 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
+                    <span class="pi pi-qrcode text-xs"></span>
+                    <span>Toca para ver QR</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Imagen SVG del Carnet (Pre-cargada con el mismo aspect-ratio para transición suave sin saltos) -->
+            <img 
+              [src]="getCarnetImgSrc()" 
+              alt="Carnet Digital" 
+              class="w-full h-full object-contain block aspect-[354/213]"
+              [class.hidden]="!imagenCargada() || imagenError()"
+              (load)="onImageLoad()"
+              (error)="onImageError($event)"
+            />
+
+            @if (imagenCargada() && !imagenError()) {
               <div class="carnet-overlay">
                 <div class="action-badge">
                   <span class="pi pi-qrcode"></span>
                   <span>Ver QR y Datos</span>
                 </div>
               </div>
-            </div>
+            }
+
+            <!-- Tarjeta Fallback cuando no hay conexión y no existe imagen disponible -->
+            @if (imagenError()) {
+              <div class="carnet-fallback-card p-4 sm:p-5 flex flex-col justify-between items-center text-center w-full h-full aspect-[354/213]">
+                <!-- Cabecera de la tarjeta fallback -->
+                <div class="w-full flex justify-between items-center border-b border-white/10 pb-2 mb-2">
+                  <div class="flex items-center gap-2 text-white">
+                    <span class="pi pi-shield text-lg text-blue-400"></span>
+                    <span class="font-bold tracking-wider text-xs">ESPOCH PASS</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold tracking-wider uppercase border border-emerald-400/30">
+                    ACTIVO
+                  </span>
+                </div>
+
+                <!-- Centro: Icono y Nombre del Rol -->
+                <div class="flex flex-col items-center my-auto">
+                  <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 text-2xl mb-1.5 shadow-inner border border-white/10">
+                    <span class="pi pi-id-card"></span>
+                  </div>
+                  <h4 class="text-white font-extrabold text-base tracking-wide uppercase leading-tight">
+                    {{ getNombreRol() }}
+                  </h4>
+                  <span class="text-slate-300 text-[11px] mt-0.5">
+                    Credencial Digital Institucional
+                  </span>
+                </div>
+
+                <!-- Pie del Fallback con aviso y botón llamativo -->
+                <div class="w-full pt-2 border-t border-white/10 flex items-center justify-between">
+                  <span class="text-[10px] text-slate-400 flex items-center gap-1">
+                    <span class="pi pi-wifi text-amber-400"></span>
+                    Sin conexión
+                  </span>
+                  <div class="py-1 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-md">
+                    <span class="pi pi-qrcode text-xs"></span>
+                    <span>Tocar para ver QR</span>
+                  </div>
+                </div>
+              </div>
+            }
+
           </div>
-        }
+        </div>
       </div>
 
-      @if(mostrarCarnet){
-        <div class="border-t border-slate-100 dark:border-zinc-800 pt-4 flex justify-center">
-          <div class="expiration-badge" [class.expired]="isCaducado()">
+      <div class="border-t border-slate-100 dark:border-zinc-800 pt-3 sm:pt-4 flex justify-center">
+        @if (!mostrarCarnet) {
+          <p-skeleton width="180px" height="1.8rem" borderRadius="12px"></p-skeleton>
+        } @else {
+          <div class="expiration-badge text-xs sm:text-sm" [class.expired]="isCaducado()">
             <span class="pi pi-calendar-times"></span>
             <span>Válido hasta: {{ fecha() | date : "dd/MM/yy, h:mm a" }}</span>
           </div>
-        </div>
-      }
+        }
+      </div>
 
     </div>
   </div>
 
   <!-- TÉRMINOS Y CONDICIONES (Lado Derecho) -->
-  <div class="col-span-12 md:col-span-6 flex flex-col h-full">
-    <div class="p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col h-full justify-between">
+  <div class="col-span-12 md:col-span-6 flex flex-col h-full w-full">
+    <div class="p-4 sm:p-6 bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-xl flex flex-col h-full justify-between w-full">
       
       <div>
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
+        <div class="flex justify-between items-center mb-4 sm:mb-6">
+          <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-3">
             <span class="pi pi-shield text-emerald-500 text-lg"></span>
             Términos y Condiciones
           </h3>
@@ -76,14 +156,14 @@
             <p-skeleton width="40%" height="1rem"></p-skeleton>
           </div>
         } @else {
-          <div class="terms-scrollable custom-scrollbar pr-2 mb-4">
+          <div class="terms-scrollable custom-scrollbar pr-2 mb-4 text-xs sm:text-sm">
             {{ strTerminos() }}
           </div>
         }
       </div>
 
-      <div class="border-t border-slate-100 dark:border-zinc-800 pt-4 flex items-center justify-between text-xs text-slate-400 dark:text-zinc-500">
-        <span class="flex items-center gap-2">
+      <div class="border-t border-slate-100 dark:border-zinc-800 pt-3 sm:pt-4 flex items-center justify-between text-xs text-slate-400 dark:text-zinc-500">
+        <span class="flex items-center gap-1.5 sm:gap-2">
           <span class="pi pi-lock"></span>
           Uso seguro y personal
         </span>

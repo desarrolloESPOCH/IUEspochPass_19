@@ -47,6 +47,10 @@ export class PgInfoQrComponent implements OnInit {
   private qrInfo = inject(QrInfo);
   private qr = inject(QrService);
 
+  onFotoError() {
+    this.foto.set('./avatar.png');
+  }
+
   ngOnInit() {
     const userInfo = this.swCas.getUserInfo();
     this.nombre = userInfo?.nombres;
@@ -55,26 +59,77 @@ export class PgInfoQrComponent implements OnInit {
     this.correo = userInfo?.per_email;
     this.rol = sessionStorage.getItem('rol');
 
-    if (this.qrInfo.datos.intIdCarnet == undefined) {
-      this.router.navigate(['/dashboard/users/']);
+    // Intentar recuperar carnet desde memoria o caché local
+    if (!this.qrInfo.datos?.intIdCarnet) {
+      try {
+        const cached = localStorage.getItem('espochpass_carnet_data');
+        if (cached) {
+          this.qrInfo.datos = JSON.parse(cached);
+        }
+      } catch (e) {}
+    }
+
+    if (this.qrInfo.datos?.intIdCarnet) {
+      this.generarCodigoQr(this.qrInfo.datos.intIdCarnet);
+    } else if (userInfo?.per_id) {
+      this.qr.buscarCarnet(userInfo.per_id).subscribe({
+        next: (carnet) => {
+          if (carnet && carnet.data && carnet.data.length > 0) {
+            this.qrInfo.datos = carnet.data[0];
+            try {
+              localStorage.setItem('espochpass_carnet_data', JSON.stringify(carnet.data[0]));
+            } catch (e) {}
+            this.generarCodigoQr(carnet.data[0].intIdCarnet);
+          } else {
+            this.generarFallbackQr();
+          }
+        },
+        error: () => {
+          this.generarFallbackQr();
+        }
+      });
     } else {
-      const json = {
-        intCarnet: this.qrInfo.datos.intIdCarnet,
-        intRol: this.rol == 3 ? this.rol : 1,
-      };
-      this.qr.generarQr(json).subscribe((obj) => {
+      this.generarFallbackQr();
+    }
+
+    this.obtenerFotoGeneral();
+  }
+
+  generarCodigoQr(intCarnet: any) {
+    const json = {
+      intCarnet: Number(intCarnet),
+      intRol: this.rol == 3 ? this.rol : 1,
+    };
+    this.qr.generarQr(json).subscribe({
+      next: (obj) => {
         if (obj && obj.data && obj.data.length > 0) {
           const item = obj.data[0];
-          // Enviamos únicamente los campos esenciales para reducir el tamaño del QR al mínimo
-          // Esto genera un código QR mucho más simple y de lectura instantánea
           this.datos = JSON.stringify({
             intIdQr: item.intIdQr,
             strHash: item.strHash,
           });
+          try {
+            localStorage.setItem('espochpass_qr_' + intCarnet, this.datos);
+          } catch (e) {}
         }
-      });
-      this.obtenerFotoGeneral();
-    }
+      },
+      error: () => {
+        const cached = localStorage.getItem('espochpass_qr_' + intCarnet);
+        if (cached) {
+          this.datos = cached;
+        } else {
+          this.generarFallbackQr();
+        }
+      }
+    });
+  }
+
+  generarFallbackQr() {
+    this.datos = JSON.stringify({
+      cedula: this.cedula || 'ESPOCH',
+      usuario: `${this.nombre || ''} ${this.apellidos || ''}`.trim(),
+      rol: this.rol || 1,
+    });
   }
 
   getRoles = () => {

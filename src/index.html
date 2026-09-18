@@ -5,13 +5,40 @@
   <meta charset="utf-8" />
   <title>Carnet Digital ESPOCH V2.1.0</title>
   <base href="/" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="author" content="Yariel Baldeon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="author" content="ESPOCH" />
+  <meta name="description" content="Sistema de Credencial Digital y Control de Acceso Institucional ESPOCH" />
+  
+  <!-- PWA Manifest & Theme -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ESPOCH Pass" />
+  
+  <!-- Icons -->
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png" />
 </head>
 
 <body class="surface-ground">
   <app-root></app-root>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => console.log('PWA ServiceWorker registrado con éxito:', reg.scope))
+          .catch((err) => console.warn('Error al registrar ServiceWorker:', err));
+      });
+    }
+  </script>
 </body>
 
 </html>

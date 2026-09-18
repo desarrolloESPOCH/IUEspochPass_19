@@ -51,15 +51,16 @@
   display: none;
 }
 @media screen and (max-width: 800px) {
-  /* .lienzo {
+  .lienzo {
+    gap: 8px;
     grid-template-areas:
-      " header header header"
-      " button path path"
-      " main main main"
-      " footer footer footer";
-    grid-template-columns: 1fr 1fr 1fr;
-    transition: grid-template-columns 1.5s ease-in-out;
-  } */
+      "header"
+      "button"
+      "main"
+      "footer";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+  }
 
   .desaparece {
     display: none;
@@ -67,6 +68,8 @@
 
   .menumovil {
     display: flex;
+    width: fit-content;
+    margin-left: 8px;
   }
 }
 

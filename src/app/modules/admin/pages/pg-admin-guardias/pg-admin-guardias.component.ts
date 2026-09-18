@@ -79,6 +79,24 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.cargarGuardias();
   }
 
+  private normalizarContacto(valor?: string | null): string {
+    if (!valor) return 'N/A';
+    const trimmed = String(valor).trim();
+    if (
+      !trimmed ||
+      trimmed === '-' ||
+      trimmed.toUpperCase() === 'NULL' ||
+      trimmed.toUpperCase() === 'UNDEFINED' ||
+      trimmed.toUpperCase() === 'N/A' ||
+      trimmed.toUpperCase() === 'S/N' ||
+      trimmed.toUpperCase() === 'NINGUNO' ||
+      trimmed.toUpperCase() === 'NONE'
+    ) {
+      return 'N/A';
+    }
+    return trimmed;
+  }
+
   cargarGuardias() {
     this.loading.set(true);
     const params: any = {
@@ -90,7 +108,12 @@ export default class PgAdminGuardiasComponent implements OnInit {
 
     this.adminService.getGuardias(params).subscribe({
       next: (res) => {
-        const list = res.data || [];
+        const rawList = res.data || [];
+        const list = rawList.map((g) => ({
+          ...g,
+          strCorreo: this.normalizarContacto(g.strCorreo),
+          strTelefono: this.normalizarContacto(g.strTelefono),
+        }));
         this.guardias.set(list);
         this.totalGuardias.set(list.length);
         this.activosCount.set(list.filter((g) => g.estadoGuardia === 1).length);
@@ -160,28 +183,119 @@ export default class PgAdminGuardiasComponent implements OnInit {
       return;
     }
 
+    const cedulaLimpia = this.cedulaNuevoGuardia.trim().replace(/[\s-]/g, '').replace(/['"]/g, '');
     this.searchingPersona.set(true);
     this.personaPreview = null;
     this.mostrarCamposManuales.set(false);
+    this.nuevoNombres = '';
+    this.nuevoApellidos = '';
+    this.nuevoCorreo = '';
+    this.nuevoTelefono = '';
 
-    this.adminService.getPersonaCarnet(this.cedulaNuevoGuardia.trim()).subscribe({
+    // 1. Consultar si la persona ya está registrada localmente
+    this.adminService.getPersonaCarnet(cedulaLimpia, true).subscribe({
       next: (res) => {
-        this.searchingPersona.set(false);
         if (res && res.data && res.data.length > 0) {
-          this.personaPreview = res.data[0];
-        } else {
-          // Si no está registrado en el sistema local, activar campos para registro
+          this.searchingPersona.set(false);
+          const persona = res.data[0];
+
+          const correo = this.normalizarContacto(persona.strCorreo);
+          const telefono = this.normalizarContacto(persona.strTelefono);
+
+          this.personaPreview = {
+            ...persona,
+            strCorreo: correo,
+            strTelefono: telefono,
+            origen: 'local',
+          };
+
+          this.nuevoNombres = (persona.strNombres || '').trim();
+          this.nuevoApellidos = (persona.strApellidos || '').trim();
+          this.nuevoCorreo = correo;
+          this.nuevoTelefono = telefono;
           this.mostrarCamposManuales.set(true);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Persona Registrada',
+            detail: 'La persona se encuentra registrada en el sistema local.',
+          });
+        } else {
+          // Si no está registrado en el sistema local, consultar Centralizada institucional
+          this.consultarCentralizada(cedulaLimpia);
+        }
+      },
+      error: () => {
+        // En caso de error local, intentar consultar en la Centralizada
+        this.consultarCentralizada(cedulaLimpia);
+      },
+    });
+  }
+
+  private consultarCentralizada(cedula: string) {
+    this.adminService.obtenerPersonaCentralizada(cedula).subscribe({
+      next: (resp) => {
+        this.searchingPersona.set(false);
+        if (resp && resp.success && resp.listado && resp.listado.length > 0) {
+          const din = resp.listado[0];
+
+          this.nuevoNombres = (din.per_nombres || din.per_nombre || [din.per_primerNombre, din.per_segundoNombre].map((n: any) => (n || '').trim()).filter((n: string) => n.length > 0).join(' ') || '').trim();
+          const apellidos = [din.per_primerApellido, din.per_segundoApellido]
+            .map((a: any) => (a || '').trim())
+            .filter((a: string) => a.length > 0)
+            .join(' ') || (din.per_apellidos || '').trim();
+          this.nuevoApellidos = apellidos;
+
+          const emailRaw = [din.per_email, din.per_correo]
+            .map((e: any) => (e ? String(e).trim() : ''))
+            .find((e: string) => e.length > 0);
+          const correo = this.normalizarContacto(emailRaw);
+          this.nuevoCorreo = correo;
+
+          const telRaw = [din.per_telefonoCelular, din.per_telefonoCasa, din.per_telefono]
+            .map((t: any) => (t ? String(t).trim() : ''))
+            .find((t: string) => t.length > 0);
+          const telefono = this.normalizarContacto(telRaw);
+          this.nuevoTelefono = telefono;
+
+          this.personaPreview = {
+            strCedula: cedula,
+            strNombres: this.nuevoNombres,
+            strApellidos: this.nuevoApellidos,
+            strCorreo: this.nuevoCorreo,
+            strTelefono: this.nuevoTelefono,
+            rol: 'Centralizada Institucional',
+            origen: 'centralizada',
+          };
+
+          this.mostrarCamposManuales.set(true);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Datos de Centralizada',
+            detail: 'Se autocompletaron los datos de la persona desde la Centralizada institucional.',
+          });
+        } else {
+          this.mostrarCamposManuales.set(true);
+          this.nuevoCorreo = 'N/A';
+          this.nuevoTelefono = 'N/A';
           this.messageService.add({
             severity: 'info',
             summary: 'Persona no registrada',
-            detail: 'La persona se registrará automáticamente al guardar o complete sus nombres.',
+            detail: 'No se encontraron datos en la Centralizada institucional. Complete los datos manualmente.',
           });
         }
       },
       error: () => {
         this.searchingPersona.set(false);
         this.mostrarCamposManuales.set(true);
+        this.nuevoCorreo = 'N/A';
+        this.nuevoTelefono = 'N/A';
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Aviso',
+          detail: 'No se pudo conectar a la Centralizada. Complete los datos manualmente.',
+        });
       },
     });
   }
@@ -196,21 +310,63 @@ export default class PgAdminGuardiasComponent implements OnInit {
       return;
     }
 
+    const cedulaLimpia = this.cedulaNuevoGuardia.trim().replace(/[\s-]/g, '').replace(/['"]/g, '');
+
+    if (this.personaPreview && this.personaPreview.strCedula !== cedulaLimpia) {
+      this.personaPreview = null;
+      this.buscarPersonaPorCedula();
+      return;
+    }
+    const nombresFinal = (this.nuevoNombres !== undefined && this.nuevoNombres !== null && this.nuevoNombres.trim() !== ''
+      ? this.nuevoNombres
+      : (this.personaPreview?.strNombres || '')).trim();
+    const apellidosFinal = (this.nuevoApellidos !== undefined && this.nuevoApellidos !== null && this.nuevoApellidos.trim() !== ''
+      ? this.nuevoApellidos
+      : (this.personaPreview?.strApellidos || '')).trim();
+
+    if (!nombresFinal || !apellidosFinal) {
+      if (!this.personaPreview && !this.mostrarCamposManuales()) {
+        this.buscarPersonaPorCedula();
+        return;
+      }
+      this.mostrarCamposManuales.set(true);
+      if (!this.nuevoCorreo) this.nuevoCorreo = 'N/A';
+      if (!this.nuevoTelefono) this.nuevoTelefono = 'N/A';
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Campos requeridos',
+        detail: 'Nombres y apellidos son requeridos para registrar al guardia.',
+      });
+      return;
+    }
+
+    const correoFinal = this.normalizarContacto(
+      this.nuevoCorreo !== undefined && this.nuevoCorreo !== null ? this.nuevoCorreo : this.personaPreview?.strCorreo
+    );
+    const telefonoFinal = this.normalizarContacto(
+      this.nuevoTelefono !== undefined && this.nuevoTelefono !== null ? this.nuevoTelefono : this.personaPreview?.strTelefono
+    );
+
     this.saving.set(true);
     const body: any = {
-      strCedula: this.cedulaNuevoGuardia.trim(),
+      strCedula: cedulaLimpia,
+      strNombres: nombresFinal,
+      strApellidos: apellidosFinal,
+      strCorreo: correoFinal,
+      strTelefono: telefonoFinal,
     };
-
-    if (this.mostrarCamposManuales()) {
-      body.strNombres = this.nuevoNombres.trim();
-      body.strApellidos = this.nuevoApellidos.trim();
-      body.strCorreo = this.nuevoCorreo.trim();
-      body.strTelefono = this.nuevoTelefono.trim();
-    }
 
     this.adminService.agregarGuardia(body).subscribe({
       next: (res) => {
         this.saving.set(false);
+        if (res && res.count === -1) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: res.message || 'No se pudo agregar al guardia.',
+          });
+          return;
+        }
         this.dialogAgregar.set(false);
         this.messageService.add({
           severity: 'success',

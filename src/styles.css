@@ -3,7 +3,7 @@
 
 @import "tailwindcss";
 @plugin "tailwindcss-primeui";
-@custom-variant dark (&:where(.app-dark, .app-dark *));
+@custom-variant dark (&:where(.app-dark, .app-dark *, .dark, .dark *));
 
 @import "primeicons/primeicons.css";
 
@@ -18,6 +18,15 @@
   --scrollbar-thumb-active: #999999;
   --scrollbar-track: #e1e1e1;
   --scrollbar-track-hover: #d4d4d4;
+
+  --surface-ground: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-border: #e2e8f0;
+  --surface-hover: #f1f5f9;
+  --text-color: #1e293b;
+  --text-color-secondary: #64748b;
+  --primary-color: #2563eb;
+  --primary-color-text: #ffffff;
 }
 
 .app-dark, .dark {
@@ -26,34 +35,31 @@
   --scrollbar-thumb-active: #374151;
   --scrollbar-track: #1f2937;
   --scrollbar-track-hover: #111827;
+
+  --surface-ground: #09090b;
+  --surface-card: #18181b;
+  --surface-border: #27272a;
+  --surface-hover: #27272a;
+  --text-color: #f4f4f5;
+  --text-color-secondary: #a1a1aa;
+  --primary-color: #3b82f6;
+  --primary-color-text: #ffffff;
+}
+
+html {
+  font-size: 12px;
+  background-color: var(--surface-ground);
+  color: var(--text-color);
 }
 
 body {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  /* font-family: "Roboto", sans-serif; */
   background-color: var(--surface-ground);
-}
-
-app-root, app-pg-login, app-c-landing, app-c-splash {
-  display: block;
-  width: 100%;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-html {
-  font-size: 12px;
-  /* background-color: var(--surface-ground); */
+  color: var(--text-color);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .fadeIn {

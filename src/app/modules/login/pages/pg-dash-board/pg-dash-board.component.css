@@ -19,7 +19,6 @@
 
 .sidebar {
   grid-area: sidebar;
-  background-color: "red";
 }
 .sidebar.oculto {
   display: none !important;

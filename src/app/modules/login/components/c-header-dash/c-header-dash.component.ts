@@ -42,7 +42,7 @@ export class CHeaderDashComponent {
   userEmail = signal<string>('');
 
   lstRoles = signal<IRol[]>([] as IRol[]);
-  themeDark = signal<boolean>(false);
+  themeDark = computed(() => this.themeService.isDark());
   idRolSeleccionado = signal<number>(1);
 
   items = computed<MenuItem[]>(() => {
@@ -79,14 +79,10 @@ export class CHeaderDashComponent {
         this.getRoles();
       }
     });
-    const isDarkSaved = localStorage.getItem('darkTheme') === 'true';
-    this.themeDark.set(isDarkSaved);
   }
 
   toggleTheme = () => {
-    const nextValue = !this.themeDark();
-    this.themeDark.set(nextValue);
-    this.themeService.activeDarkTheme(nextValue);
+    this.themeService.toggleTheme();
   };
 
   logout = () => {

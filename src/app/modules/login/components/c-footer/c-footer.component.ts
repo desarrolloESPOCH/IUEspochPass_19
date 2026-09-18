@@ -18,8 +18,6 @@ export class CFooterComponent {
   stateTheme: boolean = false;
 
   toggle = () => {
-    let state: string = localStorage.getItem('darkTheme') || 'false';
-    this.stateTheme = state == 'true' ? true : false;
-    this.changeTheme.activeDarkTheme(!this.stateTheme);
+    this.changeTheme.toggleTheme();
   };
 }

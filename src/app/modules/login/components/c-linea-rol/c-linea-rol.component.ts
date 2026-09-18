@@ -51,6 +51,10 @@ export class CLineaRolComponent {
         return 'rol5';
       case 6:
         return 'rol6';
+      case 11:
+        return 'rol1';
+      case 13:
+        return 'rol4';
       default:
         return 'rol1';
     }

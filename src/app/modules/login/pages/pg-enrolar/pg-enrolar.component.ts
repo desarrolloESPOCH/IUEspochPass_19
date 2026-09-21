@@ -58,7 +58,8 @@ export default class PgEnrolarComponent {
     { label: 'ADMIN PRUEBA', value: { per_email: 'admin@espoch.edu.ec', per_id: '1', cedula: '0600000001', nombres: 'ADMIN', apellidos: 'PRUEBA' } },
     { label: 'DIEGO BENJAMIN ORTIZ PICO', value: { per_email: 'benjamin.ortiz@espoch.edu.ec', per_id: '66434', cedula: '1850575133', nombres: 'DIEGO BENJAMIN', apellidos: 'ORTIZ PICO' } },
     { label: 'JOSE LUIS CONDO LEON', value: { per_email: 'jose.condo@espoch.edu.ec', per_id: '16778', cedula: '0604172296', nombres: 'JOSE LUIS', apellidos: 'CONDO LEON' } },
-    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } }
+    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } },
+    { label: 'MATEO PATRICIO PILCO GUAMAN', value: { per_email: 'mateo.pilco@espoch.edu.ec', per_id: '214942', cedula: '0605708114', nombres: 'MATEO PATRICIO', apellidos: 'PILCO GUAMAN' } }
   ];
 
   async suplantarUsuario(event: any) {
@@ -234,6 +235,14 @@ export default class PgEnrolarComponent {
     this.getFoto(usuario);
     const { listado: listadoAcademico } =
       await this.swUser.validarMatriculaVigenteSYNC(cedula);
+
+    const baseDatos =
+      (listadoAcademico && listadoAcademico.length > 0 && listadoAcademico[0].carreraSelecionadaBase) ||
+      (listado && listado.length > 0 && listado[0].carreraSelecionadaBase) ||
+      '';
+    if (baseDatos) {
+      this.conexion.set(baseDatos);
+    }
 
     const carreraNombre =
       (listadoAcademico && listadoAcademico.length > 0 && listadoAcademico[0].carreraSelecionadaFacultad) ||

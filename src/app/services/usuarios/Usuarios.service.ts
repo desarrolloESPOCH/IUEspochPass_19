@@ -245,6 +245,13 @@ export class swUsuariosService {
     return data;
   };
 
+  obtenerPersonaCentralizadaSYNC = async (cedula: string) => {
+    const cedulaLimpia = cedula.replace(/-/g, '');
+    const validationUrl = `https://centralizada2.espoch.edu.ec/rutadinardap/obtenerpersona/${cedulaLimpia}`;
+    const data = await this.getFetch(validationUrl);
+    return data;
+  };
+
   getFetch = async (validationUrl: string) => {
     try {
       const response = await fetch(validationUrl);

@@ -43,6 +43,16 @@ export const routesLogin: Routes = [
           import('./../admin/pages/pg-admin-historial-accesos/pg-admin-historial-accesos.component'),
       },
       {
+        path: 'admin/auditoria-logs',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-auditoria-logs/pg-admin-auditoria-logs.component'),
+      },
+      {
+        path: 'admin/usuarios-roles',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-usuarios-roles/pg-admin-usuarios-roles.component'),
+      },
+      {
         path: 'changelog',
         loadComponent: () =>
           import('./pages/pg-changelog/pg-changelog.component'),

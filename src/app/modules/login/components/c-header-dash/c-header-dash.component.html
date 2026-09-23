@@ -46,3 +46,103 @@
   </ng-template>
 </p-menubar>
 <app-c-linea-rol [color]="idRolSeleccionado()" />
+
+<!-- Modal: Cambiar Contraseña de Perfil -->
+<p-dialog
+  header="Cambiar Mi Contraseña de Acceso"
+  [(visible)]="dialogPassword"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '480px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2" *ngIf="datosUsuarioActual">
+    <!-- Info del Usuario -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center text-red-700 dark:text-red-300 font-bold text-sm">
+        <i class="pi pi-user text-lg"></i>
+      </div>
+      <div class="flex flex-col flex-1 min-w-0">
+        <span class="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
+          {{ datosUsuarioActual.nombres || datosUsuarioActual.per_nombres || 'Usuario' }} {{ datosUsuarioActual.apellidos || datosUsuarioActual.per_apellidos || '' }}
+        </span>
+        <span class="text-xs font-mono text-slate-500">
+          Cédula: {{ datosUsuarioActual.cedula || datosUsuarioActual.per_cedula || datosUsuarioActual.user }}
+        </span>
+        <span class="text-[11px] text-red-600 dark:text-red-400 font-medium truncate" *ngIf="rolSeleccionado">
+          Rol: {{ rolSeleccionado.strNombre }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Nueva Contraseña -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        Nueva Contraseña <span class="text-red-500">*</span>
+      </label>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="nuevaClave"
+          placeholder="Ingrese o genere su nueva clave"
+          class="w-full font-mono font-bold tracking-wider" />
+        <p-button
+          icon="pi pi-refresh"
+          (click)="generarNuevaClaveManual()"
+          pTooltip="Generar clave aleatoria"
+          styleClass="p-button-outlined p-button-secondary">
+        </p-button>
+      </div>
+      <span class="text-[11px] text-slate-400">
+        Puede escribir su propia contraseña o generar una clave segura aleatoria.
+      </span>
+    </div>
+
+    <!-- Correo de Notificación -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        Correo para Notificación <span class="text-red-500" *ngIf="notificarPorCorreo">*</span>
+      </label>
+      <input
+        type="email"
+        pInputText
+        [(ngModel)]="correoNotificacionClave"
+        placeholder="ejemplo@correo.com"
+        class="w-full" />
+    </div>
+
+    <!-- Checkbox Notificar -->
+    <div class="flex items-center gap-2 mt-1">
+      <input
+        type="checkbox"
+        id="chkNotificarPerfil"
+        [(ngModel)]="notificarPorCorreo"
+        class="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-slate-300 cursor-pointer" />
+      <label for="chkNotificarPerfil" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+        Enviar credenciales actualizadas a mi correo electrónico
+      </label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        (click)="dialogPassword.set(false)"
+        styleClass="p-button-text p-button-secondary">
+      </p-button>
+      <p-button
+        label="Actualizar Contraseña"
+        icon="pi pi-check"
+        [loading]="guardandoPassword()"
+        (click)="guardarPassword()"
+        styleClass="p-button-danger">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>
+

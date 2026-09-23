@@ -12,9 +12,25 @@
         Administre el personal de seguridad institucional: agregue nuevos guardias por cédula y habilite o deshabilite sus permisos de acceso y escaneo QR.
       </p>
     </div>
-    <div class="flex items-center gap-3">
-      <p-button label="Refrescar" icon="pi pi-refresh" [loading]="loading()" (click)="cargarGuardias()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
-      <p-button label="Agregar Guardia" icon="pi pi-user-plus" (click)="abrirModalAgregar()" styleClass="p-button-success p-button-sm"></p-button>
+    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+      <p-button
+        label="Descargar Plantilla"
+        icon="pi pi-download"
+        (click)="descargarPlantilla()"
+        styleClass="p-button-outlined p-button-secondary p-button-sm">
+      </p-button>
+      <p-button
+        label="Carga Masiva Excel"
+        icon="pi pi-file-excel"
+        (click)="abrirModalMasivo()"
+        styleClass="p-button-outlined p-button-success p-button-sm">
+      </p-button>
+      <p-button
+        label="Agregar Guardia"
+        icon="pi pi-user-plus"
+        (click)="abrirModalAgregar()"
+        styleClass="p-button-primary p-button-sm">
+      </p-button>
     </div>
   </div>
 
@@ -127,7 +143,14 @@
             <p-tag [value]="g.estadoTexto" [severity]="g.estadoGuardia === 1 ? 'success' : 'danger'"></p-tag>
           </td>
           <td class="text-center">
-            <div class="flex items-center justify-center gap-2">
+            <div class="flex items-center justify-center gap-1.5">
+              <p-button
+                icon="pi pi-key"
+                [pTooltip]="'Cambiar Contraseña'"
+                tooltipPosition="top"
+                (click)="abrirModalPassword(g)"
+                styleClass="p-button-outlined p-button-warning p-button-xs">
+              </p-button>
               @if (g.estadoGuardia === 1) {
               <p-button label="Deshabilitar" icon="pi pi-ban" [pTooltip]="'Deshabilitar permisos de guardia'" tooltipPosition="top" (click)="cambiarEstado(g)" styleClass="p-button-outlined p-button-danger p-button-xs"></p-button>
               }@else {
@@ -194,30 +217,40 @@
     <!-- Campos de datos de la persona -->
     @if (mostrarCamposManuales()) {
     <div class="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-      <span class="text-xs font-bold text-amber-600 dark:text-amber-400">
+      <span class="text-xs font-bold text-blue-600 dark:text-blue-400">
         {{ personaPreview?.origen === 'centralizada' ? 'Datos autocompletados desde la Centralizada institucional:' : (personaPreview ? 'Datos de la persona:' : 'Complete los datos de la persona:') }}
       </span>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Nombres</label>
-          <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres" class="w-full" />
+          <label class="text-xs font-medium">Nombres <span class="text-rose-500">*</span></label>
+          <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres completos" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Apellidos</label>
-          <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos" class="w-full" />
+          <label class="text-xs font-medium">Apellidos <span class="text-rose-500">*</span></label>
+          <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos completos" class="w-full" />
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Correo Electrónico</label>
-          <input pInputText type="text" [(ngModel)]="nuevoCorreo" placeholder="correo@espoch.edu.ec o N/A" class="w-full" />
+          <label class="text-xs font-medium font-bold text-slate-700 dark:text-slate-200">
+            Correo Personal / Institucional <span class="text-rose-500">*</span>
+          </label>
+          <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="ejemplo@gmail.com o @espoch.edu.ec" class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Teléfono</label>
-          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999 o N/A" class="w-full" />
+          <label class="text-xs font-medium">Teléfono / Celular</label>
+          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999" class="w-full" />
         </div>
+      </div>
+
+      <!-- Nota informativa sobre credenciales -->
+      <div class="p-2.5 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2 text-xs text-blue-800 dark:text-blue-300">
+        <i class="pi pi-info-circle text-sm mt-0.5 text-blue-600 dark:text-blue-400"></i>
+        <span>
+          Al habilitar al guardia, se creará su cuenta de acceso y se le enviarán automáticamente sus <strong>credenciales (usuario y contraseña generada)</strong> a este correo.
+        </span>
       </div>
     </div>
     }
@@ -227,6 +260,241 @@
     <div class="flex justify-end gap-2">
       <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
       <p-button label="Habilitar como Guardia" icon="pi pi-check" [loading]="saving()" (click)="guardarNuevoGuardia()" styleClass="p-button-success"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ========================================== -->
+<!-- MODAL: CARGA MASIVA DE GUARDIAS VÍA EXCEL  -->
+<!-- ========================================== -->
+<p-dialog
+  [(visible)]="dialogMasivo"
+  [modal]="true"
+  header="Carga Masiva de Guardias de Seguridad vía Excel (.xlsx)"
+  [style]="{ width: '92vw', maxWidth: '820px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Instrucciones y Descarga de Plantilla -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-800 rounded-xl">
+      <div>
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Plantilla Oficial de Guardias</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Descargue la plantilla oficial con el formato de columnas requerido (<code class="bg-blue-100 px-1 py-0.5 rounded text-blue-700">CEDULA</code>, <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-700">NOMBRES</code>, <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-700">APELLIDOS</code>, <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-700">CORREO</code>, etc.).
+        </p>
+      </div>
+      <p-button
+        label="Descargar Plantilla (.xlsx)"
+        icon="pi pi-download"
+        (click)="descargarPlantilla()"
+        styleClass="p-button-sm p-button-outlined p-button-primary">
+      </p-button>
+    </div>
+
+    <!-- Zona Drag & Drop / Selección de Archivo -->
+    <div
+      class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-400 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()">
+      <input #fileInput type="file" (change)="onArchivoSeleccionado($event)" accept=".xlsx, .xls" class="hidden" />
+      <i class="pi pi-upload text-3xl text-blue-500 mb-2"></i>
+      <span class="font-bold text-slate-700 dark:text-slate-200 text-sm">
+        Haga clic aquí o arrastre su archivo Excel (.xlsx)
+      </span>
+      <span class="text-xs text-slate-400 mt-1" *ngIf="!nombreArchivo">
+        Se procesarán todas las filas, se asignará el rol de Guardia y se enviarán sus credenciales por correo.
+      </span>
+      <span class="text-xs font-bold text-blue-600 mt-1" *ngIf="nombreArchivo">
+        Archivo cargado: {{ nombreArchivo }}
+      </span>
+    </div>
+
+    <!-- Previsualización de Datos si hay filas -->
+    @if (filasPrevia().length > 0) {
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300">
+        <span>Previsualización del Lote ({{ filasPrevia().length }} registros):</span>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">
+            {{ totalValidos() }} válidos
+          </span>
+          <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold" *ngIf="totalInvalidos() > 0">
+            {{ totalInvalidos() }} con error
+          </span>
+        </div>
+      </div>
+
+      <div class="max-h-56 overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-xl">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0">
+            <tr>
+              <th class="p-2">#</th>
+              <th class="p-2">Cédula</th>
+              <th class="p-2">Nombres</th>
+              <th class="p-2">Apellidos</th>
+              <th class="p-2">Correo</th>
+              <th class="p-2 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            @for (fila of filasPrevia(); track fila.fila) {
+            <tr [class.bg-rose-50/40]="!fila.valido">
+              <td class="p-2 text-slate-400">{{ fila.fila }}</td>
+              <td class="p-2 font-bold">{{ fila.cedula }}</td>
+              <td class="p-2">{{ fila.nombres }}</td>
+              <td class="p-2">{{ fila.apellidos }}</td>
+              <td class="p-2">{{ fila.correo }}</td>
+              <td class="p-2 text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                  [class.bg-emerald-100]="fila.valido" [class.text-emerald-800]="fila.valido"
+                  [class.bg-rose-100]="!fila.valido" [class.text-rose-800]="!fila.valido">
+                  {{ fila.motivo }}
+                </span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Barra de Progreso durante la Carga -->
+      @if (processingMasivo()) {
+      <div class="flex flex-col gap-1 mt-2">
+        <span class="text-xs text-blue-600 font-semibold flex items-center gap-2">
+          <i class="pi pi-spin pi-spinner"></i> Procesando guardias y enviando credenciales...
+        </span>
+        <p-progressbar [value]="progresoMasivo()" styleClass="h-2 rounded-full"></p-progressbar>
+      </div>
+      }
+
+      <!-- Resumen Posterior a la Carga -->
+      @if (resultadoLote()) {
+      <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl flex flex-col md:flex-row justify-between items-center gap-3 mt-2">
+        <div>
+          <h4 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">
+            <i class="pi pi-check-circle mr-1"></i> Proceso completado
+          </h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+            Se registraron {{ resultadoLote().exitosos }} de {{ resultadoLote().total }} guardias exitosamente con carnet activo.
+          </p>
+        </div>
+        <p-button
+          label="Descargar Reporte (.xlsx)"
+          icon="pi pi-file-excel"
+          (click)="descargarReporteResultados()"
+          styleClass="p-button-sm p-button-success">
+        </p-button>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cerrar" icon="pi pi-times" (click)="dialogMasivo.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button
+        label="Procesar Carga Masiva"
+        icon="pi pi-play"
+        [loading]="processingMasivo()"
+        [disabled]="totalValidos() === 0 || processingMasivo()"
+        (click)="ejecutarCargaMasiva()"
+        styleClass="p-button-success">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal: Cambiar Contraseña -->
+<p-dialog
+  header="Cambiar Contraseña de Guardia"
+  [(visible)]="dialogPassword"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '480px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2" *ngIf="guardiaSeleccionadoPassword">
+    <!-- Info del Guardia -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-sm">
+        {{ guardiaSeleccionadoPassword.strNombres.charAt(0) }}{{ guardiaSeleccionadoPassword.strApellidos.charAt(0) }}
+      </div>
+      <div class="flex flex-col flex-1 min-w-0">
+        <span class="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
+          {{ guardiaSeleccionadoPassword.strNombres }} {{ guardiaSeleccionadoPassword.strApellidos }}
+        </span>
+        <span class="text-xs font-mono text-slate-500">Cédula: {{ guardiaSeleccionadoPassword.strCedula }}</span>
+      </div>
+    </div>
+
+    <!-- Nueva Contraseña -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        Nueva Contraseña <span class="text-red-500">*</span>
+      </label>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          pInputText
+          [(ngModel)]="nuevaClave"
+          placeholder="Ingrese o genere una clave"
+          class="w-full font-mono font-bold tracking-wider" />
+        <p-button
+          icon="pi pi-refresh"
+          (click)="generarNuevaClaveManual()"
+          pTooltip="Generar clave aleatoria"
+          styleClass="p-button-outlined p-button-secondary">
+        </p-button>
+      </div>
+      <span class="text-[11px] text-slate-400">
+        Puede escribir una contraseña personalizada o presionar el botón para generar una segura.
+      </span>
+    </div>
+
+    <!-- Correo de Notificación -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        Correo para Notificación <span class="text-red-500" *ngIf="notificarPorCorreo">*</span>
+      </label>
+      <input
+        type="email"
+        pInputText
+        [(ngModel)]="correoNotificacionClave"
+        placeholder="ejemplo@correo.com"
+        class="w-full" />
+    </div>
+
+    <!-- Checkbox Notificar -->
+    <div class="flex items-center gap-2 mt-1">
+      <input
+        type="checkbox"
+        id="chkNotificarGuardia"
+        [(ngModel)]="notificarPorCorreo"
+        class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer" />
+      <label for="chkNotificarGuardia" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+        Enviar credenciales actualizadas por correo electrónico
+      </label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        (click)="dialogPassword.set(false)"
+        styleClass="p-button-text p-button-secondary">
+      </p-button>
+      <p-button
+        label="Actualizar Contraseña"
+        icon="pi pi-check"
+        [loading]="guardandoPassword()"
+        (click)="guardarPassword()"
+        styleClass="p-button-primary">
+      </p-button>
     </div>
   </ng-template>
 </p-dialog>

@@ -14,10 +14,24 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { ProgressBarModule } from 'primeng/progressbar';
+import * as XLSX from 'xlsx';
 import {
   AdminCarnetsService,
   IGuardiaAdmin,
 } from '../../../../services/admin/AdminCarnets.service';
+import { SwCasService } from '../../../../utils/cas/sw-cas.service';
+
+export interface IFilaPreviaExcelGuardia {
+  fila: number;
+  cedula: string;
+  nombres: string;
+  apellidos: string;
+  telefono: string;
+  correo: string;
+  valido: boolean;
+  motivo: string;
+}
 
 @Component({
   selector: 'app-pg-admin-guardias',
@@ -35,6 +49,7 @@ import {
     TooltipModule,
     IconFieldModule,
     InputIconModule,
+    ProgressBarModule,
   ],
   providers: [MessageService],
   templateUrl: './pg-admin-guardias.component.html',
@@ -43,6 +58,7 @@ import {
 export default class PgAdminGuardiasComponent implements OnInit {
   private adminService = inject(AdminCarnetsService);
   private messageService = inject(MessageService);
+  private swCas = inject(SwCasService);
 
   // Estados
   loading = signal<boolean>(false);
@@ -74,6 +90,27 @@ export default class PgAdminGuardiasComponent implements OnInit {
   nuevoCorreo: string = '';
   nuevoTelefono: string = '';
   mostrarCamposManuales = signal<boolean>(false);
+
+  // Modal Cambiar Contraseña
+  dialogPassword = signal<boolean>(false);
+  guardandoPassword = signal<boolean>(false);
+  guardiaSeleccionadoPassword: IGuardiaAdmin | null = null;
+  nuevaClave: string = '';
+  correoNotificacionClave: string = '';
+  notificarPorCorreo: boolean = true;
+
+  // ==============================
+  // MODAL CARGA MASIVA EXCEL
+  // ==============================
+  dialogMasivo = signal<boolean>(false);
+  archivoSeleccionado: File | null = null;
+  nombreArchivo: string = '';
+  filasPrevia = signal<IFilaPreviaExcelGuardia[]>([]);
+  totalValidos = signal<number>(0);
+  totalInvalidos = signal<number>(0);
+  progresoMasivo = signal<number>(0);
+  processingMasivo = signal<boolean>(false);
+  resultadoLote = signal<any | null>(null);
 
   ngOnInit() {
     this.cargarGuardias();
@@ -141,9 +178,11 @@ export default class PgAdminGuardiasComponent implements OnInit {
   cambiarEstado(guardia: IGuardiaAdmin) {
     const nuevoEstado = guardia.estadoGuardia === 1 ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'habilitar' : 'deshabilitar';
+    const adminInfo = this.swCas.getUserInfo();
 
-    this.adminService.cambiarEstadoGuardia(guardia.intPersona, nuevoEstado).subscribe({
+    this.adminService.cambiarEstadoGuardia(guardia.intPersona, nuevoEstado, adminInfo).subscribe({
       next: () => {
+
         this.messageService.add({
           severity: 'success',
           summary: 'Éxito',
@@ -347,6 +386,17 @@ export default class PgAdminGuardiasComponent implements OnInit {
       this.nuevoTelefono !== undefined && this.nuevoTelefono !== null ? this.nuevoTelefono : this.personaPreview?.strTelefono
     );
 
+    // Validación de correo personal obligatorio para envío de credenciales
+    if (!correoFinal || correoFinal === 'N/A' || !correoFinal.includes('@')) {
+      this.mostrarCamposManuales.set(true);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo personal requerido',
+        detail: 'Por favor ingrese un correo electrónico válido para enviar las credenciales de acceso al guardia.',
+      });
+      return;
+    }
+
     this.saving.set(true);
     const body: any = {
       strCedula: cedulaLimpia,
@@ -354,9 +404,11 @@ export default class PgAdminGuardiasComponent implements OnInit {
       strApellidos: apellidosFinal,
       strCorreo: correoFinal,
       strTelefono: telefonoFinal,
+      adminInfo: this.swCas.getUserInfo(),
     };
 
     this.adminService.agregarGuardia(body).subscribe({
+
       next: (res) => {
         this.saving.set(false);
         if (res && res.count === -1) {
@@ -384,5 +436,303 @@ export default class PgAdminGuardiasComponent implements OnInit {
         });
       },
     });
+  }
+
+  // ==============================
+  // FLUJO CARGA MASIVA EXCEL
+  // ==============================
+  abrirModalMasivo() {
+    this.archivoSeleccionado = null;
+    this.nombreArchivo = '';
+    this.filasPrevia.set([]);
+    this.totalValidos.set(0);
+    this.totalInvalidos.set(0);
+    this.progresoMasivo.set(0);
+    this.resultadoLote.set(null);
+    this.dialogMasivo.set(true);
+  }
+
+  descargarPlantilla() {
+    const encabezados = [
+      ['CEDULA', 'NOMBRES', 'APELLIDOS', 'TELEFONO', 'CORREO'],
+      ['0604172296', 'Juan Carlos', 'Pérez Morales', '0991234567', 'guardia1@gmail.com'],
+      ['0605987654', 'Manuel Alberto', 'López García', '0987654321', 'guardia2@gmail.com'],
+    ];
+
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(encabezados);
+    ws['!cols'] = [
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 30 },
+    ];
+
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Guardias_Seguridad');
+    XLSX.writeFile(wb, 'Plantilla_Guardias_ESPOCH.xlsx');
+  }
+
+  onArchivoSeleccionado(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    this.procesarArchivoExcel(file);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.procesarArchivoExcel(file);
+    }
+  }
+
+  procesarArchivoExcel(file: File) {
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formato no compatible',
+        detail: 'Por favor seleccione un archivo Excel válido (.xlsx o .xls).',
+      });
+      return;
+    }
+
+    this.archivoSeleccionado = file;
+    this.nombreArchivo = file.name;
+    this.resultadoLote.set(null);
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        if (!json || json.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Archivo vacío',
+            detail: 'La hoja de cálculo no contiene filas de datos.',
+          });
+          return;
+        }
+
+        const previsualizacion: IFilaPreviaExcelGuardia[] = [];
+        let validos = 0;
+        let invalidos = 0;
+
+        json.forEach((row: any, index: number) => {
+          const rawCedula = String(row['CEDULA'] || row['cedula'] || row['Cedula'] || row['Cédula'] || '').trim();
+          const nombres = String(row['NOMBRES'] || row['nombres'] || row['Nombre'] || row['NOMBRE'] || '').trim();
+          const apellidos = String(row['APELLIDOS'] || row['apellidos'] || row['Apellido'] || row['APELLIDO'] || '').trim();
+          const telefono = String(row['TELEFONO'] || row['telefono'] || '').trim();
+          const correo = String(row['CORREO'] || row['correo'] || '').trim();
+
+          const cedulaLimpia = rawCedula.replace(/-/g, '');
+          let esValido = true;
+          let motivo = 'Válido';
+
+          if (!cedulaLimpia) {
+            esValido = false;
+            motivo = 'Cédula no proporcionada';
+          } else if (cedulaLimpia.length !== 10) {
+            esValido = false;
+            motivo = `Longitud inválida (${cedulaLimpia.length} dígitos)`;
+          } else if (!correo || !correo.includes('@')) {
+            esValido = false;
+            motivo = 'Correo personal requerido / inválido';
+          }
+
+          if (esValido) validos++;
+          else invalidos++;
+
+          previsualizacion.push({
+            fila: index + 2,
+            cedula: cedulaLimpia,
+            nombres,
+            apellidos,
+            telefono,
+            correo,
+            valido: esValido,
+            motivo,
+          });
+        });
+
+        this.filasPrevia.set(previsualizacion);
+        this.totalValidos.set(validos);
+        this.totalInvalidos.set(invalidos);
+
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Archivo leído',
+          detail: `Se detectaron ${previsualizacion.length} registros (${validos} válidos, ${invalidos} con advertencias).`,
+        });
+      } catch (err: any) {
+        console.error('Error al leer Excel:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error de lectura',
+          detail: 'No se pudo procesar el archivo Excel. Verifique el formato.',
+        });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  ejecutarCargaMasiva() {
+    const validos = this.filasPrevia().filter((f) => f.valido);
+    if (validos.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Sin registros válidos',
+        detail: 'No hay filas con datos válidos para procesar.',
+      });
+      return;
+    }
+
+    this.processingMasivo.set(true);
+    this.progresoMasivo.set(30);
+    const adminInfo = this.swCas.getUserInfo();
+
+    const lista = validos.map((v) => ({
+      strCedula: v.cedula,
+      strNombres: v.nombres,
+      strApellidos: v.apellidos,
+      strTelefono: v.telefono,
+      strCorreo: v.correo,
+    }));
+
+    this.adminService
+      .cargaMasivaGuardias({
+        lista,
+        adminInfo,
+      })
+      .subscribe({
+        next: (res) => {
+          this.progresoMasivo.set(100);
+          this.processingMasivo.set(false);
+          this.resultadoLote.set(res.data);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Lote Completado',
+            detail: res.message || 'Se procesó la carga masiva de guardias exitosamente.',
+          });
+          this.cargarGuardias();
+        },
+        error: (err) => {
+          this.processingMasivo.set(false);
+          this.progresoMasivo.set(0);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error en lote',
+            detail: err.error?.message || 'Ocurrió un error al procesar la carga masiva.',
+          });
+        },
+      });
+  }
+
+  descargarReporteResultados() {
+    const res = this.resultadoLote();
+    if (!res || !res.detalles) return;
+
+    const dataReporte = res.detalles.map((d: any) => ({
+      CEDULA: d.cedula,
+      ESTADO: d.estado,
+      DETALLE: d.mensaje,
+      NOMBRE: d.datos ? `${d.datos.strNombres} ${d.datos.strApellidos}` : 'N/A',
+      CORREO: d.datos ? d.datos.strCorreo : 'N/A',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataReporte);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Resultado_Lote_Guardias');
+    XLSX.writeFile(wb, `Reporte_Carga_Guardias_${Date.now()}.xlsx`);
+  }
+
+  // ==========================================
+  // CAMBIO DE CONTRASEÑA
+  // ==========================================
+
+  abrirModalPassword(guardia: IGuardiaAdmin) {
+    this.guardiaSeleccionadoPassword = guardia;
+    this.correoNotificacionClave = guardia.strCorreo && guardia.strCorreo !== 'N/A' ? guardia.strCorreo : '';
+    this.nuevaClave = this.generarPasswordAleatorio();
+    this.notificarPorCorreo = true;
+    this.dialogPassword.set(true);
+  }
+
+  generarPasswordAleatorio(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  generarNuevaClaveManual() {
+    this.nuevaClave = this.generarPasswordAleatorio();
+  }
+
+  guardarPassword() {
+    if (!this.guardiaSeleccionadoPassword) return;
+
+    if (!this.nuevaClave || this.nuevaClave.trim().length < 4) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Contraseña no válida',
+        detail: 'La contraseña debe tener al menos 4 caracteres.',
+      });
+      return;
+    }
+
+    if (this.notificarPorCorreo && (!this.correoNotificacionClave || !this.correoNotificacionClave.includes('@'))) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido para enviar las credenciales.',
+      });
+      return;
+    }
+
+    this.guardandoPassword.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    this.adminService
+      .cambiarPassword({
+        strCedula: this.guardiaSeleccionadoPassword.strCedula,
+        nuevaClave: this.nuevaClave.trim(),
+        strCorreo: this.correoNotificacionClave.trim(),
+        strNombres: `${this.guardiaSeleccionadoPassword.strNombres} ${this.guardiaSeleccionadoPassword.strApellidos}`.trim(),
+        rol: 'GUARDIA DE SEGURIDAD',
+        notificarCorreo: this.notificarPorCorreo,
+        adminInfo,
+      })
+      .subscribe({
+        next: (res) => {
+          this.guardandoPassword.set(false);
+          this.dialogPassword.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Contraseña Actualizada',
+            detail: res.message || 'La contraseña ha sido actualizada exitosamente.',
+          });
+          this.cargarGuardias();
+        },
+        error: (err) => {
+          this.guardandoPassword.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'No se pudo actualizar la contraseña.',
+          });
+        },
+      });
   }
 }

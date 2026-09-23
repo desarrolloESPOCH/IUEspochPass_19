@@ -112,6 +112,16 @@ export default class PgAdminInvitadosComponent implements OnInit {
   progresoMasivo = signal<number>(0);
   resultadoLote = signal<any | null>(null);
 
+  // ==============================
+  // MODAL CAMBIAR CONTRASEÑA
+  // ==============================
+  dialogPassword = signal<boolean>(false);
+  guardandoPassword = signal<boolean>(false);
+  invitadoSeleccionadoPassword: IInvitadoAdmin | null = null;
+  nuevaClave: string = '';
+  correoNotificacionClave: string = '';
+  notificarPorCorreo: boolean = true;
+
   ngOnInit() {
     this.cargarInvitados();
   }
@@ -213,21 +223,29 @@ export default class PgAdminInvitadosComponent implements OnInit {
         this.searchingPersona.set(false);
         if (res && res.data && res.data.length > 0) {
           this.personaPreview = res.data[0];
+          this.nuevoNombres = (this.personaPreview.strNombres || '').trim();
+          this.nuevoApellidos = (this.personaPreview.strApellidos || '').trim();
+          const emailRaw = this.personaPreview.strCorreo;
+          if (emailRaw && !['null', 'undefined', 'n/a', ''].includes(String(emailRaw).toLowerCase().trim())) {
+            this.nuevoCorreo = String(emailRaw).trim();
+          }
+          const telRaw = this.personaPreview.strTelefono;
+          if (telRaw && !['null', 'undefined', 'n/a', ''].includes(String(telRaw).toLowerCase().trim())) {
+            this.nuevoTelefono = String(telRaw).trim();
+          }
           if (this.personaPreview.strDepencia) {
             this.nuevoDependencia = this.personaPreview.strDepencia;
           }
         } else {
-          this.mostrarCamposManuales.set(true);
           this.messageService.add({
             severity: 'info',
             summary: 'Persona no registrada',
-            detail: 'Complete los nombres y apellidos manualmente para el registro.',
+            detail: 'Complete los datos de la persona para el registro.',
           });
         }
       },
       error: () => {
         this.searchingPersona.set(false);
-        this.mostrarCamposManuales.set(true);
       },
     });
   }
@@ -238,6 +256,28 @@ export default class PgAdminInvitadosComponent implements OnInit {
         severity: 'warn',
         summary: 'Cédula requerida',
         detail: 'Ingrese el número de cédula del invitado.',
+      });
+      return;
+    }
+
+    const nombresFinal = (this.nuevoNombres || this.personaPreview?.strNombres || '').trim();
+    const apellidosFinal = (this.nuevoApellidos || this.personaPreview?.strApellidos || '').trim();
+
+    if (!nombresFinal || !apellidosFinal) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Campos requeridos',
+        detail: 'Nombres y apellidos son requeridos para registrar al invitado.',
+      });
+      return;
+    }
+
+    const correoFinal = (this.nuevoCorreo || this.personaPreview?.strCorreo || '').trim();
+    if (!correoFinal || correoFinal.toLowerCase() === 'n/a' || !correoFinal.includes('@')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo personal requerido',
+        detail: 'Ingrese un correo personal válido para enviar las credenciales de acceso al invitado.',
       });
       return;
     }
@@ -256,18 +296,15 @@ export default class PgAdminInvitadosComponent implements OnInit {
 
     const body: any = {
       strCedula: this.cedulaNuevo.trim(),
+      strNombres: nombresFinal,
+      strApellidos: apellidosFinal,
+      strCorreo: correoFinal,
+      strTelefono: (this.nuevoTelefono || '').trim(),
       strDepencia: this.nuevoDependencia.trim(),
       strCargo: this.nuevoCargo.trim() || 'INVITADO',
       mesesVigencia: this.mesesVigenciaIndividual || 6,
       adminInfo: adminInfo,
     };
-
-    if (this.mostrarCamposManuales()) {
-      body.strNombres = this.nuevoNombres.trim();
-      body.strApellidos = this.nuevoApellidos.trim();
-      body.strCorreo = this.nuevoCorreo.trim();
-      body.strTelefono = this.nuevoTelefono.trim();
-    }
 
     this.adminService.agregarInvitado(body).subscribe({
       next: (res) => {
@@ -398,6 +435,9 @@ export default class PgAdminInvitadosComponent implements OnInit {
           } else if (cedulaLimpia.length !== 10) {
             esValido = false;
             motivo = `Longitud inválida (${cedulaLimpia.length} dígitos)`;
+          } else if (!correo || !correo.includes('@')) {
+            esValido = false;
+            motivo = 'Correo personal requerido / inválido';
           }
 
           if (esValido) validos++;
@@ -520,5 +560,86 @@ export default class PgAdminInvitadosComponent implements OnInit {
       default:
         return 'warn';
     }
+  }
+
+  // ==========================================
+  // CAMBIO DE CONTRASEÑA
+  // ==========================================
+
+  abrirModalPassword(invitado: IInvitadoAdmin) {
+    this.invitadoSeleccionadoPassword = invitado;
+    this.correoNotificacionClave = invitado.strCorreo && invitado.strCorreo !== 'N/A' ? invitado.strCorreo : '';
+    this.nuevaClave = this.generarPasswordAleatorio();
+    this.notificarPorCorreo = true;
+    this.dialogPassword.set(true);
+  }
+
+  generarPasswordAleatorio(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  generarNuevaClaveManual() {
+    this.nuevaClave = this.generarPasswordAleatorio();
+  }
+
+  guardarPassword() {
+    if (!this.invitadoSeleccionadoPassword) return;
+
+    if (!this.nuevaClave || this.nuevaClave.trim().length < 4) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Contraseña no válida',
+        detail: 'La contraseña debe tener al menos 4 caracteres.',
+      });
+      return;
+    }
+
+    if (this.notificarPorCorreo && (!this.correoNotificacionClave || !this.correoNotificacionClave.includes('@'))) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido para enviar las credenciales.',
+      });
+      return;
+    }
+
+    this.guardandoPassword.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    this.adminService
+      .cambiarPassword({
+        strCedula: this.invitadoSeleccionadoPassword.strCedula,
+        nuevaClave: this.nuevaClave.trim(),
+        strCorreo: this.correoNotificacionClave.trim(),
+        strNombres: `${this.invitadoSeleccionadoPassword.strNombres} ${this.invitadoSeleccionadoPassword.strApellidos}`.trim(),
+        rol: this.invitadoSeleccionadoPassword.strDepencia || 'BAR / PROVEEDOR',
+        notificarCorreo: this.notificarPorCorreo,
+        adminInfo,
+      })
+      .subscribe({
+        next: (res) => {
+          this.guardandoPassword.set(false);
+          this.dialogPassword.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Contraseña Actualizada',
+            detail: res.message || 'La contraseña ha sido actualizada exitosamente.',
+          });
+          this.cargarInvitados();
+        },
+        error: (err) => {
+          this.guardandoPassword.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'No se pudo actualizar la contraseña.',
+          });
+        },
+      });
   }
 }

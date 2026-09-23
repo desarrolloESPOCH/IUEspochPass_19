@@ -1,0 +1,404 @@
+<!-- cspell:disable -->
+<p-toast></p-toast>
+
+<div class="auditoria-container p-4 md:p-6 max-w-7xl mx-auto flex flex-col gap-6">
+  <!-- ENCABEZADO -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 dark:border-zinc-800 pb-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+        <i class="pi pi-shield text-blue-600 text-2xl md:text-3xl"></i>
+        Logs de Auditoría y Control Administrativo
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Registro detallado de acciones administrativas: quién activó carnets, modificó roles, dependencias o realizó cargas masivas.
+      </p>
+    </div>
+
+    <!-- BOTÓN EXPORTAR EXCEL -->
+    <div class="flex items-center gap-2">
+      <p-button
+        label="Exportar a Excel"
+        icon="pi pi-file-excel"
+        severity="success"
+        [loading]="exporting()"
+        (onClick)="descargarExcel()"
+        pTooltip="Descargar logs de auditoría en Excel"
+        tooltipPosition="bottom"
+      />
+    </div>
+  </div>
+
+  <!-- TARJETAS DE RESUMEN Y MÉTRICAS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total General -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Logs</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ totales().total | number }}</p>
+        <span class="text-xs text-blue-600 font-medium">Acciones registradas</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-xl">
+        <i class="pi pi-list"></i>
+      </div>
+    </div>
+
+    <!-- Logs de Hoy -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones de Hoy</p>
+        <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{{ totales().totalHoy | number }}</p>
+        <span class="text-xs text-indigo-500 font-medium">Actividad reciente</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center text-xl">
+        <i class="pi pi-calendar"></i>
+      </div>
+    </div>
+
+    <!-- Gestión de Carnets -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Gestión de Carnets</p>
+        <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ totales().totalCarnets | number }}</p>
+        <span class="text-xs text-green-600 font-medium">Activaciones / Prórrogas</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/40 text-green-600 flex items-center justify-center text-xl">
+        <i class="pi pi-id-card"></i>
+      </div>
+    </div>
+
+    <!-- Cambios de Roles y Datos -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Roles y Dependencias</p>
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{{ totales().totalRoles | number }}</p>
+        <span class="text-xs text-amber-500 font-medium">Asignaciones / Edición</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-xl">
+        <i class="pi pi-users"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DE FILTROS -->
+  <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 md:p-5 shadow-xs flex flex-col gap-4">
+    <!-- FILTROS RÁPIDOS DE FECHA -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-zinc-800 pb-3">
+      <span class="text-xs font-semibold text-gray-500 uppercase">Rango Rápido:</span>
+      <div class="flex flex-wrap gap-2">
+        <p-button
+          label="Hoy"
+          size="small"
+          [outlined]="filtroFechaInicio !== filtroFechaFin || !filtroFechaInicio"
+          severity="secondary"
+          (onClick)="establecerRangoRapido('hoy')"
+        />
+        <p-button
+          label="Últimos 7 días"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('semana')"
+        />
+        <p-button
+          label="Este Mes"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('mes')"
+        />
+        <p-button
+          label="Todo el Histórico"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('todos')"
+        />
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE FILTROS DETALLADOS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+      <!-- Fecha Desde -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Fecha Desde</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="filtroFechaInicio"
+          class="w-full text-sm"
+        />
+      </div>
+
+      <!-- Fecha Hasta -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Fecha Hasta</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="filtroFechaFin"
+          class="w-full text-sm"
+        />
+      </div>
+
+      <!-- Tipo de Acción -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Tipo de Acción</label>
+        <p-select
+          [options]="tiposAccionOpciones"
+          [(ngModel)]="filtroTipoAccion"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full text-sm"
+        />
+      </div>
+
+      <!-- Buscador por texto -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Buscar (Admin / Usuario / Detalle)</label>
+        <p-iconfield styleClass="w-full">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            type="text"
+            pInputText
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Cédula, nombre, detalle..."
+            class="w-full text-sm"
+            (keyup.enter)="cargarLogs(1)"
+          />
+        </p-iconfield>
+      </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN DE FILTRADO -->
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button
+        label="Limpiar Filtros"
+        icon="pi pi-filter-slash"
+        severity="secondary"
+        outlined
+        size="small"
+        (onClick)="limpiarFiltros()"
+      />
+      <p-button
+        label="Aplicar Filtros"
+        icon="pi pi-search"
+        severity="primary"
+        size="small"
+        [loading]="loading()"
+        (onClick)="cargarLogs(1)"
+      />
+    </div>
+  </div>
+
+  <!-- TABLA DE RESULTADOS -->
+  <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xs">
+    <p-table
+      [value]="logs()"
+      [loading]="loading()"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="limit()"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 20, 50, 100]"
+      (onPage)="onPageChange($event)"
+      styleClass="p-datatable-sm"
+      responsiveLayout="stack"
+      [breakpoint]="'960px'"
+    >
+      <!-- Encabezado de la tabla -->
+      <ng-template pTemplate="header">
+        <tr class="bg-gray-50 dark:bg-zinc-800/60 text-xs text-gray-600 dark:text-gray-300">
+          <th style="width: 150px">Fecha y Hora</th>
+          <th style="width: 180px">Acción</th>
+          <th>Administrador Responsable</th>
+          <th>Usuario Afectado</th>
+          <th>Detalle del Cambio</th>
+          <th style="width: 80px" class="text-center">Detalle</th>
+        </tr>
+      </ng-template>
+
+      <!-- Cuerpo de la tabla -->
+      <ng-template pTemplate="body" let-log>
+        <tr class="hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 text-sm transition-colors">
+          <!-- Fecha y Hora -->
+          <td>
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-800 dark:text-gray-200">
+                {{ log.dtFecha ? (log.dtFecha | date:'dd/MM/yyyy') : 'N/A' }}
+              </span>
+              <span class="text-xs text-gray-500 flex items-center gap-1">
+                <i class="pi pi-clock text-[10px]"></i>
+                {{ log.dtFecha ? (log.dtFecha | date:'hh:mm:ss a') : '' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Acción -->
+          <td>
+            <div class="flex items-center gap-1.5">
+              <p-tag
+                [value]="log.strAccion"
+                [severity]="getSeverityAccion(log.strAccion)"
+                [icon]="getIconoAccion(log.strAccion)"
+                styleClass="text-xs font-semibold px-2 py-0.5"
+              />
+            </div>
+          </td>
+
+          <!-- Administrador Responsable -->
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                {{ (log.strNombresAdmin || 'A').charAt(0) }}
+              </div>
+              <div class="flex flex-col">
+                <span class="font-semibold text-gray-800 dark:text-gray-200">
+                  {{ log.strNombresAdmin }}
+                </span>
+                <span class="text-xs text-gray-500 font-mono">
+                  CI: {{ log.strCedulaAdmin }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Usuario Afectado -->
+          <td>
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-800 dark:text-gray-200" *ngIf="log.nombreUsuarioAfectado !== 'N/A'">
+                {{ log.nombreUsuarioAfectado }}
+              </span>
+              <span class="text-xs text-gray-500 font-mono" *ngIf="log.strCedulaUsuario && log.strCedulaUsuario !== 'N/A'">
+                CI: {{ log.strCedulaUsuario }}
+              </span>
+              <span class="text-xs text-gray-400 italic" *ngIf="log.nombreUsuarioAfectado === 'N/A' && (!log.strCedulaUsuario || log.strCedulaUsuario === 'N/A')">
+                (Global / No asignado)
+              </span>
+            </div>
+          </td>
+
+          <!-- Detalle del Cambio -->
+          <td>
+            <p class="text-xs text-gray-600 dark:text-gray-300 truncate max-w-[280px]" [pTooltip]="log.strDetalle" tooltipPosition="top">
+              {{ log.strDetalle }}
+            </p>
+          </td>
+
+          <!-- Acción Detalle -->
+          <td class="text-center">
+            <p-button
+              icon="pi pi-eye"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              (onClick)="verDetalle(log)"
+              pTooltip="Ver detalle completo del log"
+              tooltipPosition="left"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Mensaje cuando no hay registros -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <i class="pi pi-inbox text-4xl text-gray-400"></i>
+              <p class="font-medium">No se encontraron logs de auditoría con los filtros seleccionados.</p>
+              <p class="text-xs text-gray-400">Intenta ampliar el rango de fechas o restablecer los filtros.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- MODAL DE DETALLE COMPLETO DEL LOG -->
+<p-dialog
+  [(visible)]="modalDetalleVisible"
+  [modal]="true"
+  [header]="'Auditoría #' + (logSeleccionado()?.intIdAuditoria || '') + ' - ' + (logSeleccionado()?.strAccion || '')"
+  [style]="{ width: '90vw', maxWidth: '600px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="flex flex-col gap-4 text-sm" *ngIf="logSeleccionado() as log">
+    <!-- Encabezado de la acción -->
+    <div class="flex items-center justify-between p-3 rounded-lg border bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+      <div class="flex items-center gap-2">
+        <i [ngClass]="getIconoAccion(log.strAccion)" class="text-xl text-blue-600"></i>
+        <div>
+          <p class="font-bold text-blue-700 dark:text-blue-300">{{ log.strAccion }}</p>
+          <p class="text-xs text-gray-500">{{ log.dtFecha ? (log.dtFecha | date:'dd/MM/yyyy hh:mm:ss a') : 'N/A' }}</p>
+        </div>
+      </div>
+      <p-tag [value]="log.strAccion" [severity]="getSeverityAccion(log.strAccion)" />
+    </div>
+
+    <!-- Administrador Responsable -->
+    <div class="border border-gray-200 dark:border-zinc-800 rounded-lg p-3 flex flex-col gap-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+        <i class="pi pi-user-check text-blue-600"></i>
+        Administrador que ejecutó la acción
+      </p>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <span class="text-gray-500 block">Nombres y Apellidos:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.strNombresAdmin }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Cédula:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.strCedulaAdmin }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">ID Administrador:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.intIdAdmin || 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usuario Afectado -->
+    <div class="border border-gray-200 dark:border-zinc-800 rounded-lg p-3 flex flex-col gap-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+        <i class="pi pi-user text-green-600"></i>
+        Usuario Afectado / Modificado
+      </p>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <span class="text-gray-500 block">Nombres:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.nombreUsuarioAfectado }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Cédula:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.strCedulaUsuario || 'N/A' }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">ID Persona:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ log.intIdPersona || 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle Completo del Cambio -->
+    <div class="border border-gray-200 dark:border-zinc-800 rounded-lg p-3 flex flex-col gap-1.5 bg-gray-50/50 dark:bg-zinc-800/40">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+        <i class="pi pi-info-circle text-amber-600"></i>
+        Detalle Completo de la Modificación
+      </p>
+      <p class="text-xs text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+        {{ log.strDetalle }}
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      severity="secondary"
+      (onClick)="cerrarModalDetalle()"
+    />
+  </ng-template>
+</p-dialog>

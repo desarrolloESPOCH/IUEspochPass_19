@@ -125,10 +125,40 @@ export interface IHistorialResponse {
   data: IHistorialAcceso[];
 }
 
+export interface IAuditoriaLog {
+  intIdAuditoria: number;
+  dtFecha: string;
+  strAccion: string;
+  strCedulaUsuario: string;
+  intIdPersona?: number;
+  nombreUsuarioAfectado: string;
+  strCedulaAdmin: string;
+  strNombresAdmin: string;
+  intIdAdmin?: number;
+  strDetalle: string;
+}
+
+export interface IResumenAuditoria {
+  total: number;
+  totalHoy: number;
+  totalCarnets: number;
+  totalRoles: number;
+  totalPersonas: number;
+}
+
+export interface IAuditoriaResponse {
+  count: number;
+  totales: IResumenAuditoria;
+  page: number;
+  limit: number;
+  data: IAuditoriaLog[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AdminCarnetsService {
+
   private http = inject(HttpClient);
   private URLSERVICIO = environment.SERVICIO_WEB;
 
@@ -241,17 +271,28 @@ export class AdminCarnetsService {
     );
   }
 
-  cambiarEstadoGuardia(intPersona: number, intEstado: number): Observable<any> {
+  cambiarEstadoGuardia(intPersona: number, intEstado: number, adminInfo?: any): Observable<any> {
     return this.http.put<any>(
       `${this.URLSERVICIO}/admin/guardia/cambiar_estado`,
-      { intPersona, intEstado }
+      { intPersona, intEstado, adminInfo }
     );
   }
 
-  agregarGuardia(body: { strCedula: string; strNombres?: string; strApellidos?: string; strCorreo?: string; strTelefono?: string }): Observable<any> {
+  agregarGuardia(body: { strCedula: string; strNombres?: string; strApellidos?: string; strCorreo?: string; strTelefono?: string; adminInfo?: any }): Observable<any> {
     return this.http.post<any>(
       `${this.URLSERVICIO}/admin/guardia/agregar`,
       body
+    );
+  }
+
+
+  cargaMasivaGuardias(payload: {
+    lista: any[];
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.post<any>(
+      `${this.URLSERVICIO}/admin/guardia/carga_masiva`,
+      payload
     );
   }
 
@@ -364,6 +405,70 @@ export class AdminCarnetsService {
       window.URL.revokeObjectURL(url);
     });
   }
+
+  // ==========================================
+  // LOGS DE AUDITORÍA Y ACTIVIDAD ADMINISTRATIVA
+  // ==========================================
+
+  getAuditorias(paramsObj: any = {}): Observable<IAuditoriaResponse> {
+    let params = new HttpParams();
+    Object.keys(paramsObj).forEach((key) => {
+      if (paramsObj[key] !== null && paramsObj[key] !== undefined && paramsObj[key] !== '') {
+        params = params.set(key, paramsObj[key]);
+      }
+    });
+    return this.http.get<IAuditoriaResponse>(
+      `${this.URLSERVICIO}/admin/auditorias`,
+      { params }
+    );
+  }
+
+  exportarExcelAuditorias(datos: IAuditoriaLog[], nombreArchivo: string = 'Auditoria_Logs_ESPOCH'): void {
+    import('xlsx').then((xlsx) => {
+      const dataFormateada = datos.map((d, index) => ({
+        '#': index + 1,
+        'Fecha y Hora': d.dtFecha || 'N/A',
+        'Acción Realizada': d.strAccion || 'N/A',
+        'Usuario Responsable (Admin)': d.strNombresAdmin || 'ADMINISTRADOR',
+        'Cédula Admin': d.strCedulaAdmin || 'N/A',
+        'Usuario Afectado': d.nombreUsuarioAfectado || 'N/A',
+        'Cédula Usuario': d.strCedulaUsuario || 'N/A',
+        'Detalle del Cambio': d.strDetalle || '',
+      }));
+
+      const worksheet = xlsx.utils.json_to_sheet(dataFormateada);
+      const workbook = { Sheets: { 'Auditoría': worksheet }, SheetNames: ['Auditoría'] };
+      const excelBuffer: any = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${nombreArchivo}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  // ==========================================
+  // CAMBIO DE CONTRASEÑA
+  // ==========================================
+
+  cambiarPassword(body: {
+    strCedula: string;
+    nuevaClave?: string;
+    strCorreo?: string;
+    strNombres?: string;
+    rol?: string;
+    notificarCorreo?: boolean;
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.post<any>(
+      `${this.URLSERVICIO}/admin/usuario/cambiar_password`,
+      body
+    );
+  }
 }
+
 
 

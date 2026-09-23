@@ -12,6 +12,8 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { Router } from '@angular/router';
 
+import { AdminCarnetsService } from '../../../../services/admin/AdminCarnets.service';
+
 @Component({
   selector: 'app-pg-validar-qr',
   imports: [
@@ -31,6 +33,7 @@ export default class PgValidarQrComponent implements OnInit {
   private swQr = inject(QrService);
   private swUser = inject(swUsuariosService);
   private swFoto = inject(FotoService);
+  private swAdmin = inject(AdminCarnetsService);
   private router = inject(Router);
   isValid = signal(true);
 
@@ -85,13 +88,20 @@ export default class PgValidarQrComponent implements OnInit {
       strHash = infoQr.strHash || infoQr.hash || infoQr.h;
     }
 
+    const userInfo = this.swCas.getUserInfo();
+
     if (!intIdQr || !strHash) {
       this.isLoading.set(false);
       this.isValid.set(false);
+      this.swAdmin.registrarAccesoInvalido({
+        strUsuarioRegitro: String(userInfo?.per_id || userInfo?.cedula || 'DESCONOCIDO'),
+        intTipoRegistro: 1,
+        strMotivoRechazo: 'Código QR no reconocido o con formato incompatible',
+        strCodigoLeido: raw.slice(0, 200),
+      }).subscribe({ error: () => {} });
       return;
     }
 
-    const userInfo = this.swCas.getUserInfo();
     const datos: IQrValidarParams = {
       strHash: strHash,
       intIdQr: intIdQr,
@@ -101,6 +111,7 @@ export default class PgValidarQrComponent implements OnInit {
     };
     this.getValidar(datos);
   };
+
 
   getValidar = (json: IQrValidarParams) => {
     this.swQr

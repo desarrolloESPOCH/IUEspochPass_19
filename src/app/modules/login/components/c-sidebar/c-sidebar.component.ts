@@ -67,6 +67,17 @@ export class CSidebarComponent implements OnInit {
           icon: 'pi pi-users',
           command: () => this.obtenerRutas('/dashboard/admin/invitados')
         });
+        menu.push({
+          label: 'Historial de Accesos',
+          icon: 'pi pi-calendar-clock',
+          command: () => this.obtenerRutas('/dashboard/admin/historial-accesos')
+        });
+      } else if (rol === 6) {
+        menu.push({
+          label: 'Historial de Accesos',
+          icon: 'pi pi-calendar-clock',
+          command: () => this.obtenerRutas('/dashboard/admin/historial-accesos')
+        });
       }
       menu.push({
         label: 'Historial de Cambios',
@@ -76,6 +87,7 @@ export class CSidebarComponent implements OnInit {
       this.items = menu;
     });
   };
+
 
   obtenerRutas = (url: string) => {
     this.router.navigateByUrl(url);

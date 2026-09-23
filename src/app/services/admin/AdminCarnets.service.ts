@@ -15,6 +15,7 @@ export interface ICarnetAdmin {
   dtFecha_Inicio: string;
   dtFecha_Fin: string;
   estadoCarnet: number;
+  totalCarnetsUsuario?: number;
   intIdRol: number;
   rol: string;
   strCargo: string;
@@ -83,6 +84,47 @@ export interface IInvitadoAdmin {
   estadoVigencia: 'ACTIVO' | 'VENCIDO' | 'DESACTIVADO' | 'SIN_CARNET';
 }
 
+export interface IHistorialAcceso {
+  intIdRegistro: number;
+  intQR?: number;
+  fechaRegistro: string;
+  strUsuarioRegitro: string;
+  intTipoRegistro: number;
+  tipoRegistroTexto: 'ENTRADA' | 'SALIDA' | 'CONTROL';
+  estadoAcceso: number;
+  estadoAccesoTexto: 'VÁLIDO' | 'NO VÁLIDO';
+  strMotivoRechazo: string;
+  strCodigoLeido?: string;
+  // Dueño del QR
+  idDueno?: number;
+  cedulaDueno: string;
+  nombreDueno: string;
+  correoDueno?: string;
+  telefonoDueno?: string;
+  rolDueno: string;
+  dependenciaDueno: string;
+  cargoDueno: string;
+  // Guardia / Operador
+  idGuardia?: number;
+  cedulaGuardia: string;
+  nombreGuardia: string;
+}
+
+export interface IResumenHistorial {
+  total: number;
+  totalValidos: number;
+  totalInvalidos: number;
+  totalHoy: number;
+}
+
+export interface IHistorialResponse {
+  count: number;
+  totales: IResumenHistorial;
+  page: number;
+  limit: number;
+  data: IHistorialAcceso[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -118,6 +160,12 @@ export class AdminCarnetsService {
     return this.http.get<any>(
       `${this.URLSERVICIO}/admin/carnet/persona/${cedulaLimpia}`,
       { params }
+    );
+  }
+
+  getCarnetsPorPersona(idPersona: number | string): Observable<{ count: number; message: string; data: any[] }> {
+    return this.http.get<{ count: number; message: string; data: any[] }>(
+      `${this.URLSERVICIO}/admin/persona/${idPersona}/carnets`
     );
   }
 
@@ -162,7 +210,9 @@ export class AdminCarnetsService {
   actualizarRolDependencia(data: {
     intPersona: number;
     strCedula?: string;
-    intRol: number;
+    intRol?: number;
+    roles?: number[];
+    intRoles?: number[];
     strDepencia: string;
     strCargo?: string;
     intDepencia?: number;
@@ -253,5 +303,67 @@ export class AdminCarnetsService {
       payload
     );
   }
+
+  // ==========================================
+  // HISTORIAL DE ACCESOS Y EXPORTACIÓN A EXCEL
+  // ==========================================
+
+  getHistorialAccesos(paramsObj: any = {}): Observable<IHistorialResponse> {
+    let params = new HttpParams();
+    Object.keys(paramsObj).forEach((key) => {
+      if (paramsObj[key] !== null && paramsObj[key] !== undefined && paramsObj[key] !== '') {
+        params = params.set(key, paramsObj[key]);
+      }
+    });
+    return this.http.get<IHistorialResponse>(
+      `${this.URLSERVICIO}/admin/historial-accesos`,
+      { params }
+    );
+  }
+
+  registrarAccesoInvalido(body: {
+    intIdQr?: any;
+    strUsuarioRegitro: string;
+    intTipoRegistro?: number;
+    strMotivoRechazo: string;
+    strCodigoLeido?: string;
+  }): Observable<any> {
+    return this.http.post<any>(
+      `${this.URLSERVICIO}/admin/registro-acceso-invalido`,
+      body
+    );
+  }
+
+  exportarExcelAccesos(datos: IHistorialAcceso[], nombreArchivo: string = 'Historial_Accesos_ESPOCH'): void {
+    import('xlsx').then((xlsx) => {
+      const dataFormateada = datos.map((d, index) => ({
+        '#': index + 1,
+        'Fecha y Hora': d.fechaRegistro || 'N/A',
+        'Tipo Movimiento': d.tipoRegistroTexto || 'ENTRADA',
+        'Estado': d.estadoAccesoTexto || (d.estadoAcceso === 1 ? 'VÁLIDO' : 'NO VÁLIDO'),
+        'Motivo / Observación': d.strMotivoRechazo || '',
+        'Cédula Usuario': d.cedulaDueno || 'N/A',
+        'Nombre del Usuario': d.nombreDueno || 'Desconocido',
+        'Rol': d.rolDueno || 'SIN ROL',
+        'Dependencia / Carrera': d.dependenciaDueno || 'N/A',
+        'Cargo': d.cargoDueno || 'N/A',
+        'Cédula Guardia': d.cedulaGuardia || '',
+        'Guardia / Lector': d.nombreGuardia || 'SISTEMA',
+      }));
+
+      const worksheet = xlsx.utils.json_to_sheet(dataFormateada);
+      const workbook = { Sheets: { 'Accesos': worksheet }, SheetNames: ['Accesos'] };
+      const excelBuffer: any = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${nombreArchivo}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
 }
+
 

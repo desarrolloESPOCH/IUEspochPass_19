@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
+import { MultiSelect } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
@@ -31,6 +32,7 @@ import { SwCasService } from '../../../../utils/cas/sw-cas.service';
     ButtonModule,
     InputTextModule,
     Select,
+    MultiSelect,
     DialogModule,
     ToastModule,
     TagModule,
@@ -77,6 +79,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
   rolesList = signal<{ label: string; value: any }[]>([
     { label: 'Todos los roles', value: 'todos' },
   ]);
+  rolesEdicionList = signal<{ label: string; value: any }[]>([]);
 
   estadosVigenciaList = [
     { label: 'Todos los estados', value: 'TODOS' },
@@ -90,6 +93,12 @@ export default class PgAdminCarnetsComponent implements OnInit {
   personaEncontrada: any = null;
   mostrarPanelPersona = signal<boolean>(false);
 
+  // Modal de Detalles de Todos los Carnets de la Persona
+  dialogDetallesCarnets = signal<boolean>(false);
+  loadingDetalles = signal<boolean>(false);
+  carnetsPersonaList = signal<any[]>([]);
+  personaSeleccionadaDetalle: any = null;
+
   // Modal de Renovación / Prórroga (Por defecto 6 meses)
   dialogProrroga = signal<boolean>(false);
   carnetSeleccionado: any = null;
@@ -98,7 +107,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
 
   // Modal de Edición de Rol y Dependencia
   dialogEditarRolDep = signal<boolean>(false);
-  rolSeleccionadoEdicion: any = null;
+  rolesSeleccionadosEdicion: number[] = [];
   dependenciaEdicion: string = '';
   cargoEdicion: string = '';
 
@@ -117,6 +126,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
             value: r.intIdRol,
           }));
           this.rolesList.set([{ label: 'Todos los roles', value: 'todos' }, ...roles]);
+          this.rolesEdicionList.set(roles);
         }
       },
       error: (err) => console.error('Error al cargar roles', err),
@@ -196,7 +206,17 @@ export default class PgAdminCarnetsComponent implements OnInit {
       next: (res) => {
         this.loadingPersona.set(false);
         if (res && res.data && res.data.length > 0) {
-          this.personaEncontrada = res.data[0];
+          const first = res.data[0];
+          const rolesValidos = first.roles || res.data.filter((r: any) => r.intIdRol != null);
+          const rolesIds = first.rolesIds || rolesValidos.map((r: any) => r.intIdRol);
+          const rolesNombres = first.rol || rolesValidos.map((r: any) => r.rol).join(', ');
+
+          this.personaEncontrada = {
+            ...first,
+            roles: rolesValidos,
+            rolesIds: rolesIds,
+            rol: rolesNombres || first.rol || 'SIN ROL',
+          };
           this.mostrarPanelPersona.set(true);
         } else {
           this.personaEncontrada = null;
@@ -243,12 +263,45 @@ export default class PgAdminCarnetsComponent implements OnInit {
           this.personaEncontrada.estadoCarnet = nuevoEstado;
           this.personaEncontrada.estadoVigencia = nuevoEstado === 1 ? 'ACTIVO' : 'DESACTIVADO';
         }
+        if (this.dialogDetallesCarnets() && this.personaSeleccionadaDetalle) {
+          this.cargarCarnetsPersona(this.personaSeleccionadaDetalle.intIdPersona || this.personaSeleccionadaDetalle.intUsuario || this.personaSeleccionadaDetalle.strCedula);
+        }
       },
       error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: `No se pudo ${accion} el carnet.`,
+        });
+      },
+    });
+  }
+
+  // Modal Ver Más Detalles / Todos los Carnets de la Persona
+  abrirModalDetalles(persona: any) {
+    const idPersona = persona.intUsuario || persona.intIdPersona || persona.strCedula;
+    this.personaSeleccionadaDetalle = {
+      ...persona,
+      intIdPersona: persona.intUsuario || persona.intIdPersona,
+    };
+    this.dialogDetallesCarnets.set(true);
+    this.cargarCarnetsPersona(idPersona);
+  }
+
+  cargarCarnetsPersona(idPersona: number | string) {
+    this.loadingDetalles.set(true);
+    this.adminService.getCarnetsPorPersona(idPersona).subscribe({
+      next: (res) => {
+        this.carnetsPersonaList.set(res.data || []);
+        this.loadingDetalles.set(false);
+      },
+      error: () => {
+        this.carnetsPersonaList.set([]);
+        this.loadingDetalles.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo cargar el historial de carnets de la persona.',
         });
       },
     });
@@ -309,6 +362,9 @@ export default class PgAdminCarnetsComponent implements OnInit {
         if (this.mostrarPanelPersona()) {
           this.consultarPorCedula();
         }
+        if (this.dialogDetallesCarnets() && this.personaSeleccionadaDetalle) {
+          this.cargarCarnetsPersona(this.personaSeleccionadaDetalle.intIdPersona || this.personaSeleccionadaDetalle.intUsuario || this.personaSeleccionadaDetalle.strCedula);
+        }
       },
       error: (err) => {
         this.saving.set(false);
@@ -323,11 +379,42 @@ export default class PgAdminCarnetsComponent implements OnInit {
 
   // Modal Edición de Rol y Dependencia
   abrirModalEditarRolDep(persona: any) {
-    this.personaEncontrada = persona;
-    this.rolSeleccionadoEdicion = persona.intIdRol || null;
+    const idPersona = persona.intUsuario || persona.intIdPersona;
+    this.personaEncontrada = {
+      ...persona,
+      intIdPersona: idPersona,
+    };
+
+    if (persona.rolesIds && Array.isArray(persona.rolesIds) && persona.rolesIds.length > 0) {
+      this.rolesSeleccionadosEdicion = [...persona.rolesIds];
+    } else if (persona.intIdRol) {
+      this.rolesSeleccionadosEdicion = [persona.intIdRol];
+    } else {
+      this.rolesSeleccionadosEdicion = [];
+    }
+
     this.dependenciaEdicion = persona.strDepencia || '';
     this.cargoEdicion = persona.strCargo || '';
     this.dialogEditarRolDep.set(true);
+
+    // Consultar todos los roles activos que tenga registrados en la base de datos
+    if (persona.strCedula) {
+      this.adminService.getPersonaCarnet(persona.strCedula, true).subscribe({
+        next: (res) => {
+          if (res && res.data && res.data.length > 0) {
+            const data = res.data[0];
+            const rolesValidos = data.roles || res.data.filter((r: any) => r.intIdRol != null);
+            const rolesIds = data.rolesIds || rolesValidos.map((r: any) => r.intIdRol);
+            if (rolesIds && rolesIds.length > 0) {
+              this.rolesSeleccionadosEdicion = [...rolesIds];
+              this.personaEncontrada.rolesIds = rolesIds;
+              this.personaEncontrada.roles = rolesValidos;
+            }
+          }
+        },
+        error: () => {},
+      });
+    }
   }
 
   guardarRolDependencia() {
@@ -340,11 +427,11 @@ export default class PgAdminCarnetsComponent implements OnInit {
       return;
     }
 
-    if (!this.rolSeleccionadoEdicion) {
+    if (!this.rolesSeleccionadosEdicion || this.rolesSeleccionadosEdicion.length === 0) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Rol requerido',
-        detail: 'Seleccione un rol institucional para la persona.',
+        summary: 'Roles requeridos',
+        detail: 'Seleccione al menos un rol institucional para la persona.',
       });
       return;
     }
@@ -355,7 +442,8 @@ export default class PgAdminCarnetsComponent implements OnInit {
     const payload = {
       intPersona: this.personaEncontrada.intIdPersona,
       strCedula: this.personaEncontrada.strCedula,
-      intRol: this.rolSeleccionadoEdicion,
+      roles: this.rolesSeleccionadosEdicion,
+      intRol: this.rolesSeleccionadosEdicion[0], // fallback para compatibilidad
       strDepencia: this.dependenciaEdicion.trim() || 'ESPOCH',
       strCargo: this.cargoEdicion.trim() || '',
       adminInfo: adminInfo,
@@ -367,12 +455,14 @@ export default class PgAdminCarnetsComponent implements OnInit {
         this.dialogEditarRolDep.set(false);
         this.messageService.add({
           severity: 'success',
-          summary: 'Rol y Dependencia Actualizados',
-          detail: 'Se actualizaron correctamente el rol y la dependencia asignada.',
+          summary: 'Roles y Dependencia Actualizados',
+          detail: 'Se actualizaron correctamente los roles y la dependencia asignada.',
         });
 
         // Refrescar datos en el panel y en la tabla general
-        this.consultarPorCedula();
+        if (this.mostrarPanelPersona()) {
+          this.consultarPorCedula();
+        }
         this.cargarEstadisticas();
         this.cargarCarnets();
       },
@@ -381,7 +471,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo actualizar el rol y la dependencia.',
+          detail: 'No se pudo actualizar los roles y la dependencia.',
         });
       },
     });

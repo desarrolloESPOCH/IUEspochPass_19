@@ -114,20 +114,22 @@
         <div class="flex flex-wrap items-center gap-2">
           <p-tag [value]="personaEncontrada.estadoVigencia" [severity]="getSeverityVigencia(personaEncontrada.estadoVigencia)"></p-tag>
           
+          <p-button label="Ver todos los carnets" icon="pi pi-eye" (click)="abrirModalDetalles(personaEncontrada)" styleClass="p-button-outlined p-button-primary p-button-sm"></p-button>
+
           @if (personaEncontrada.estadoVigencia === 'SIN_CARNET') {
             <p-button label="Crear y Activar Carnet" icon="pi pi-plus-circle" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
           } @else {
             <p-button label="Renovar / Prorrogar Vigencia" icon="pi pi-calendar-plus" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
           }
 
-          <p-button label="Editar Rol / Dependencia" icon="pi pi-user-edit" (click)="abrirModalEditarRolDep(personaEncontrada)" styleClass="p-button-info p-button-sm"></p-button>
+          <p-button label="Editar Roles / Dependencia" icon="pi pi-user-edit" (click)="abrirModalEditarRolDep(personaEncontrada)" styleClass="p-button-info p-button-sm"></p-button>
           <p-button icon="pi pi-times" (click)="cerrarPanelPersona()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs text-slate-600 dark:text-slate-300">
         <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-          <span class="text-slate-400 block font-semibold uppercase">ID Carnet</span>
+          <span class="text-slate-400 block font-semibold uppercase">ID Carnet Actual</span>
           <span class="font-bold text-sm" [class.text-amber-600]="!personaEncontrada.intIdCarnet">
             {{ personaEncontrada.intIdCarnet || 'No registrado (Requiere Creación)' }}
           </span>
@@ -185,12 +187,12 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Cédula</th>
-          <th>Usuario</th>
-          <th>Rol</th>
+          <th>Persona / Usuario</th>
+          <th>Rol(es)</th>
           <th>Dependencia / Cargo</th>
           <th>Vigencia Inicio</th>
           <th>Vigencia Fin</th>
-          <th>Estado</th>
+          <th>Estado Carnet</th>
           <th class="text-center">Acciones</th>
         </tr>
       </ng-template>
@@ -207,7 +209,7 @@
             </div>
           </td>
           <td>
-            <span class="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium">
+            <span class="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium">
               {{ c.rol }}
             </span>
           </td>
@@ -226,10 +228,23 @@
             </span>
           </td>
           <td>
-            <p-tag [value]="c.estadoVigencia" [severity]="getSeverityVigencia(c.estadoVigencia)"></p-tag>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <p-tag [value]="c.estadoVigencia" [severity]="getSeverityVigencia(c.estadoVigencia)"></p-tag>
+              @if (c.totalCarnetsUsuario && c.totalCarnetsUsuario > 1) {
+                <span class="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 px-1.5 py-0.5 rounded-full font-bold cursor-pointer" [pTooltip]="c.totalCarnetsUsuario + ' carnets en historial'" (click)="abrirModalDetalles(c)">
+                  {{ c.totalCarnetsUsuario }} carnets
+                </span>
+              }
+            </div>
           </td>
           <td class="text-center">
             <div class="flex items-center justify-center gap-1">
+              <!-- Ver Detalles y Todos los Carnets -->
+              <p-button icon="pi pi-eye" [pTooltip]="'Ver todos los carnets de la persona'" tooltipPosition="top" (click)="abrirModalDetalles(c)" styleClass="p-button-rounded p-button-text p-button-info p-button-sm"></p-button>
+
+              <!-- Editar Roles y Dependencia -->
+              <p-button icon="pi pi-user-edit" [pTooltip]="'Editar Roles y Dependencia'" tooltipPosition="top" (click)="abrirModalEditarRolDep(c)" styleClass="p-button-rounded p-button-text p-button-help p-button-sm"></p-button>
+
               <!-- Prorrogar / Renovar -->
               <p-button icon="pi pi-calendar-plus" [pTooltip]="'Prorrogar / Renovar Vigencia'" tooltipPosition="top" (click)="abrirModalProrroga(c)" styleClass="p-button-rounded p-button-text p-button-success p-button-sm"></p-button>
               
@@ -237,7 +252,7 @@
               @if (c.estadoCarnet === 1) {
               <p-button icon="pi pi-ban" [pTooltip]="'Deshabilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"></p-button>
               }@else {
-              <p-button icon="pi pi-check" [pTooltip]="'Habilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-info p-button-sm"></p-button>
+              <p-button icon="pi pi-check" [pTooltip]="'Habilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-secondary p-button-sm"></p-button>
               }
             </div>
           </td>
@@ -339,8 +354,10 @@
 <p-dialog
   [(visible)]="dialogEditarRolDep"
   [modal]="true"
-  header="Editar Rol y Dependencia Institucional"
-  [style]="{ width: '90vw', maxWidth: '520px' }"
+  header="Editar Roles y Dependencia Institucional"
+  [style]="{ width: '90vw', maxWidth: '560px' }"
+  [contentStyle]="{ 'overflow': 'visible' }"
+  [focusTrap]="false"
   [draggable]="false"
   [resizable]="false">
 
@@ -360,19 +377,28 @@
       </div>
     </div>
 
-    <!-- Selección de Rol -->
+    <!-- Selección de Roles (Múltiple) -->
     <div class="flex flex-col gap-1.5">
       <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
-        Rol Institucional: <span class="text-rose-500">*</span>
+        Roles Institucionales (Selección múltiple): <span class="text-rose-500">*</span>
       </label>
-      <p-select
-        [options]="rolesList()"
-        [(ngModel)]="rolSeleccionadoEdicion"
+      <p-multiselect
+        [options]="rolesEdicionList()"
+        [(ngModel)]="rolesSeleccionadosEdicion"
         optionLabel="label"
         optionValue="value"
-        placeholder="Seleccione un rol"
+        placeholder="Seleccione uno o varios roles"
+        [filter]="true"
+        filterPlaceholder="Buscar o seleccionar roles..."
+        [filterBy]="'label'"
+        [resetFilterOnHide]="true"
+        [appendTo]="'body'"
+        [scrollHeight]="'220px'"
+        display="chip"
+        [showClear]="true"
         styleClass="w-full">
-      </p-select>
+      </p-multiselect>
+      <span class="text-[11px] text-slate-400">Puede marcar uno o más roles simultáneos (ej: Docente, Administrativo, etc.).</span>
     </div>
 
     <!-- Campo Dependencia / Área -->
@@ -408,6 +434,132 @@
     <div class="flex justify-end gap-2">
       <p-button label="Cancelar" icon="pi pi-times" (click)="dialogEditarRolDep.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
       <p-button label="Guardar Asignación" icon="pi pi-check" [loading]="savingRolDep()" (click)="guardarRolDependencia()" styleClass="p-button-primary"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Detalle Completo de Persona y Todos sus Carnets -->
+<p-dialog
+  [(visible)]="dialogDetallesCarnets"
+  [modal]="true"
+  header="Detalles del Usuario y Todos sus Carnets"
+  [style]="{ width: '92vw', maxWidth: '850px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  @if (personaSeleccionadaDetalle) {
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Ficha de Datos de la Persona -->
+    <div class="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-lg">
+          {{ personaSeleccionadaDetalle.strNombres?.charAt(0) }}{{ personaSeleccionadaDetalle.strApellidos?.charAt(0) }}
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">
+            {{ personaSeleccionadaDetalle.strNombres }} {{ personaSeleccionadaDetalle.strApellidos }}
+          </h3>
+          <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <span><i class="pi pi-id-card mr-1"></i><strong>Cédula:</strong> {{ personaSeleccionadaDetalle.strCedula }}</span>
+            <span><i class="pi pi-envelope mr-1"></i><strong>Correo:</strong> {{ personaSeleccionadaDetalle.strCorreo }}</span>
+            <span><i class="pi pi-building mr-1"></i><strong>Dependencia:</strong> {{ personaSeleccionadaDetalle.strDepencia || 'ESPOCH' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-button label="Editar Roles" icon="pi pi-user-edit" (click)="abrirModalEditarRolDep(personaSeleccionadaDetalle)" styleClass="p-button-outlined p-button-help p-button-sm"></p-button>
+        <p-button label="Nuevo Carnet" icon="pi pi-plus" (click)="abrirModalProrroga({ ...personaSeleccionadaDetalle, intIdCarnet: null })" styleClass="p-button-success p-button-sm"></p-button>
+      </div>
+    </div>
+
+    <!-- Roles de la Persona -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Roles Asignados:</span>
+      <span class="text-xs px-2.5 py-1 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg font-semibold">
+        {{ personaSeleccionadaDetalle.rol || 'SIN ROL' }}
+      </span>
+    </div>
+
+    <!-- Tabla con todos los carnets de la persona -->
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between items-center">
+        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <i class="pi pi-id-card text-blue-600"></i>
+          Historial de Todos los Carnets ({{ carnetsPersonaList().length }})
+        </h4>
+        <p-button icon="pi pi-refresh" (click)="cargarCarnetsPersona(personaSeleccionadaDetalle.intIdPersona || personaSeleccionadaDetalle.intUsuario || personaSeleccionadaDetalle.strCedula)" [loading]="loadingDetalles()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
+      </div>
+
+      <p-table
+        [value]="carnetsPersonaList()"
+        [loading]="loadingDetalles()"
+        styleClass="p-datatable-sm p-datatable-striped"
+        [tableStyle]="{ 'min-width': '38rem' }">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID Carnet</th>
+            <th>Fecha Emisión</th>
+            <th>Fecha Vigencia (Fin)</th>
+            <th>Estado Vigencia</th>
+            <th>QRs Generados</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-carnet>
+          <tr>
+            <td>
+              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">#{{ carnet.intIdCarnet }}</span>
+            </td>
+            <td class="text-xs text-slate-600 dark:text-slate-400">
+              {{ (carnet.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}
+            </td>
+            <td class="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+              <span [class.text-rose-600]="carnet.estadoVigencia === 'VENCIDO'">
+                {{ (carnet.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}
+              </span>
+            </td>
+            <td>
+              <p-tag [value]="carnet.estadoVigencia" [severity]="getSeverityVigencia(carnet.estadoVigencia)"></p-tag>
+            </td>
+            <td class="text-xs text-slate-600 dark:text-slate-400">
+              <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-medium">
+                {{ carnet.totalQrsGenerados || 0 }} accesos
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="flex items-center justify-center gap-1">
+                <!-- Prorrogar / Renovar este carnet -->
+                <p-button icon="pi pi-calendar-plus" [pTooltip]="'Prorrogar / Renovar este carnet'" tooltipPosition="top" (click)="abrirModalProrroga({ ...personaSeleccionadaDetalle, ...carnet })" styleClass="p-button-rounded p-button-text p-button-success p-button-sm"></p-button>
+                
+                <!-- Desactivar / Activar este carnet -->
+                @if (carnet.estadoCarnet === 1) {
+                <p-button icon="pi pi-ban" [pTooltip]="'Deshabilitar este carnet'" tooltipPosition="top" (click)="cambiarEstado(carnet)" styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"></p-button>
+                }@else {
+                <p-button icon="pi pi-check" [pTooltip]="'Habilitar este carnet'" tooltipPosition="top" (click)="cambiarEstado(carnet)" styleClass="p-button-rounded p-button-text p-button-info p-button-sm"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center p-4 text-slate-400">
+              No se registran carnets activos o previos para este usuario.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end">
+      <p-button label="Cerrar" icon="pi pi-times" (click)="dialogDetallesCarnets.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
     </div>
   </ng-template>
 </p-dialog>

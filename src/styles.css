@@ -116,3 +116,12 @@ body {
 .container-slider::-webkit-scrollbar-track:active {
   background: var(--scrollbar-track-hover);
 }
+
+/* Evitar que el scroll del desplegable cierre el overlay al llegar al último elemento */
+.p-select-overlay,
+.p-select-list-container,
+.p-select-list,
+.p-dropdown-panel,
+.p-dropdown-items-wrapper {
+  overscroll-behavior: contain !important;
+}

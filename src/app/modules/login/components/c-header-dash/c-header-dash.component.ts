@@ -134,6 +134,7 @@ export class CHeaderDashComponent {
     { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } },
     { label: 'ANAHI MAGALY ANDRADE PINO', value: { per_email: 'anahi.andrade@espoch.edu.ec', per_id: '80299', cedula: '0350212940', nombres: 'ANAHI MAGALY', apellidos: 'ANDRADE PINO' } },
     { label: 'EVELYN MISHEL TACURI TACURI', value: { per_email: 'mishel.tacuri@espoch.edu.ec', per_id: '98335', cedula: '0604402297', nombres: 'EVELYN MISHEL', apellidos: 'TACURI TACURI' } },
+    { label: 'JERSON SEBASTIAN MARTINEZ PAGALO', value: { per_email: 'jersons.martinez@espoch.edu.ec', per_id: '248826', cedula: '0606087237', nombres: 'JERSON SEBASTIAN', apellidos: 'MARTINEZ PAGALO' } },
   ];
 
   async suplantarUsuario(event: any) {

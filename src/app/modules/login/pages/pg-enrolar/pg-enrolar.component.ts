@@ -58,7 +58,10 @@ export default class PgEnrolarComponent {
     { label: 'ADMIN PRUEBA', value: { per_email: 'admin@espoch.edu.ec', per_id: '1', cedula: '0600000001', nombres: 'ADMIN', apellidos: 'PRUEBA' } },
     { label: 'DIEGO BENJAMIN ORTIZ PICO', value: { per_email: 'benjamin.ortiz@espoch.edu.ec', per_id: '66434', cedula: '1850575133', nombres: 'DIEGO BENJAMIN', apellidos: 'ORTIZ PICO' } },
     { label: 'JOSE LUIS CONDO LEON', value: { per_email: 'jose.condo@espoch.edu.ec', per_id: '16778', cedula: '0604172296', nombres: 'JOSE LUIS', apellidos: 'CONDO LEON' } },
-    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } }
+    { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } },
+    { label: 'MATEO PATRICIO PILCO GUAMAN', value: { per_email: 'mateo.pilco@espoch.edu.ec', per_id: '214942', cedula: '0605708114', nombres: 'MATEO PATRICIO', apellidos: 'PILCO GUAMAN' } },
+    { label: 'RITA EULALIA LLIGUILEMA BOCON', value: { per_email: 'rita.lliguilema@espoch.edu.ec', per_id: '296625', cedula: '0605270362', nombres: 'RITA EULALIA', apellidos: 'LLIGUILEMA BOCON' } },
+
   ];
 
   async suplantarUsuario(event: any) {
@@ -94,32 +97,60 @@ export default class PgEnrolarComponent {
       this.atras();
       return;
     }
+    await this.cargarDatosCentralizada(this.dataEnrol.cedula);
     this.formBuilder(this.dataEnrol);
     await this.getCargos(this.dataEnrol);
     this.isloading.set(true);
   }
 
+  cargarDatosCentralizada = async (cedula: string) => {
+    if (!cedula) return;
+    try {
+      const res = await this.swUser.obtenerPersonaCentralizadaSYNC(cedula);
+      if (res && res.success && res.listado && res.listado.length > 0) {
+        const persona = res.listado[0];
+        const apellidos = `${persona.per_primerApellido || ''} ${persona.per_segundoApellido || ''}`.trim();
+        if (persona.per_nombres && persona.per_nombres.trim() !== '') {
+          this.dataEnrol.nombres = persona.per_nombres.trim();
+        }
+        if (apellidos !== '') {
+          this.dataEnrol.apellidos = apellidos;
+        }
+        if (persona.per_email && persona.per_email.trim() !== '') {
+          this.dataEnrol.per_email = persona.per_email.trim();
+        }
+      }
+    } catch (e) {
+      console.warn('No se pudo obtener datos de la Centralizada:', e);
+    }
+  };
+
   IsDocenteOrFuncionario = (data: any) => {
     let cargo = '';
     let dependencia = '';
+    if (!data) return { cargo, dependencia };
     const { contrato, accionPersonal } = data;
 
     if (contrato) {
-      // console.log('aqui: ');
-      const { conCargo } = contrato;
-      if (conCargo) {
+      const { conCargo, conDependenciaEspecifica } = contrato;
+      if (conCargo && conCargo.trim() !== '') {
         conCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        cargo = contrato.conCargo;
-        dependencia = contrato.conDependenciaEspecifica;
+        cargo = conCargo;
+        dependencia = conDependenciaEspecifica || 'ESPOCH';
+        return { cargo, dependencia };
       }
-      return { cargo, dependencia };
     }
 
-    const { apeCargo } = accionPersonal;
+    if (accionPersonal) {
+      const { apeCargo, apeDepedenciaEspecifica } = accionPersonal;
+      if (apeCargo && apeCargo.trim() !== '') {
+        apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
+        cargo = apeCargo;
+        dependencia = apeDepedenciaEspecifica || 'ESPOCH';
+        return { cargo, dependencia };
+      }
+    }
 
-    apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-    cargo = accionPersonal.apeCargo;
-    dependencia = accionPersonal.apeDepedenciaEspecifica;
     return { cargo, dependencia };
   };
 
@@ -127,13 +158,15 @@ export default class PgEnrolarComponent {
     const { cedula } = usuario;
     const res = await this.swUser.validarGuardia(this.dataEnrol.per_id);
     const { data: roles } = res;
-    if (roles.some((item: IRol) => item.intIdRol == 6 && item.intEstado == 1)) {
+    if (roles && roles.some((item: IRol) => item.intIdRol == 6 && item.intEstado == 1)) {
       this.rol = 6;
       this.getFoto(usuario);
       this.frmRegistro.patchValue({
         cargo: 'GUARDIA',
         dependencia: 'ESPOCH',
+        rolId: 6,
       });
+      return;
     }
 
     const token = await obtenerToken(this.swUser);
@@ -144,14 +177,20 @@ export default class PgEnrolarComponent {
       cedula,
       token
     );
-    if (!success) {
+    if (!success || !data) {
       this.rol = 3;
       await this.obtenerDataAcademico(usuario);
       return;
     }
-    await this.getFoto(usuario);
-    const { cargo, dependencia } = await this.IsDocenteOrFuncionario(data);
 
+    const { cargo, dependencia } = await this.IsDocenteOrFuncionario(data);
+    if (!cargo && !dependencia) {
+      this.rol = 3;
+      await this.obtenerDataAcademico(usuario);
+      return;
+    }
+
+    await this.getFoto(usuario);
     this.frmRegistro.patchValue({
       cargo: cargo,
       dependencia: dependencia,
@@ -181,57 +220,105 @@ export default class PgEnrolarComponent {
     const { per_id, cedula } = usuario;
     if (this.rol === 3) {
       let cedulaConGuion = cedula.slice(0, 9) + '-' + cedula.slice(9, 10);
-      const { listado } = await this.swUser.getInformacionEstudianteSYNC(cedulaConGuion);
-      if (listado.length > 0 && listado[0].strfoto) {
-        this.base64textString.set(listado[0].strfoto);
-        return;
+      try {
+        const res = await this.swUser.getInformacionEstudianteSYNC(cedulaConGuion);
+        if (res && res.listado && res.listado.length > 0 && res.listado[0].strfoto) {
+          this.base64textString.set(res.listado[0].strfoto);
+          return;
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener foto de estudiante fallback:', e);
       }
     }
-    const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(per_id);
-    if (imgArchivo) {
-      this.base64textString.set(imgArchivo);
+    try {
+      const { imgArchivo } = await this.swUser.getFotoTTHHASYNC(per_id);
+      if (imgArchivo) {
+        this.base64textString.set(imgArchivo);
+      }
+    } catch (e) {
+      console.warn('No se pudo obtener foto TTHH fallback:', e);
     }
   };
 
   obtenerDataAcademico = async (usuario: any) => {
     let cedula = usuario.cedula.slice(0, 9) + '-' + usuario.cedula.slice(9, 10);
-    const { listado } = await this.swUser.getInformacionEstudianteSYNC(cedula);
-    if (listado.length == 0) {
-      const { listado: listadoPostgrado } =
-        await this.swUser.validarMatriculaVigentePostGradoSYNC(usuario.cedula);
-      if (listadoPostgrado.length == 0) {
-        this.sinMatricula = true;
+
+    // 1. Validar matrícula en pregrado / nivelación a través del servicio SQL de OAS
+    try {
+      const resAcademico = await this.swUser.validarMatriculaVigenteSYNC(cedula);
+      if (resAcademico && resAcademico.success && resAcademico.listado && resAcademico.listado.length > 0) {
+        const itemMatricula = resAcademico.listado[0];
+        const baseDatos = itemMatricula.carreraSelecionadaBase || '';
+        if (baseDatos) {
+          this.conexion.set(baseDatos);
+        }
+
+        const carreraNombre =
+          itemMatricula.carreraSelecionadaFacultad ||
+          itemMatricula.carreraSeleccionada ||
+          'ESPOCH';
+
+        this.getFoto(usuario);
+        this.frmRegistro.patchValue({
+          cargo: 'ESTUDIANTE',
+          dependencia: carreraNombre,
+          rolId: 3,
+        });
+        this.rol = 3;
+        this.sinMatricula = false;
         return;
       }
+    } catch (error) {
+      console.warn('Error al validar matrícula vigente en pregrado/nivelación:', error);
+    }
 
-      if (listadoPostgrado[0].graduado) {
-        this.sinMatricula = true;
+    // 2. Validar matrícula en posgrado
+    try {
+      const resPostgrado = await this.swUser.validarMatriculaVigentePostGradoSYNC(usuario.cedula);
+      if (resPostgrado && resPostgrado.listado && resPostgrado.listado.length > 0) {
+        const itemPostgrado = resPostgrado.listado[0];
+        if (!itemPostgrado.graduado) {
+          this.getFoto(usuario);
+          this.frmRegistro.patchValue({
+            cargo: 'MAESTRANTE',
+            dependencia: 'POSGRADO',
+            rolId: 3,
+          });
+          this.rol = 3;
+          this.sinMatricula = false;
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Error al validar posgrado:', error);
+    }
+
+    // 3. Fallback adicional si aún existiese información en el servicio de estudiante
+    try {
+      const { listado } = await this.swUser.getInformacionEstudianteSYNC(cedula);
+      if (listado && listado.length > 0) {
+        const item = listado[0];
+        const baseDatos = item.carreraSelecionadaBase || '';
+        if (baseDatos) {
+          this.conexion.set(baseDatos);
+        }
+        const carreraNombre = item.carreraSelecionadaFacultad || item.carreraSeleccionada || 'ESPOCH';
+        this.getFoto(usuario);
+        this.frmRegistro.patchValue({
+          cargo: 'ESTUDIANTE',
+          dependencia: carreraNombre,
+          rolId: 3,
+        });
+        this.rol = 3;
+        this.sinMatricula = false;
         return;
       }
-      this.getFoto(usuario);
-      this.frmRegistro.patchValue({
-        cargo: 'MAESTRANTE',
-        dependencia: 'POSGRADO',
-      });
-      // this.conexion.set();
-      this.rol = 3;
-
-      return;
+    } catch (error) {
+      console.warn('Error en fallback getInformacionEstudianteSYNC:', error);
     }
 
-    this.getFoto(usuario);
-    const { listado: listadoAcademico } =
-      await this.swUser.validarMatriculaVigenteSYNC(cedula);
-
-    if (!listadoAcademico || listadoAcademico.length == 0) {
-      this.sinMatricula = true;
-      return;
-    }
-
-    this.frmRegistro.patchValue({
-      cargo: 'ESTUDIANTE',
-      dependencia: listadoAcademico[0].carreraSelecionadaFacultad,
-    });
+    // Si no tiene matrícula en ningún lado
+    this.sinMatricula = true;
   };
 
   guardar = () => {

@@ -44,7 +44,7 @@
             }
           </div>
           <h2 class="user-name">{{ User().Usuario || 'Nombre no disponible' }}</h2>
-          <span class="user-role-tag">{{ cargo() || 'FUNCIONARIO' }}</span>
+          <span class="user-role-tag">{{ cargo() || nombreRol() || 'ESTUDIANTE' }}</span>
         </div>
 
         <div class="info-grid">

@@ -1,0 +1,46 @@
+/* cspell:disable */
+:host {
+  display: block;
+  width: 100%;
+}
+
+.tree-drag-item {
+  cursor: grab;
+  user-select: none;
+}
+
+.tree-drag-item:active {
+  cursor: grabbing;
+}
+
+.tree-drag-item.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.tree-drop-active {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+  transform: scale(1.01);
+  transition: all 0.2s ease-in-out;
+}
+
+.tree-branch-line {
+  position: relative;
+}
+
+.tree-branch-line::before {
+  content: '';
+  position: absolute;
+  left: 1.25rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: rgba(203, 213, 225, 0.6);
+}
+
+:host-context(.dark) .tree-branch-line::before {
+  background-color: rgba(51, 65, 85, 0.6);
+}
+

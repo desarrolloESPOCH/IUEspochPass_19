@@ -82,6 +82,20 @@ export default class CasComponent {
       }
 
       if (roles.count == 0) {
+        try {
+          if (transformacion.cedula) {
+            const resCentral = await this.swUsuario.obtenerPersonaCentralizadaSYNC(transformacion.cedula);
+            if (resCentral && resCentral.success && resCentral.listado && resCentral.listado.length > 0) {
+              const p = resCentral.listado[0];
+              const apellidos = `${p.per_primerApellido || ''} ${p.per_segundoApellido || ''}`.trim();
+              if (p.per_nombres && p.per_nombres.trim() !== '') transformacion.nombres = p.per_nombres.trim();
+              if (apellidos !== '') transformacion.apellidos = apellidos;
+              if (p.per_email && p.per_email.trim() !== '') transformacion.per_email = p.per_email.trim();
+            }
+          }
+        } catch (errCentral) {
+          console.warn('No se pudo enriquecer datos de sesión con la Centralizada:', errCentral);
+        }
         await this.swCas.saveInfo(transformacion);
         this.router.navigate(['/enrolamiento']);
         return;

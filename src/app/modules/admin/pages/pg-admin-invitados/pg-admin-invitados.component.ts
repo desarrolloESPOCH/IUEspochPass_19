@@ -1,6 +1,6 @@
 // cspell:disable
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
@@ -16,17 +16,20 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ProgressBarModule } from 'primeng/progressbar';
 import * as XLSX from 'xlsx';
+
 import {
   AdminCarnetsService,
-  IGuardiaAdmin,
+  IInvitadoAdmin,
 } from '../../../../services/admin/AdminCarnets.service';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 
-export interface IFilaPreviaExcelGuardia {
+export interface IFilaPreviaExcel {
   fila: number;
   cedula: string;
   nombres: string;
   apellidos: string;
+  dependencia: string;
+  cargo: string;
   telefono: string;
   correo: string;
   valido: boolean;
@@ -36,7 +39,7 @@ export interface IFilaPreviaExcelGuardia {
 }
 
 @Component({
-  selector: 'app-pg-admin-guardias',
+  selector: 'app-pg-admin-invitados',
   imports: [
     CommonModule,
     FormsModule,
@@ -52,24 +55,26 @@ export interface IFilaPreviaExcelGuardia {
     IconFieldModule,
     InputIconModule,
     ProgressBarModule,
+    DatePipe,
   ],
   providers: [MessageService],
-  templateUrl: './pg-admin-guardias.component.html',
-  styleUrl: './pg-admin-guardias.component.css',
+  templateUrl: './pg-admin-invitados.component.html',
+  styleUrl: './pg-admin-invitados.component.css',
 })
-export default class PgAdminGuardiasComponent implements OnInit {
+export default class PgAdminInvitadosComponent implements OnInit {
   private adminService = inject(AdminCarnetsService);
   private messageService = inject(MessageService);
   private swCas = inject(SwCasService);
 
-  // Estados
+  // Estados de carga
   loading = signal<boolean>(false);
-  saving = signal<boolean>(false);
+  savingIndividual = signal<boolean>(false);
+  processingMasivo = signal<boolean>(false);
   searchingPersona = signal<boolean>(false);
 
   // Listado y métricas
-  guardias = signal<IGuardiaAdmin[]>([]);
-  totalGuardias = signal<number>(0);
+  invitados = signal<IInvitadoAdmin[]>([]);
+  totalInvitados = signal<number>(0);
   activosCount = signal<number>(0);
   desactivadosCount = signal<number>(0);
 
@@ -79,27 +84,24 @@ export default class PgAdminGuardiasComponent implements OnInit {
 
   estadosList = [
     { label: 'Todos los estados', value: 'TODOS' },
-    { label: 'Habilitados (Activos)', value: '1' },
-    { label: 'Deshabilitados (Inactivos)', value: '0' },
+    { label: 'Activos / Habilitados', value: '1' },
+    { label: 'Desactivados / Inactivos', value: '0' },
   ];
 
-  // Modal Agregar Guardia
+  // ==============================
+  // MODAL ALTA INDIVIDUAL
+  // ==============================
   dialogAgregar = signal<boolean>(false);
-  cedulaNuevoGuardia: string = '';
+  cedulaNuevo: string = '';
   personaPreview: any = null;
   nuevoNombres: string = '';
   nuevoApellidos: string = '';
   nuevoCorreo: string = '';
   nuevoTelefono: string = '';
+  nuevoDependencia: string = '';
+  nuevoCargo: string = '';
+  mesesVigenciaIndividual: number = 6; // Por defecto 6 meses
   mostrarCamposManuales = signal<boolean>(false);
-
-  // Modal Cambiar Contraseña
-  dialogPassword = signal<boolean>(false);
-  guardandoPassword = signal<boolean>(false);
-  guardiaSeleccionadoPassword: IGuardiaAdmin | null = null;
-  nuevaClave: string = '';
-  correoNotificacionClave: string = '';
-  notificarPorCorreo: boolean = true;
 
   // ==============================
   // MODAL CARGA MASIVA EXCEL
@@ -107,39 +109,31 @@ export default class PgAdminGuardiasComponent implements OnInit {
   dialogMasivo = signal<boolean>(false);
   archivoSeleccionado: File | null = null;
   nombreArchivo: string = '';
-  filasPrevia = signal<IFilaPreviaExcelGuardia[]>([]);
+  filasPrevia = signal<IFilaPreviaExcel[]>([]);
   totalValidos = signal<number>(0);
   totalInvalidos = signal<number>(0);
+  mesesVigenciaMasivo: number = 6; // Por defecto 6 meses
   progresoMasivo = signal<number>(0);
-  processingMasivo = signal<boolean>(false);
   resolviendoCentralizada = signal<boolean>(false);
   filtroPrevia = signal<'TODOS' | 'VALIDOS' | 'INVALIDOS'>('TODOS');
   filtroResultado = signal<'TODOS' | 'EXITOSOS' | 'ERRORES'>('TODOS');
   resultadoLote = signal<any | null>(null);
 
+  // ==============================
+  // MODAL CAMBIAR CONTRASEÑA
+  // ==============================
+  dialogPassword = signal<boolean>(false);
+  guardandoPassword = signal<boolean>(false);
+  invitadoSeleccionadoPassword: IInvitadoAdmin | null = null;
+  nuevaClave: string = '';
+  correoNotificacionClave: string = '';
+  notificarPorCorreo: boolean = true;
+
   ngOnInit() {
-    this.cargarGuardias();
+    this.cargarInvitados();
   }
 
-  private normalizarContacto(valor?: string | null): string {
-    if (!valor) return 'N/A';
-    const trimmed = String(valor).trim();
-    if (
-      !trimmed ||
-      trimmed === '-' ||
-      trimmed.toUpperCase() === 'NULL' ||
-      trimmed.toUpperCase() === 'UNDEFINED' ||
-      trimmed.toUpperCase() === 'N/A' ||
-      trimmed.toUpperCase() === 'S/N' ||
-      trimmed.toUpperCase() === 'NINGUNO' ||
-      trimmed.toUpperCase() === 'NONE'
-    ) {
-      return 'N/A';
-    }
-    return trimmed;
-  }
-
-  cargarGuardias() {
+  cargarInvitados() {
     this.loading.set(true);
     const params: any = {
       busqueda: this.filtroBusqueda,
@@ -148,18 +142,13 @@ export default class PgAdminGuardiasComponent implements OnInit {
       params.estado = this.filtroEstado;
     }
 
-    this.adminService.getGuardias(params).subscribe({
+    this.adminService.getInvitados(params).subscribe({
       next: (res) => {
-        const rawList = res.data || [];
-        const list = rawList.map((g) => ({
-          ...g,
-          strCorreo: this.normalizarContacto(g.strCorreo),
-          strTelefono: this.normalizarContacto(g.strTelefono),
-        }));
-        this.guardias.set(list);
-        this.totalGuardias.set(list.length);
-        this.activosCount.set(list.filter((g) => g.estadoGuardia === 1).length);
-        this.desactivadosCount.set(list.filter((g) => g.estadoGuardia === 0).length);
+        const list = res.data || [];
+        this.invitados.set(list);
+        this.totalInvitados.set(list.length);
+        this.activosCount.set(list.filter((inv) => inv.estadoInvitado === 1).length);
+        this.desactivadosCount.set(list.filter((inv) => inv.estadoInvitado === 0).length);
         this.loading.set(false);
       },
       error: (err) => {
@@ -167,7 +156,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo cargar el listado de guardias.',
+          detail: 'No se pudo cargar el listado de invitados.',
         });
       },
     });
@@ -176,49 +165,54 @@ export default class PgAdminGuardiasComponent implements OnInit {
   limpiarFiltros() {
     this.filtroBusqueda = '';
     this.filtroEstado = 'TODOS';
-    this.cargarGuardias();
+    this.cargarInvitados();
   }
 
-  // Cambiar Estado (Habilitar / Deshabilitar)
-  cambiarEstado(guardia: IGuardiaAdmin) {
-    const nuevoEstado = guardia.estadoGuardia === 1 ? 0 : 1;
+  // Cambiar Estado con Auditoría
+  cambiarEstado(invitado: IInvitadoAdmin) {
+    const nuevoEstado = invitado.estadoInvitado === 1 ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'habilitar' : 'deshabilitar';
     const adminInfo = this.swCas.getUserInfo();
 
-    this.adminService.cambiarEstadoGuardia(guardia.intPersona, nuevoEstado, adminInfo).subscribe({
+    this.adminService.cambiarEstadoInvitado(invitado.intPersona, nuevoEstado, adminInfo).subscribe({
       next: () => {
-
         this.messageService.add({
           severity: 'success',
-          summary: 'Éxito',
-          detail: `Guardia ${accion === 'habilitar' ? 'habilitado' : 'deshabilitado'} correctamente.`,
+          summary: 'Estado Actualizado',
+          detail: `Invitado ${accion === 'habilitar' ? 'habilitado' : 'deshabilitado'} exitosamente.`,
         });
-        this.cargarGuardias();
+        this.cargarInvitados();
       },
       error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `No se pudo ${accion} al guardia.`,
+          detail: `No se pudo ${accion} al invitado.`,
         });
       },
     });
   }
 
-  // Modal Agregar Guardia
+  // ==============================
+  // FLUJO INDIVIDUAL
+  // ==============================
   abrirModalAgregar() {
-    this.cedulaNuevoGuardia = '';
+    this.cedulaNuevo = '';
     this.personaPreview = null;
     this.nuevoNombres = '';
     this.nuevoApellidos = '';
     this.nuevoCorreo = '';
     this.nuevoTelefono = '';
+    this.nuevoDependencia = '';
+    this.nuevoCargo = 'ATENCIÓN / PERSONAL';
+    this.mesesVigenciaIndividual = 6;
     this.mostrarCamposManuales.set(false);
     this.dialogAgregar.set(true);
   }
 
   buscarPersonaPorCedula() {
-    if (!this.cedulaNuevoGuardia || this.cedulaNuevoGuardia.trim() === '') {
+    const cedula = this.cedulaNuevo.trim();
+    if (!cedula) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Atención',
@@ -227,217 +221,115 @@ export default class PgAdminGuardiasComponent implements OnInit {
       return;
     }
 
-    const cedulaLimpia = this.cedulaNuevoGuardia.trim().replace(/[\s-]/g, '').replace(/['"]/g, '');
     this.searchingPersona.set(true);
     this.personaPreview = null;
     this.mostrarCamposManuales.set(false);
-    this.nuevoNombres = '';
-    this.nuevoApellidos = '';
-    this.nuevoCorreo = '';
-    this.nuevoTelefono = '';
 
-    // 1. Consultar si la persona ya está registrada localmente
-    this.adminService.getPersonaCarnet(cedulaLimpia, true).subscribe({
+    this.adminService.getPersonaCarnet(cedula).subscribe({
       next: (res) => {
-        if (res && res.data && res.data.length > 0) {
-          this.searchingPersona.set(false);
-          const persona = res.data[0];
-
-          const correo = this.normalizarContacto(persona.strCorreo);
-          const telefono = this.normalizarContacto(persona.strTelefono);
-
-          this.personaPreview = {
-            ...persona,
-            strCorreo: correo,
-            strTelefono: telefono,
-            origen: 'local',
-          };
-
-          this.nuevoNombres = (persona.strNombres || '').trim();
-          this.nuevoApellidos = (persona.strApellidos || '').trim();
-          this.nuevoCorreo = correo;
-          this.nuevoTelefono = telefono;
-          this.mostrarCamposManuales.set(true);
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Persona Registrada',
-            detail: 'La persona se encuentra registrada en el sistema local.',
-          });
-        } else {
-          // Si no está registrado en el sistema local, consultar Centralizada institucional
-          this.consultarCentralizada(cedulaLimpia);
-        }
-      },
-      error: () => {
-        // En caso de error local, intentar consultar en la Centralizada
-        this.consultarCentralizada(cedulaLimpia);
-      },
-    });
-  }
-
-  private consultarCentralizada(cedula: string) {
-    this.adminService.obtenerPersonaCentralizada(cedula).subscribe({
-      next: (resp) => {
         this.searchingPersona.set(false);
-        if (resp && resp.success && resp.listado && resp.listado.length > 0) {
-          const din = resp.listado[0];
-
-          this.nuevoNombres = (din.per_nombres || din.per_nombre || [din.per_primerNombre, din.per_segundoNombre].map((n: any) => (n || '').trim()).filter((n: string) => n.length > 0).join(' ') || '').trim();
-          const apellidos = [din.per_primerApellido, din.per_segundoApellido]
-            .map((a: any) => (a || '').trim())
-            .filter((a: string) => a.length > 0)
-            .join(' ') || (din.per_apellidos || '').trim();
-          this.nuevoApellidos = apellidos;
-
-          const emailRaw = [din.per_email, din.per_correo]
-            .map((e: any) => (e ? String(e).trim() : ''))
-            .find((e: string) => e.length > 0);
-          const correo = this.normalizarContacto(emailRaw);
-          this.nuevoCorreo = correo;
-
-          const telRaw = [din.per_telefonoCelular, din.per_telefonoCasa, din.per_telefono]
-            .map((t: any) => (t ? String(t).trim() : ''))
-            .find((t: string) => t.length > 0);
-          const telefono = this.normalizarContacto(telRaw);
-          this.nuevoTelefono = telefono;
-
-          this.personaPreview = {
-            strCedula: cedula,
-            strNombres: this.nuevoNombres,
-            strApellidos: this.nuevoApellidos,
-            strCorreo: this.nuevoCorreo,
-            strTelefono: this.nuevoTelefono,
-            rol: 'Centralizada Institucional',
-            origen: 'centralizada',
-          };
-
-          this.mostrarCamposManuales.set(true);
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Datos de Centralizada',
-            detail: 'Se autocompletaron los datos de la persona desde la Centralizada institucional.',
-          });
+        if (res && res.data && res.data.length > 0) {
+          this.personaPreview = res.data[0];
+          this.nuevoNombres = (this.personaPreview.strNombres || '').trim();
+          this.nuevoApellidos = (this.personaPreview.strApellidos || '').trim();
+          const emailRaw = this.personaPreview.strCorreo;
+          if (emailRaw && !['null', 'undefined', 'n/a', ''].includes(String(emailRaw).toLowerCase().trim())) {
+            this.nuevoCorreo = String(emailRaw).trim();
+          }
+          const telRaw = this.personaPreview.strTelefono;
+          if (telRaw && !['null', 'undefined', 'n/a', ''].includes(String(telRaw).toLowerCase().trim())) {
+            this.nuevoTelefono = String(telRaw).trim();
+          }
+          if (this.personaPreview.strDepencia) {
+            this.nuevoDependencia = this.personaPreview.strDepencia;
+          }
         } else {
-          this.mostrarCamposManuales.set(true);
-          this.nuevoCorreo = 'N/A';
-          this.nuevoTelefono = 'N/A';
           this.messageService.add({
             severity: 'info',
             summary: 'Persona no registrada',
-            detail: 'No se encontraron datos en la Centralizada institucional. Complete los datos manualmente.',
+            detail: 'Complete los datos de la persona para el registro.',
           });
         }
       },
       error: () => {
         this.searchingPersona.set(false);
-        this.mostrarCamposManuales.set(true);
-        this.nuevoCorreo = 'N/A';
-        this.nuevoTelefono = 'N/A';
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Aviso',
-          detail: 'No se pudo conectar a la Centralizada. Complete los datos manualmente.',
-        });
       },
     });
   }
 
-  guardarNuevoGuardia() {
-    if (!this.cedulaNuevoGuardia || this.cedulaNuevoGuardia.trim() === '') {
+  guardarNuevoInvitado() {
+    if (!this.cedulaNuevo || this.cedulaNuevo.trim() === '') {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Campo requerido',
-        detail: 'Ingrese el número de cédula.',
+        summary: 'Cédula requerida',
+        detail: 'Ingrese el número de cédula del invitado.',
       });
       return;
     }
 
-    const cedulaLimpia = this.cedulaNuevoGuardia.trim().replace(/[\s-]/g, '').replace(/['"]/g, '');
-
-    if (this.personaPreview && this.personaPreview.strCedula !== cedulaLimpia) {
-      this.personaPreview = null;
-      this.buscarPersonaPorCedula();
-      return;
-    }
-    const nombresFinal = (this.nuevoNombres !== undefined && this.nuevoNombres !== null && this.nuevoNombres.trim() !== ''
-      ? this.nuevoNombres
-      : (this.personaPreview?.strNombres || '')).trim();
-    const apellidosFinal = (this.nuevoApellidos !== undefined && this.nuevoApellidos !== null && this.nuevoApellidos.trim() !== ''
-      ? this.nuevoApellidos
-      : (this.personaPreview?.strApellidos || '')).trim();
+    const nombresFinal = (this.nuevoNombres || this.personaPreview?.strNombres || '').trim();
+    const apellidosFinal = (this.nuevoApellidos || this.personaPreview?.strApellidos || '').trim();
 
     if (!nombresFinal || !apellidosFinal) {
-      if (!this.personaPreview && !this.mostrarCamposManuales()) {
-        this.buscarPersonaPorCedula();
-        return;
-      }
-      this.mostrarCamposManuales.set(true);
-      if (!this.nuevoCorreo) this.nuevoCorreo = 'N/A';
-      if (!this.nuevoTelefono) this.nuevoTelefono = 'N/A';
       this.messageService.add({
         severity: 'warn',
         summary: 'Campos requeridos',
-        detail: 'Nombres y apellidos son requeridos para registrar al guardia.',
+        detail: 'Nombres y apellidos son requeridos para registrar al invitado.',
       });
       return;
     }
 
-    const correoFinal = this.normalizarContacto(
-      this.nuevoCorreo !== undefined && this.nuevoCorreo !== null ? this.nuevoCorreo : this.personaPreview?.strCorreo
-    );
-    const telefonoFinal = this.normalizarContacto(
-      this.nuevoTelefono !== undefined && this.nuevoTelefono !== null ? this.nuevoTelefono : this.personaPreview?.strTelefono
-    );
-
-    // Validación de correo personal obligatorio para envío de credenciales
-    if (!correoFinal || correoFinal === 'N/A' || !correoFinal.includes('@')) {
-      this.mostrarCamposManuales.set(true);
+    const correoFinal = (this.nuevoCorreo || this.personaPreview?.strCorreo || '').trim();
+    if (!correoFinal || correoFinal.toLowerCase() === 'n/a' || !correoFinal.includes('@')) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Correo personal requerido',
-        detail: 'Por favor ingrese un correo electrónico válido para enviar las credenciales de acceso al guardia.',
+        detail: 'Ingrese un correo personal válido para enviar las credenciales de acceso al invitado.',
       });
       return;
     }
 
-    this.saving.set(true);
+    if (!this.nuevoDependencia || this.nuevoDependencia.trim() === '') {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Dependencia / Bar requerida',
+        detail: 'Indique el bar, local o empresa proveedora a la que pertenece.',
+      });
+      return;
+    }
+
+    this.savingIndividual.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
     const body: any = {
-      strCedula: cedulaLimpia,
+      strCedula: this.cedulaNuevo.trim(),
       strNombres: nombresFinal,
       strApellidos: apellidosFinal,
       strCorreo: correoFinal,
-      strTelefono: telefonoFinal,
-      adminInfo: this.swCas.getUserInfo(),
+      strTelefono: (this.nuevoTelefono || '').trim(),
+      strDepencia: this.nuevoDependencia.trim(),
+      strCargo: this.nuevoCargo.trim() || 'INVITADO',
+      mesesVigencia: this.mesesVigenciaIndividual || 6,
+      adminInfo: adminInfo,
     };
 
-    this.adminService.agregarGuardia(body).subscribe({
-
+    this.adminService.agregarInvitado(body).subscribe({
       next: (res) => {
-        this.saving.set(false);
-        if (res && res.count === -1) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: res.message || 'No se pudo agregar al guardia.',
-          });
-          return;
-        }
+        this.savingIndividual.set(false);
         this.dialogAgregar.set(false);
         this.messageService.add({
           severity: 'success',
-          summary: 'Guardia Registrado',
-          detail: 'El usuario ha sido registrado y habilitado como Guardia correctamente.',
+          summary: 'Invitado Registrado',
+          detail: 'El usuario fue registrado con rol INVITADO y su carnet activado por 6 meses.',
         });
-        this.cargarGuardias();
+        this.cargarInvitados();
       },
       error: (err) => {
-        this.saving.set(false);
+        this.savingIndividual.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: err.error?.message || 'No se pudo agregar al guardia.',
+          detail: err.error?.message || 'No se pudo registrar al invitado.',
         });
       },
     });
@@ -452,6 +344,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.filasPrevia.set([]);
     this.totalValidos.set(0);
     this.totalInvalidos.set(0);
+    this.mesesVigenciaMasivo = 6;
     this.progresoMasivo.set(0);
     this.resolviendoCentralizada.set(false);
     this.filtroPrevia.set('TODOS');
@@ -473,7 +366,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.resultadoLote.set(null);
   }
 
-  get filasPreviaFiltradas(): IFilaPreviaExcelGuardia[] {
+  get filasPreviaFiltradas(): IFilaPreviaExcel[] {
     const filtro = this.filtroPrevia();
     const lista = this.filasPrevia();
     if (filtro === 'VALIDOS') return lista.filter((f) => f.valido);
@@ -504,9 +397,9 @@ export default class PgAdminGuardiasComponent implements OnInit {
 
   descargarPlantilla() {
     const encabezados = [
-      ['CEDULA', 'NOMBRES', 'APELLIDOS', 'TELEFONO', 'CORREO'],
-      ['0604172296', 'Juan Carlos', 'Pérez Morales', '0991234567', 'guardia1@gmail.com'],
-      ['0605987654', '', '', '0987654321', 'guardia2@gmail.com'],
+      ['CEDULA', 'NOMBRES', 'APELLIDOS', 'LOCAL_O_EMPRESA', 'CARGO', 'TELEFONO', 'CORREO'],
+      ['1850575133', 'Carlos Eduardo', 'Sánchez López', 'Bar Facultad de Mecánica', 'Atención al Cliente', '0991234567', 'personal_bar@gmail.com'],
+      ['0604172296', '', '', 'Distribuidora Lácteos San Pedro', 'Repartidor / Proveedor', '0987654321', 'proveedor@lacteos.com'],
     ];
 
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(encabezados);
@@ -514,13 +407,15 @@ export default class PgAdminGuardiasComponent implements OnInit {
       { wch: 15 },
       { wch: 25 },
       { wch: 25 },
+      { wch: 35 },
+      { wch: 25 },
       { wch: 15 },
       { wch: 30 },
     ];
 
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Guardias_Seguridad');
-    XLSX.writeFile(wb, 'Plantilla_Guardias_ESPOCH.xlsx');
+    XLSX.utils.book_append_sheet(wb, ws, 'Invitados_Proveedores');
+    XLSX.writeFile(wb, 'Plantilla_Invitados_ESPOCH.xlsx');
   }
 
   onArchivoSeleccionado(event: any) {
@@ -575,7 +470,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
           return;
         }
 
-        const previsualizacion: IFilaPreviaExcelGuardia[] = [];
+        const previsualizacion: IFilaPreviaExcel[] = [];
         let validos = 0;
         let invalidos = 0;
 
@@ -583,6 +478,8 @@ export default class PgAdminGuardiasComponent implements OnInit {
           const rawCedula = String(row['CEDULA'] || row['cedula'] || row['Cedula'] || row['Cédula'] || '').trim();
           const nombres = String(row['NOMBRES'] || row['nombres'] || row['Nombre'] || row['NOMBRE'] || '').trim();
           const apellidos = String(row['APELLIDOS'] || row['apellidos'] || row['Apellido'] || row['APELLIDO'] || '').trim();
+          const dependencia = String(row['LOCAL_O_EMPRESA'] || row['EMPRESA'] || row['DEPENDENCIA'] || row['dependencia'] || row['Bar'] || 'BAR / PROVEEDOR').trim();
+          const cargo = String(row['CARGO'] || row['cargo'] || 'INVITADO').trim();
           const telefono = String(row['TELEFONO'] || row['telefono'] || '').trim();
           const correo = String(row['CORREO'] || row['correo'] || '').trim();
 
@@ -619,6 +516,8 @@ export default class PgAdminGuardiasComponent implements OnInit {
             cedula: cedulaLimpia,
             nombres: nombres || (faltanNombres && esValido ? 'Consultando...' : ''),
             apellidos: apellidos,
+            dependencia: dependencia || 'BAR / PROVEEDOR',
+            cargo: cargo || 'INVITADO',
             telefono,
             correo,
             valido: esValido,
@@ -637,7 +536,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
           this.messageService.add({
             severity: 'info',
             summary: 'Consultando Centralizada',
-            detail: `Se detectaron ${pendientes.length} registros sin nombres. Consultando Centralizada institucional...`,
+            detail: `Se detectaron ${pendientes.length} invitados sin nombres. Sincronizando con Centralizada institucional...`,
           });
           this.resolverNombresCentralizada(previsualizacion);
         } else {
@@ -659,7 +558,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
     reader.readAsArrayBuffer(file);
   }
 
-  async resolverNombresCentralizada(filas: IFilaPreviaExcelGuardia[]) {
+  async resolverNombresCentralizada(filas: IFilaPreviaExcel[]) {
     const pendientes = filas.filter((f) => f.origenInfo === 'pendiente');
     if (pendientes.length === 0) return;
 
@@ -734,11 +633,11 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.messageService.add({
       severity: 'success',
       summary: 'Centralizada sincronizada',
-      detail: 'Se completó la verificación de nombres desde la Centralizada institucional.',
+      detail: 'Se completó la verificación de nombres de invitados desde la Centralizada institucional.',
     });
   }
 
-  private actualizarTotalesFilas(filas: IFilaPreviaExcelGuardia[]) {
+  private actualizarTotalesFilas(filas: IFilaPreviaExcel[]) {
     this.filasPrevia.set([...filas]);
     this.totalValidos.set(filas.filter((f) => f.valido).length);
     this.totalInvalidos.set(filas.filter((f) => !f.valido).length);
@@ -750,7 +649,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
       this.messageService.add({
         severity: 'warn',
         summary: 'Sin registros válidos',
-        detail: 'No hay filas con datos válidos para procesar.',
+        detail: 'No hay filas con cédulas válidas para procesar.',
       });
       return;
     }
@@ -763,13 +662,17 @@ export default class PgAdminGuardiasComponent implements OnInit {
       strCedula: v.cedula,
       strNombres: v.nombres,
       strApellidos: v.apellidos,
+      strDepencia: v.dependencia,
+      strCargo: v.cargo,
       strTelefono: v.telefono,
       strCorreo: v.correo,
+      mesesVigencia: this.mesesVigenciaMasivo || 6,
     }));
 
     this.adminService
-      .cargaMasivaGuardias({
+      .cargaMasivaInvitados({
         lista,
+        mesesVigencia: this.mesesVigenciaMasivo,
         adminInfo,
       })
       .subscribe({
@@ -781,9 +684,9 @@ export default class PgAdminGuardiasComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Lote Completado',
-            detail: res.message || 'Se procesó la carga masiva de guardias exitosamente.',
+            detail: res.message || 'Se procesó la carga masiva de invitados exitosamente.',
           });
-          this.cargarGuardias();
+          this.cargarInvitados();
         },
         error: (err) => {
           this.processingMasivo.set(false);
@@ -806,22 +709,37 @@ export default class PgAdminGuardiasComponent implements OnInit {
       ESTADO: d.estado,
       DETALLE: d.mensaje,
       NOMBRE: d.datos ? `${d.datos.strNombres || ''} ${d.datos.strApellidos || ''}`.trim() : 'N/A',
+      LOCAL_O_BAR: d.datos ? d.datos.strDepencia || 'N/A' : 'N/A',
       CORREO: d.datos ? d.datos.strCorreo || 'N/A' : 'N/A',
+      FECHA_EXPIRACION_CARNET: d.datos ? d.datos.dtFecha_Fin || 'N/A' : 'N/A',
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataReporte);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Resultado_Lote_Guardias');
-    XLSX.writeFile(wb, `Reporte_Carga_Guardias_${Date.now()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, 'Resultado_Lote_Invitados');
+    XLSX.writeFile(wb, `Reporte_Carga_Invitados_${Date.now()}.xlsx`);
+  }
+
+  getSeverityVigencia(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (estado) {
+      case 'ACTIVO':
+        return 'success';
+      case 'VENCIDO':
+        return 'danger';
+      case 'DESACTIVADO':
+        return 'secondary';
+      default:
+        return 'warn';
+    }
   }
 
   // ==========================================
   // CAMBIO DE CONTRASEÑA
   // ==========================================
 
-  abrirModalPassword(guardia: IGuardiaAdmin) {
-    this.guardiaSeleccionadoPassword = guardia;
-    this.correoNotificacionClave = guardia.strCorreo && guardia.strCorreo !== 'N/A' ? guardia.strCorreo : '';
+  abrirModalPassword(invitado: IInvitadoAdmin) {
+    this.invitadoSeleccionadoPassword = invitado;
+    this.correoNotificacionClave = invitado.strCorreo && invitado.strCorreo !== 'N/A' ? invitado.strCorreo : '';
     this.nuevaClave = this.generarPasswordAleatorio();
     this.notificarPorCorreo = true;
     this.dialogPassword.set(true);
@@ -841,7 +759,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
   }
 
   guardarPassword() {
-    if (!this.guardiaSeleccionadoPassword) return;
+    if (!this.invitadoSeleccionadoPassword) return;
 
     if (!this.nuevaClave || this.nuevaClave.trim().length < 4) {
       this.messageService.add({
@@ -866,11 +784,11 @@ export default class PgAdminGuardiasComponent implements OnInit {
 
     this.adminService
       .cambiarPassword({
-        strCedula: this.guardiaSeleccionadoPassword.strCedula,
+        strCedula: this.invitadoSeleccionadoPassword.strCedula,
         nuevaClave: this.nuevaClave.trim(),
         strCorreo: this.correoNotificacionClave.trim(),
-        strNombres: `${this.guardiaSeleccionadoPassword.strNombres} ${this.guardiaSeleccionadoPassword.strApellidos}`.trim(),
-        rol: 'GUARDIA DE SEGURIDAD',
+        strNombres: `${this.invitadoSeleccionadoPassword.strNombres} ${this.invitadoSeleccionadoPassword.strApellidos}`.trim(),
+        rol: this.invitadoSeleccionadoPassword.strDepencia || 'BAR / PROVEEDOR',
         notificarCorreo: this.notificarPorCorreo,
         adminInfo,
       })
@@ -883,7 +801,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
             summary: 'Contraseña Actualizada',
             detail: res.message || 'La contraseña ha sido actualizada exitosamente.',
           });
-          this.cargarGuardias();
+          this.cargarInvitados();
         },
         error: (err) => {
           this.guardandoPassword.set(false);

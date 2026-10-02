@@ -1,0 +1,455 @@
+<!-- cspell:disable -->
+<p-toast></p-toast>
+
+<div class="historial-container p-4 md:p-6 max-w-7xl mx-auto flex flex-col gap-6">
+  <!-- ENCABEZADO -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 dark:border-zinc-800 pb-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+        <i class="pi pi-history text-blue-600 text-2xl md:text-3xl"></i>
+        Historial de Entradas y Accesos
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Monitoreo en tiempo real y auditoría de escaneos de carnets (válidos y no válidos).
+      </p>
+    </div>
+
+    <!-- BOTÓN EXPORTAR EXCEL -->
+    <div class="flex items-center gap-2">
+      <p-button
+        label="Exportar a Excel"
+        icon="pi pi-file-excel"
+        severity="success"
+        [loading]="exporting()"
+        (onClick)="descargarExcel()"
+        pTooltip="Descargar reporte con los filtros actuales"
+        tooltipPosition="bottom"
+      />
+    </div>
+  </div>
+
+  <!-- TARJETAS DE RESUMEN Y MÉTRICAS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total General -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Accesos</p>
+        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">{{ totales().total | number }}</p>
+        <span class="text-xs text-blue-600 font-medium">Histórico general</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-xl">
+        <i class="pi pi-list"></i>
+      </div>
+    </div>
+
+    <!-- Total Válidos -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Accesos Válidos</p>
+        <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ totales().totalValidos | number }}</p>
+        <span class="text-xs text-green-600 font-medium">Permitidos correctamente</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/40 text-green-600 flex items-center justify-center text-xl">
+        <i class="pi pi-check-circle"></i>
+      </div>
+    </div>
+
+    <!-- Total No Válidos / Fallidos -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">No Válidos / Denegados</p>
+        <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ totales().totalInvalidos | number }}</p>
+        <span class="text-xs text-red-500 font-medium">QR expirado / Inválido</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center text-xl">
+        <i class="pi pi-times-circle"></i>
+      </div>
+    </div>
+
+    <!-- Total Hoy -->
+    <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Accesos de Hoy</p>
+        <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{{ totales().totalHoy | number }}</p>
+        <span class="text-xs text-indigo-500 font-medium">Fecha actual</span>
+      </div>
+      <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center text-xl">
+        <i class="pi pi-calendar"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DE FILTROS -->
+  <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 md:p-5 shadow-xs flex flex-col gap-4">
+    <!-- FILTROS RÁPIDOS DE FECHA -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-zinc-800 pb-3">
+      <span class="text-xs font-semibold text-gray-500 uppercase">Rango Rápido:</span>
+      <div class="flex flex-wrap gap-2">
+        <p-button
+          label="Hoy"
+          size="small"
+          [outlined]="filtroFechaInicio !== filtroFechaFin || !filtroFechaInicio"
+          severity="secondary"
+          (onClick)="establecerRangoRapido('hoy')"
+        />
+        <p-button
+          label="Últimos 7 días"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('semana')"
+        />
+        <p-button
+          label="Este Mes"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('mes')"
+        />
+        <p-button
+          label="Todo el Histórico"
+          size="small"
+          outlined
+          severity="secondary"
+          (onClick)="establecerRangoRapido('todos')"
+        />
+      </div>
+    </div>
+
+    <!-- FORMULARIO DE FILTROS DETALLADOS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <!-- Fecha Desde -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Fecha Desde</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="filtroFechaInicio"
+          class="w-full text-sm"
+        />
+      </div>
+
+      <!-- Fecha Hasta -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Fecha Hasta</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="filtroFechaFin"
+          class="w-full text-sm"
+        />
+      </div>
+
+      <!-- Estado de Acceso -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Estado de Acceso</label>
+        <p-select
+          [options]="estadosAccesoOpciones"
+          [(ngModel)]="filtroEstadoAcceso"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full text-sm"
+        />
+      </div>
+
+      <!-- Rol del Usuario -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Rol del Usuario</label>
+        <p-select
+          [options]="rolesOpciones"
+          [(ngModel)]="filtroRol"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full text-sm"
+        />
+      </div>
+
+      <!-- Tipo Movimiento -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Tipo de Acceso</label>
+        <p-select
+          [options]="tiposMovimientoOpciones"
+          [(ngModel)]="filtroTipo"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full text-sm"
+        />
+      </div>
+
+      <!-- Buscador por texto -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">Buscar (Usuario/Guardia)</label>
+        <p-iconfield styleClass="w-full">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            type="text"
+            pInputText
+            [(ngModel)]="filtroBusqueda"
+            placeholder="Cédula, nombre..."
+            class="w-full text-sm"
+            (keyup.enter)="cargarHistorial(1)"
+          />
+        </p-iconfield>
+      </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN DE FILTRADO -->
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button
+        label="Limpiar Filtros"
+        icon="pi pi-filter-slash"
+        severity="secondary"
+        outlined
+        size="small"
+        (onClick)="limpiarFiltros()"
+      />
+      <p-button
+        label="Aplicar Filtros"
+        icon="pi pi-search"
+        severity="primary"
+        size="small"
+        [loading]="loading()"
+        (onClick)="cargarHistorial(1)"
+      />
+    </div>
+  </div>
+
+  <!-- TABLA DE RESULTADOS -->
+  <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xs">
+    <p-table
+      [value]="accesos()"
+      [loading]="loading()"
+      [lazy]="true"
+      [paginator]="true"
+      [rows]="limit()"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 20, 50, 100]"
+      (onPage)="onPageChange($event)"
+      styleClass="p-datatable-sm"
+      responsiveLayout="stack"
+      [breakpoint]="'960px'"
+    >
+      <!-- Encabezado de la tabla -->
+      <ng-template pTemplate="header">
+        <tr class="bg-gray-50 dark:bg-zinc-800/60 text-xs text-gray-600 dark:text-gray-300">
+          <th style="width: 150px">Fecha y Hora</th>
+          <th>Usuario (Dueño QR)</th>
+          <th>Rol / Dependencia</th>
+          <th>Guardia / Lector</th>
+          <th style="width: 110px" class="text-center">Tipo</th>
+          <th style="width: 140px" class="text-center">Estado</th>
+          <th style="width: 80px" class="text-center">Detalle</th>
+        </tr>
+      </ng-template>
+
+      <!-- Cuerpo de la tabla -->
+      <ng-template pTemplate="body" let-acc>
+        <tr class="hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 text-sm transition-colors">
+          <!-- Fecha y Hora -->
+          <td>
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-800 dark:text-gray-200">
+                {{ acc.fechaRegistro | date:'dd/MM/yyyy' }}
+              </span>
+              <span class="text-xs text-gray-500 flex items-center gap-1">
+                <i class="pi pi-clock text-[10px]"></i>
+                {{ acc.fechaRegistro | date:'hh:mm:ss a' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Usuario (Dueño del QR) -->
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs"
+                [ngClass]="acc.estadoAcceso === 1 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'">
+                {{ (acc.nombreDueno || 'U').charAt(0) }}
+              </div>
+              <div class="flex flex-col">
+                <span class="font-semibold text-gray-800 dark:text-gray-200">
+                  {{ acc.nombreDueno }}
+                </span>
+                <span class="text-xs text-gray-500 font-mono">
+                  CI: {{ acc.cedulaDueno }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Rol y Dependencia -->
+          <td>
+            <div class="flex flex-col gap-1 items-start">
+              <p-tag
+                [value]="acc.rolDueno || 'SIN ROL'"
+                [severity]="getSeverityRol(acc.rolDueno)"
+                styleClass="text-xs font-semibold px-2 py-0.5"
+              />
+              <span class="text-xs text-gray-500 truncate max-w-[180px]" [pTooltip]="acc.dependenciaDueno">
+                {{ acc.dependenciaDueno || 'ESPOCH' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Guardia / Operador -->
+          <td>
+            <div class="flex flex-col">
+              <span class="text-gray-800 dark:text-gray-200 font-medium">
+                {{ acc.nombreGuardia }}
+              </span>
+              <span class="text-xs text-gray-500 font-mono" *ngIf="acc.cedulaGuardia">
+                ID/CI: {{ acc.cedulaGuardia }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Tipo Movimiento -->
+          <td class="text-center">
+            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md"
+              [ngClass]="acc.intTipoRegistro === 2 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'">
+              <i [ngClass]="acc.intTipoRegistro === 2 ? 'pi pi-sign-out' : 'pi pi-sign-in'" class="text-[11px]"></i>
+              {{ acc.tipoRegistroTexto || 'ENTRADA' }}
+            </span>
+          </td>
+
+          <!-- Estado Acceso -->
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-1">
+              <p-tag
+                [value]="acc.estadoAcceso === 1 ? 'VÁLIDO' : 'NO VÁLIDO'"
+                [severity]="getSeverityEstado(acc.estadoAcceso)"
+                [icon]="acc.estadoAcceso === 1 ? 'pi pi-check' : 'pi pi-times'"
+                styleClass="text-xs font-bold"
+              />
+              <span *ngIf="acc.estadoAcceso === 0 && acc.strMotivoRechazo" class="text-[11px] text-red-500 truncate max-w-[130px]" [pTooltip]="acc.strMotivoRechazo">
+                {{ acc.strMotivoRechazo }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Acción Detalle -->
+          <td class="text-center">
+            <p-button
+              icon="pi pi-eye"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              (onClick)="verDetalle(acc)"
+              pTooltip="Ver detalle completo del acceso"
+              tooltipPosition="left"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Mensaje cuando no hay registros -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <i class="pi pi-inbox text-4xl text-gray-400"></i>
+              <p class="font-medium">No se encontraron registros de accesos con los filtros seleccionados.</p>
+              <p class="text-xs text-gray-400">Intenta ampliar el rango de fechas o restablecer los filtros.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- MODAL DE DETALLE COMPLETO -->
+<p-dialog
+  [(visible)]="modalDetalleVisible"
+  [modal]="true"
+  [header]="'Detalle del Registro de Acceso #' + (accesoSeleccionado()?.intIdRegistro || '')"
+  [style]="{ width: '90vw', maxWidth: '550px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="flex flex-col gap-4 text-sm" *ngIf="accesoSeleccionado() as acc">
+    <!-- Estado y Tipo -->
+    <div class="flex items-center justify-between p-3 rounded-lg border"
+      [ngClass]="acc.estadoAcceso === 1 ? 'bg-green-50/50 border-green-200 dark:bg-green-950/20 dark:border-green-800' : 'bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800'">
+      <div class="flex items-center gap-2">
+        <i [ngClass]="acc.estadoAcceso === 1 ? 'pi pi-check-circle text-green-600' : 'pi pi-times-circle text-red-600'" class="text-xl"></i>
+        <div>
+          <p class="font-bold" [ngClass]="acc.estadoAcceso === 1 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'">
+            {{ acc.estadoAcceso === 1 ? 'ACCESO AUTORIZADO' : 'ACCESO DENEGADO / NO VÁLIDO' }}
+          </p>
+          <p class="text-xs text-gray-500">{{ acc.tipoRegistroTexto }} - {{ acc.fechaRegistro | date:'dd/MM/yyyy hh:mm:ss a' }}</p>
+        </div>
+      </div>
+      <p-tag [value]="acc.estadoAcceso === 1 ? 'Válido' : 'Rechazado'" [severity]="getSeverityEstado(acc.estadoAcceso)" />
+    </div>
+
+    <!-- Motivo si fue denegado -->
+    <div *ngIf="acc.estadoAcceso === 0 && acc.strMotivoRechazo" class="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg">
+      <p class="text-xs font-semibold text-red-700 dark:text-red-300">Motivo del Rechazo:</p>
+      <p class="text-sm text-red-800 dark:text-red-200 mt-0.5">{{ acc.strMotivoRechazo }}</p>
+      <p class="text-[11px] text-gray-500 font-mono mt-1" *ngIf="acc.strCodigoLeido">Código leído: {{ acc.strCodigoLeido }}</p>
+    </div>
+
+    <!-- Información del Dueño -->
+    <div class="border border-gray-200 dark:border-zinc-800 rounded-lg p-3 flex flex-col gap-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Información del Usuario (Dueño)</p>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <span class="text-gray-500 block">Nombres:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.nombreDueno }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Cédula:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.cedulaDueno }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Rol:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.rolDueno }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Dependencia:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.dependenciaDueno }}</span>
+        </div>
+        <div *ngIf="acc.correoDueno && acc.correoDueno !== 'N/A'">
+          <span class="text-gray-500 block">Correo:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.correoDueno }}</span>
+        </div>
+        <div *ngIf="acc.telefonoDueno && acc.telefonoDueno !== 'N/A'">
+          <span class="text-gray-500 block">Teléfono:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.telefonoDueno }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Guardia / Punto de Control -->
+    <div class="border border-gray-200 dark:border-zinc-800 rounded-lg p-3 flex flex-col gap-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Operador del Escaneo</p>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <span class="text-gray-500 block">Guardia / Lector:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.nombreGuardia }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">ID / Cédula Guardia:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.cedulaGuardia || acc.strUsuarioRegitro }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">ID QR:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">{{ acc.intQR || 'N/A' }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">ID Registro:</span>
+          <span class="font-semibold text-gray-800 dark:text-gray-200">#{{ acc.intIdRegistro }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      severity="secondary"
+      (onClick)="cerrarModalDetalle()"
+    />
+  </ng-template>
+</p-dialog>

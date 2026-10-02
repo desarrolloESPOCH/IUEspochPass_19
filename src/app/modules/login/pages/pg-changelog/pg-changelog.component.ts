@@ -32,6 +32,29 @@ export default class PgChangelogComponent implements OnInit {
   // Datos del changelog para el Frontend (Aplicación)
   frontChanges = signal<ChangelogItem[]>([
     {
+      version: '2.1.0',
+      fecha: '23 Septiembre 2026',
+      nuevasFunciones: [
+        'Módulo de Administración de Carnets con búsqueda avanzada, gestión de estados y estadísticas en tiempo real.',
+        'Módulo de Administración y Gestión de Guardias de seguridad institucional.',
+        'Módulo de Registro y Control de Invitados para asignación de pases temporales.',
+        'Soporte completo para Progressive Web App (PWA) con Service Worker, manifiesto web e instalación móvil.',
+        'Módulo interactivo de escáner QR y pantalla de validación instantánea de credenciales con visualización de datos.',
+        'Nuevo menú lateral de navegación administrativa y cabecera de dashboard con control de roles.'
+      ],
+      correcciones: [
+        'Optimización y corrección en las validaciones de enrolamiento y expiración de carnet.',
+        'Ajuste en la verificación de permisos CAS y protección de rutas administrativas mediante guards.',
+        'Corrección de alineación visual y diseño responsivo en dashboard y lectura de códigos QR para pantallas móviles.'
+      ],
+      mejoras: [
+        'Implementación del servicio ThemeService con soporte y persistencia de temas claro/oscuro y paleta corporativa.',
+        'Rediseño visual de la tarjeta de carnet digital con efectos interactivos y soporte de gestos táctiles.',
+        'Actualización y optimización de dependencias globales y estilos institucionales.',
+        'Guía de configuración PWA y depuración móvil en la documentación técnica.'
+      ]
+    },
+    {
       version: '2.0.0',
       fecha: '11 Junio 2026',
       nuevasFunciones: [
@@ -85,6 +108,26 @@ export default class PgChangelogComponent implements OnInit {
 
   // Datos del changelog para el Backend (Servicios)
   backChanges = signal<ChangelogItem[]>([
+    {
+      version: '1.3.0',
+      fecha: '23 Septiembre 2026',
+      nuevasFunciones: [
+        'Servicios y controladores CRUD para el módulo administrativo de carnets (búsqueda, estados y estadísticas).',
+        'Módulo y servicio de cuentas externas para registro, validación y gestión de invitados.',
+        'Servicios de gestión, auditoría y control de accesos para personal de guardias.',
+        'Validación directa de matrículas en base de datos y mecanismo fallback para estudiantes sin períodos regulares.',
+        'Controlador y rutas específicas para administración de carnets y emisión de accesos.'
+      ],
+      correcciones: [
+        'Ajuste en la consistencia de estados durante el cambio de vigencia y renovación de credenciales.',
+        'Corrección en consultas de verificación de dependencias y roles de usuarios.'
+      ],
+      mejoras: [
+        'Implementación del middleware de validación administrativa (validateAdmin.middleware) para protección de endpoints.',
+        'Optimización de consultas SQL Server para reducción de tiempos de respuesta en validación QR.',
+        'Reorganización modular de rutas (adminCarnet.router, admin.router, carnet.router).'
+      ]
+    },
     {
       version: '1.2.0',
       fecha: '11 Junio 2026',

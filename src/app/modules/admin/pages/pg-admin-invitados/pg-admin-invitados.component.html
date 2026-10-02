@@ -1,17 +1,23 @@
-<!-- cspell:disable -->
-<div class="w-full p-2 sm:p-4 md:p-6 flex flex-col gap-4 sm:gap-6 max-w-[1650px] mx-auto">
-
-  <!-- Encabezado de la página -->
+<div class="w-full flex flex-col gap-4 sm:gap-6 p-2 sm:p-4 md:p-6 max-w-[1650px] mx-auto animate-fadein">
+  <!-- Encabezado -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
     <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-        <i class="pi pi-shield text-blue-600 dark:text-blue-400 text-3xl"></i>
-        Gestión de Guardias de Seguridad
-      </h1>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
-        Administre el personal de seguridad institucional: agregue nuevos guardias por cédula y habilite o deshabilite sus permisos de acceso y escaneo QR.
-      </p>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl shadow-inner">
+          <i class="pi pi-users"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+            Gestión de Invitados (Bares y Proveedores)
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+            Registro, habilitación de carnet y vigencias para personal externo sin correo institucional.
+          </p>
+        </div>
+      </div>
     </div>
+
+    <!-- Botones de Acción Superior -->
     <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
       <p-button
         label="Descargar Plantilla"
@@ -26,7 +32,7 @@
         styleClass="p-button-outlined p-button-success p-button-sm">
       </p-button>
       <p-button
-        label="Agregar Guardia"
+        label="Agregar Invitado"
         icon="pi pi-user-plus"
         (click)="abrirModalAgregar()"
         styleClass="p-button-primary p-button-sm">
@@ -34,128 +40,173 @@
     </div>
   </div>
 
-  <!-- Métricas / Tarjetas KPIs -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <!-- Total Guardias -->
+  <!-- Métricas Rápidas -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Guardias</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invitados</span>
         <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
-          {{ totalGuardias() }}
+          {{ totalInvitados() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl shadow-inner">
-        <i class="pi pi-shield"></i>
+      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shadow-inner">
+        <i class="pi pi-users"></i>
       </div>
     </div>
 
-    <!-- Habilitados / Activos -->
     <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
-        <span class="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Guardias Activos</span>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Habilitados / Activos</span>
         <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-          {{ activosCount() }}
+          {{ activosCount() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
         <i class="pi pi-check-circle"></i>
       </div>
     </div>
 
-    <!-- Inactivos / Deshabilitados -->
     <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
-        <span class="text-xs font-semibold text-rose-500 uppercase tracking-wider">Guardias Inactivos</span>
-        <h3 class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
-          {{ desactivadosCount() }}
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desactivados / Inactivos</span>
+        <h3 class="text-2xl font-black text-slate-600 dark:text-slate-400 mt-1">
+          {{ desactivadosCount() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400 text-xl shadow-inner">
+      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-xl shadow-inner">
         <i class="pi pi-ban"></i>
       </div>
     </div>
   </div>
 
-  <!-- Tabla de Guardias con Filtros -->
+  <!-- Tabla Principal de Invitados -->
   <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
-    
-    <!-- Filtros de búsqueda -->
-    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-      <div class="flex-1">
-        <p-iconfield iconPosition="left" class="w-full">
+    <!-- Barra de Filtros -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+      <div class="w-full md:w-80">
+        <p-iconfield iconPosition="left" styleClass="w-full">
           <p-inputicon styleClass="pi pi-search"></p-inputicon>
-          <input pInputText type="text" [(ngModel)]="filtroBusqueda" (keyup.enter)="cargarGuardias()" placeholder="Buscar guardia por cédula, nombres o correo..." class="w-full" />
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            (keyup.enter)="cargarInvitados()"
+            placeholder="Buscar por cédula, nombre o local..."
+            class="w-full" />
         </p-iconfield>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <p-select [options]="estadosList" [(ngModel)]="filtroEstado" (onChange)="cargarGuardias()" optionLabel="label" optionValue="value" placeholder="Filtrar por Estado" [appendTo]="'body'" styleClass="w-full sm:w-56"></p-select>
-        <p-button label="Buscar" icon="pi pi-search" (click)="cargarGuardias()" styleClass="p-button-primary p-button-sm"></p-button>
-        <p-button label="Limpiar" icon="pi pi-filter-slash" (click)="limpiarFiltros()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <p-select
+          [options]="estadosList"
+          [(ngModel)]="filtroEstado"
+          (onChange)="cargarInvitados()"
+          optionLabel="label"
+          optionValue="value"
+          [appendTo]="'body'"
+          styleClass="w-full md:w-56">
+        </p-select>
+
+        <p-button
+          icon="pi pi-filter-slash"
+          (click)="limpiarFiltros()"
+          pTooltip="Limpiar Filtros"
+          styleClass="p-button-outlined p-button-secondary">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          (click)="cargarInvitados()"
+          [loading]="loading()"
+          pTooltip="Recargar Listado"
+          styleClass="p-button-outlined p-button-primary">
+        </p-button>
       </div>
     </div>
 
     <!-- Tabla PrimeNG -->
     <p-table
-      [value]="guardias()"
+      [value]="invitados()"
       [loading]="loading()"
       [paginator]="true"
       [rows]="15"
-      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      [rowsPerPageOptions]="[10, 15, 30, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} invitados"
       styleClass="p-datatable-sm p-datatable-striped"
-      [tableStyle]="{ 'min-width': '50rem' }">
-      
+      responsiveLayout="scroll">
+
       <ng-template pTemplate="header">
         <tr>
           <th>Cédula</th>
-          <th>Nombre del Guardia</th>
-          <th>Correo Electrónico</th>
-          <th>Teléfono</th>
-          <th>Dependencia / Cargo</th>
-          <th>Estado del Rol</th>
-          <th class="text-center">Acciones</th>
+          <th>Nombres y Apellidos</th>
+          <th>Local / Bar / Proveedor</th>
+          <th>Cargo / Función</th>
+          <th>Contacto</th>
+          <th class="text-center">Estado Invitado</th>
+          <th class="text-center">Vigencia Carnet</th>
+          <th class="text-center">Acción</th>
         </tr>
       </ng-template>
 
-      <ng-template pTemplate="body" let-g>
+      <ng-template pTemplate="body" let-inv>
         <tr>
           <td>
-            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ g.strCedula }}</span>
+            <span class="font-bold text-slate-800 dark:text-slate-100">{{ inv.strCedula }}</span>
           </td>
           <td>
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs">
-                {{ g.strNombres?.charAt(0) }}{{ g.strApellidos?.charAt(0) }}
-              </div>
-              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ g.strNombres }} {{ g.strApellidos }}</span>
+            <div class="font-semibold text-slate-800 dark:text-slate-100">
+              {{ inv.strNombres }} {{ inv.strApellidos }}
             </div>
           </td>
-          <td class="text-xs text-slate-600 dark:text-slate-400">
-            {{ g.strCorreo || 'N/A' }}
-          </td>
-          <td class="text-xs text-slate-600 dark:text-slate-400">
-            {{ g.strTelefono || 'N/A' }}
-          </td>
-          <td class="text-xs text-slate-600 dark:text-slate-400">
-            <span class="font-medium">{{ g.strDepencia || 'ESPOCH' }}</span>
+          <td>
+            <div class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-medium rounded inline-block">
+              <i class="pi pi-building mr-1"></i>{{ inv.strDepencia || 'BAR / PROVEEDOR' }}
+            </div>
           </td>
           <td>
-            <p-tag [value]="g.estadoTexto" [severity]="g.estadoGuardia === 1 ? 'success' : 'danger'"></p-tag>
+            <span class="text-xs text-slate-600 dark:text-slate-300">{{ inv.strCargo || 'INVITADO' }}</span>
+          </td>
+          <td>
+            <div class="text-xs text-slate-500 flex flex-col">
+              <span><i class="pi pi-phone mr-1"></i>{{ inv.strTelefono || 'N/A' }}</span>
+              <span *ngIf="inv.strCorreo"><i class="pi pi-envelope mr-1"></i>{{ inv.strCorreo }}</span>
+            </div>
           </td>
           <td class="text-center">
-            <div class="flex items-center justify-center gap-1.5">
+            <p-tag
+              [value]="inv.estadoInvitado === 1 ? 'Habilitado' : 'Desactivado'"
+              [severity]="inv.estadoInvitado === 1 ? 'success' : 'secondary'">
+            </p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-0.5">
+              <p-tag
+                [value]="inv.estadoVigencia || 'ACTIVO'"
+                [severity]="getSeverityVigencia(inv.estadoVigencia || 'ACTIVO')">
+              </p-tag>
+              <span class="text-[10px] text-slate-400" *ngIf="inv.dtFecha_Fin">
+                Hasta: {{ inv.dtFecha_Fin | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
               <p-button
                 icon="pi pi-key"
-                [pTooltip]="'Cambiar Contraseña'"
-                tooltipPosition="top"
-                (click)="abrirModalPassword(g)"
-                styleClass="p-button-outlined p-button-warning p-button-xs">
+                severity="warn"
+                pTooltip="Cambiar Contraseña"
+                (click)="abrirModalPassword(inv)"
+                [rounded]="true"
+                [text]="true">
               </p-button>
-              @if (g.estadoGuardia === 1) {
-              <p-button label="Deshabilitar" icon="pi pi-ban" [pTooltip]="'Deshabilitar permisos de guardia'" tooltipPosition="top" (click)="cambiarEstado(g)" styleClass="p-button-outlined p-button-danger p-button-xs"></p-button>
-              }@else {
-              <p-button label="Habilitar" icon="pi pi-check" [pTooltip]="'Habilitar permisos de guardia'" tooltipPosition="top" (click)="cambiarEstado(g)" styleClass="p-button-outlined p-button-success p-button-xs"></p-button>
-              }
+              <p-button
+                [icon]="inv.estadoInvitado === 1 ? 'pi pi-ban' : 'pi pi-check'"
+                [severity]="inv.estadoInvitado === 1 ? 'danger' : 'success'"
+                [pTooltip]="inv.estadoInvitado === 1 ? 'Deshabilitar Invitado' : 'Habilitar Invitado'"
+                (click)="cambiarEstado(inv)"
+                [rounded]="true"
+                [text]="true">
+              </p-button>
             </div>
           </td>
         </tr>
@@ -163,124 +214,165 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7" class="text-center p-6 text-slate-400">
-            <i class="pi pi-inbox text-4xl mb-2 block"></i>
-            No se encontraron guardias registrados.
+          <td colspan="8" class="text-center py-8 text-slate-400">
+            <i class="pi pi-inbox text-3xl mb-2 block"></i>
+            No se encontraron invitados registrados con los criterios seleccionados.
           </td>
         </tr>
       </ng-template>
     </p-table>
   </div>
-
 </div>
 
-<!-- Modal para Agregar Nuevo Guardia -->
+<!-- ========================================== -->
+<!-- MODAL: AGREGAR INVITADO INDIVIDUAL         -->
+<!-- ========================================== -->
 <p-dialog
-  header="Agregar Nuevo Guardia de Seguridad"
   [(visible)]="dialogAgregar"
   [modal]="true"
-  [style]="{ width: '90vw', maxWidth: '520px' }"
+  header="Registrar Nuevo Invitado (Bar / Proveedor)"
+  [style]="{ width: '90vw', maxWidth: '580px' }"
   [draggable]="false"
   [resizable]="false">
-  
-  <div class="flex flex-col gap-4 py-2">
-    <p class="text-xs text-slate-500 dark:text-slate-400">
-      Ingrese la cédula de la persona. Si ya existe en la base de datos institucional o local, sus datos se cargarán automáticamente.
-    </p>
 
-    <!-- Buscador de Cédula -->
-    <div class="flex flex-col gap-2">
-      <label class="font-bold text-sm text-slate-700 dark:text-slate-300">Número de Cédula</label>
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Campo Cédula con Búsqueda -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Número de Cédula: <span class="text-rose-500">*</span>
+      </label>
       <div class="flex gap-2">
-        <input pInputText type="text" [(ngModel)]="cedulaNuevoGuardia" (keyup.enter)="buscarPersonaPorCedula()" placeholder="Ej. 0604172296" class="w-full" />
-        <p-button label="Buscar" icon="pi pi-search" [loading]="searchingPersona()" (click)="buscarPersonaPorCedula()" styleClass="p-button-primary"></p-button>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="cedulaNuevo"
+          (keyup.enter)="buscarPersonaPorCedula()"
+          placeholder="Ej. 1850575133"
+          class="w-full" />
+        <p-button
+          label="Buscar"
+          icon="pi pi-search"
+          [loading]="searchingPersona()"
+          (click)="buscarPersonaPorCedula()"
+          styleClass="p-button-outlined p-button-primary">
+        </p-button>
       </div>
+      <span class="text-[11px] text-slate-400">El sistema buscará automáticamente los nombres en la base institucional / DINARDAP.</span>
     </div>
 
-    <!-- Vista previa de Persona Encontrada -->
+    <!-- Preview si se encontró la persona -->
     @if (personaPreview) {
-    <div class="p-4 bg-blue-50 dark:bg-slate-900 rounded-xl border border-blue-200 dark:border-slate-700 text-sm">
-      <div class="flex justify-between items-center mb-1">
-        <span class="text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase">
-          {{ personaPreview.origen === 'centralizada' ? 'Persona Encontrada en Centralizada' : 'Usuario Encontrado' }}
-        </span>
+    <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow">
+        {{ personaPreview.strNombres?.charAt(0) }}{{ personaPreview.strApellidos?.charAt(0) }}
       </div>
-      <h4 class="font-bold text-slate-800 dark:text-slate-100 text-base">
-        {{ (nuevoNombres && nuevoNombres.trim() !== '' ? nuevoNombres.trim() : personaPreview.strNombres) }} {{ (nuevoApellidos && nuevoApellidos.trim() !== '' ? nuevoApellidos.trim() : personaPreview.strApellidos) }}
-      </h4>
-      <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">
-        Correo: <strong>{{ (nuevoCorreo && nuevoCorreo.trim() !== '' ? nuevoCorreo.trim() : 'N/A') }}</strong> | Teléfono: <strong>{{ (nuevoTelefono && nuevoTelefono.trim() !== '' ? nuevoTelefono.trim() : 'N/A') }}</strong> | Rol actual: <strong>{{ personaPreview.rol || 'Sin Rol' }}</strong>
-      </p>
+      <div class="flex-1">
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+          {{ personaPreview.strNombres }} {{ personaPreview.strApellidos }}
+        </h4>
+        <span class="text-xs text-slate-500">Cédula: {{ personaPreview.strCedula }}</span>
+      </div>
     </div>
     }
 
     <!-- Campos de datos de la persona -->
-    @if (mostrarCamposManuales()) {
-    <div class="flex flex-col gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-      <span class="text-xs font-bold text-blue-600 dark:text-blue-400">
-        {{ personaPreview?.origen === 'centralizada' ? 'Datos autocompletados desde la Centralizada institucional:' : (personaPreview ? 'Datos de la persona:' : 'Complete los datos de la persona:') }}
-      </span>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Nombres <span class="text-rose-500">*</span></label>
-          <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres completos" class="w-full" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Apellidos <span class="text-rose-500">*</span></label>
-          <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos completos" class="w-full" />
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nombres: <span class="text-rose-500">*</span></label>
+        <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres completos" class="w-full" />
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium font-bold text-slate-700 dark:text-slate-200">
-            Correo Personal / Institucional <span class="text-rose-500">*</span>
-          </label>
-          <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="ejemplo@gmail.com o @espoch.edu.ec" class="w-full" />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium">Teléfono / Celular</label>
-          <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="0999999999" class="w-full" />
-        </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Apellidos: <span class="text-rose-500">*</span></label>
+        <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos completos" class="w-full" />
       </div>
-
-      <!-- Nota informativa sobre credenciales -->
-      <div class="p-2.5 bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2 text-xs text-blue-800 dark:text-blue-300">
-        <i class="pi pi-info-circle text-sm mt-0.5 text-blue-600 dark:text-blue-400"></i>
-        <span>
-          Al habilitar al guardia, se creará su cuenta de acceso y se le enviarán automáticamente sus <strong>credenciales (usuario y contraseña generada)</strong> a este correo.
-        </span>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Correo Personal: <span class="text-rose-500">*</span></label>
+        <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="correo_personal@gmail.com" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Teléfono / Celular:</label>
+        <input pInputText type="text" [(ngModel)]="nuevoTelefono" placeholder="099..." class="w-full" />
       </div>
     </div>
-    }
+
+    <!-- Nota informativa de credenciales -->
+    <div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg flex items-start gap-2 text-xs text-purple-900 dark:text-purple-300">
+      <i class="pi pi-envelope text-sm mt-0.5 text-purple-600 dark:text-purple-400"></i>
+      <span>
+        Al registrar y activar el carnet, se creará la cuenta del invitado y se enviarán automáticamente sus <strong>credenciales (usuario y contraseña generada)</strong> a su correo personal.
+      </span>
+    </div>
+
+    <!-- Campo Local / Bar / Proveedor -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Local, Bar o Empresa Proveedora: <span class="text-rose-500">*</span>
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="nuevoDependencia"
+        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro"
+        class="w-full" />
+    </div>
+
+    <!-- Campo Cargo -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="nuevoCargo"
+        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo"
+        class="w-full" />
+    </div>
+
+    <!-- Vigencia del Carnet (Por defecto 6 meses) -->
+    <div class="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl flex flex-col gap-2">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Vigencia de Acceso y Carnet:
+      </label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="6" class="text-purple-600" />
+          <span><strong>6 Meses (Recomendado)</strong></span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="12" class="text-purple-600" />
+          <span>12 Meses (1 Año)</span>
+        </label>
+      </div>
+      <span class="text-[11px] text-slate-400">Se generará y activará automáticamente el carnet con esta vigencia en el sistema de torniquetes.</span>
+    </div>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
       <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
-      <p-button label="Habilitar como Guardia" icon="pi pi-check" [loading]="saving()" (click)="guardarNuevoGuardia()" styleClass="p-button-success"></p-button>
+      <p-button label="Registrar y Activar Carnet" icon="pi pi-check" [loading]="savingIndividual()" (click)="guardarNuevoInvitado()" styleClass="p-button-success"></p-button>
     </div>
   </ng-template>
 </p-dialog>
 
 <!-- ========================================== -->
-<!-- MODAL: CARGA MASIVA DE GUARDIAS VÍA EXCEL  -->
+<!-- MODAL: CARGA MASIVA VÍA EXCEL             -->
 <!-- ========================================== -->
 <p-dialog
   [(visible)]="dialogMasivo"
   [modal]="true"
-  header="Carga Masiva de Guardias de Seguridad vía Excel (.xlsx)"
-  [style]="{ width: '94vw', maxWidth: '920px' }"
+  header="Carga Masiva de Invitados (Bares / Proveedores) vía Excel (.xlsx)"
+  [style]="{ width: '94vw', maxWidth: '940px' }"
   [draggable]="false"
   [resizable]="false">
 
   <div class="flex flex-col gap-4 py-2 text-sm">
     <!-- Instrucciones y Descarga de Plantilla -->
     @if (!resultadoLote()) {
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-800 rounded-xl">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800 rounded-xl">
       <div>
-        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Plantilla Oficial de Guardias</h4>
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Plantilla Oficial de Invitados</h4>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Si no incluye nombres en la matriz, el sistema los <strong>obtendrá automáticamente desde la Centralizada institucional (DINARDAP)</strong>.
         </p>
@@ -289,25 +381,25 @@
         label="Descargar Plantilla (.xlsx)"
         icon="pi pi-download"
         (click)="descargarPlantilla()"
-        styleClass="p-button-sm p-button-outlined p-button-primary">
+        styleClass="p-button-sm p-button-outlined p-button-purple">
       </p-button>
     </div>
 
     <!-- Zona Drag & Drop / Selección de Archivo -->
     <div
-      class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-400 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50"
+      class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-purple-400 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50"
       (dragover)="onDragOver($event)"
       (drop)="onDrop($event)"
       (click)="fileInput.click()">
       <input #fileInput type="file" (change)="onArchivoSeleccionado($event)" accept=".xlsx, .xls" class="hidden" />
-      <i class="pi pi-upload text-3xl text-blue-500 mb-2"></i>
+      <i class="pi pi-upload text-3xl text-purple-500 mb-2"></i>
       <span class="font-bold text-slate-700 dark:text-slate-200 text-sm">
         Haga clic aquí o arrastre su archivo Excel (.xlsx)
       </span>
       <span class="text-xs text-slate-400 mt-1" *ngIf="!nombreArchivo">
-        Se validarán cédulas, se completarán nombres de Centralizada y se enviarán credenciales al correo personal.
+        Se validarán cédulas, se obtendrán nombres y se enviarán credenciales al correo personal.
       </span>
-      <span class="text-xs font-bold text-blue-600 mt-1 flex items-center gap-1.5" *ngIf="nombreArchivo">
+      <span class="text-xs font-bold text-purple-600 mt-1 flex items-center gap-1.5" *ngIf="nombreArchivo">
         <i class="pi pi-file-excel text-emerald-600"></i> Archivo cargado: {{ nombreArchivo }}
       </span>
     </div>
@@ -316,7 +408,7 @@
     @if (resolviendoCentralizada()) {
     <div class="p-3 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 rounded-xl flex items-center gap-3 text-xs text-cyan-800 dark:text-cyan-200 animate-pulse">
       <i class="pi pi-spin pi-spinner text-base text-cyan-600"></i>
-      <span>Consultando y sincronizando nombres desde la <strong>Centralizada institucional (DINARDAP)</strong> para las filas sin nombre...</span>
+      <span>Consultando y sincronizando nombres desde la <strong>Centralizada institucional (DINARDAP)</strong> para los invitados sin nombre...</span>
     </div>
     }
 
@@ -335,7 +427,7 @@
             [class.bg-white]="filtroPrevia() === 'TODOS'"
             [class.shadow-sm]="filtroPrevia() === 'TODOS'"
             [class.font-bold]="filtroPrevia() === 'TODOS'"
-            [class.text-blue-600]="filtroPrevia() === 'TODOS'"
+            [class.text-purple-600]="filtroPrevia() === 'TODOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Todos ({{ filasPrevia().length }})
           </button>
@@ -370,7 +462,8 @@
               <th class="p-2.5">#</th>
               <th class="p-2.5">Cédula</th>
               <th class="p-2.5">Nombre Completo</th>
-              <th class="p-2.5">Origen Datos</th>
+              <th class="p-2.5">Origen</th>
+              <th class="p-2.5">Local / Bar / Empresa</th>
               <th class="p-2.5">Correo</th>
               <th class="p-2.5 text-center">Estado / Observación</th>
             </tr>
@@ -414,6 +507,9 @@
                   </span>
                 }
               </td>
+              <td class="p-2.5 text-purple-700 dark:text-purple-300 font-medium">
+                {{ fila.dependencia }}
+              </td>
               <td class="p-2.5 font-mono text-[11px]">{{ fila.correo }}</td>
               <td class="p-2.5 text-center">
                 <span class="px-2 py-0.5 rounded text-[11px] font-bold inline-block"
@@ -431,9 +527,9 @@
 
       <!-- Barra de Progreso durante la Carga -->
       @if (processingMasivo()) {
-      <div class="flex flex-col gap-1.5 mt-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200">
-        <span class="text-xs text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner text-sm"></i> Registrando guardias en el sistema y enviando credenciales...
+      <div class="flex flex-col gap-1.5 mt-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200">
+        <span class="text-xs text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-2">
+          <i class="pi pi-spin pi-spinner text-sm"></i> Registrando invitados y activando carnets en el sistema...
         </span>
         <p-progressbar [value]="progresoMasivo()" styleClass="h-2 rounded-full"></p-progressbar>
       </div>
@@ -457,7 +553,7 @@
 
         <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
           <div>
-            <span class="text-xs text-emerald-600 font-medium">Guardias Registrados</span>
+            <span class="text-xs text-emerald-600 font-medium">Invitados Registrados</span>
             <h4 class="text-xl font-bold text-emerald-700 dark:text-emerald-300">{{ totalResultadosExitosos }}</h4>
           </div>
           <i class="pi pi-check-circle text-2xl text-emerald-500"></i>
@@ -475,7 +571,7 @@
       <!-- Barra de Filtro de Resultados -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <span class="text-xs font-bold text-slate-700 dark:text-slate-200">
-          Detalle del Resultado por Guardia:
+          Detalle del Resultado por Invitado:
         </span>
         <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs">
           <button
@@ -484,7 +580,7 @@
             [class.bg-white]="filtroResultado() === 'TODOS'"
             [class.shadow-sm]="filtroResultado() === 'TODOS'"
             [class.font-bold]="filtroResultado() === 'TODOS'"
-            [class.text-blue-600]="filtroResultado() === 'TODOS'"
+            [class.text-purple-600]="filtroResultado() === 'TODOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Todos ({{ resultadoLote().detalles?.length || 0 }})
           </button>
@@ -518,6 +614,7 @@
             <tr>
               <th class="p-2.5">Cédula</th>
               <th class="p-2.5">Nombre Completo</th>
+              <th class="p-2.5">Local / Empresa</th>
               <th class="p-2.5">Correo</th>
               <th class="p-2.5 text-center">Estado</th>
               <th class="p-2.5">Motivo / Detalle</th>
@@ -529,6 +626,9 @@
               <td class="p-2.5 font-bold font-mono">{{ det.cedula || 'N/A' }}</td>
               <td class="p-2.5 font-medium">
                 {{ det.datos ? ((det.datos.strNombres || '') + ' ' + (det.datos.strApellidos || '')).trim() || 'N/A' : 'N/A' }}
+              </td>
+              <td class="p-2.5 text-purple-700 dark:text-purple-300 font-medium">
+                {{ det.datos?.strDepencia || 'BAR / PROVEEDOR' }}
               </td>
               <td class="p-2.5 font-mono text-[11px]">
                 <div>{{ det.datos?.strCorreo || 'N/A' }}</div>
@@ -599,24 +699,27 @@
 
 <!-- Modal: Cambiar Contraseña -->
 <p-dialog
-  header="Cambiar Contraseña de Guardia"
+  header="Cambiar Contraseña de Invitado"
   [(visible)]="dialogPassword"
   [modal]="true"
   [style]="{ width: '90vw', maxWidth: '480px' }"
   [draggable]="false"
   [resizable]="false">
 
-  <div class="flex flex-col gap-4 py-2" *ngIf="guardiaSeleccionadoPassword">
-    <!-- Info del Guardia -->
+  <div class="flex flex-col gap-4 py-2" *ngIf="invitadoSeleccionadoPassword">
+    <!-- Info del Invitado -->
     <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-sm">
-        {{ guardiaSeleccionadoPassword.strNombres.charAt(0) }}{{ guardiaSeleccionadoPassword.strApellidos.charAt(0) }}
+      <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/60 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm">
+        {{ invitadoSeleccionadoPassword.strNombres.charAt(0) }}{{ invitadoSeleccionadoPassword.strApellidos.charAt(0) }}
       </div>
       <div class="flex flex-col flex-1 min-w-0">
         <span class="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
-          {{ guardiaSeleccionadoPassword.strNombres }} {{ guardiaSeleccionadoPassword.strApellidos }}
+          {{ invitadoSeleccionadoPassword.strNombres }} {{ invitadoSeleccionadoPassword.strApellidos }}
         </span>
-        <span class="text-xs font-mono text-slate-500">Cédula: {{ guardiaSeleccionadoPassword.strCedula }}</span>
+        <span class="text-xs font-mono text-slate-500">Cédula: {{ invitadoSeleccionadoPassword.strCedula }}</span>
+        <span class="text-[11px] text-purple-600 dark:text-purple-400 font-medium truncate">
+          {{ invitadoSeleccionadoPassword.strDepencia || 'BAR / PROVEEDOR' }}
+        </span>
       </div>
     </div>
 
@@ -661,10 +764,10 @@
     <div class="flex items-center gap-2 mt-1">
       <input
         type="checkbox"
-        id="chkNotificarGuardia"
+        id="chkNotificarInvitado"
         [(ngModel)]="notificarPorCorreo"
-        class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer" />
-      <label for="chkNotificarGuardia" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+        class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer" />
+      <label for="chkNotificarInvitado" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
         Enviar credenciales actualizadas por correo electrónico
       </label>
     </div>

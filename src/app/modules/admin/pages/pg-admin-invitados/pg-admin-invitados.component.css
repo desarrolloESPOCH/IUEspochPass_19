@@ -1,0 +1,5 @@
+/* Estilos específicos para pg-admin-invitados */
+:host {
+  display: block;
+  width: 100%;
+}

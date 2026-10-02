@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { PgDashBoardComponent } from './pages/pg-dash-board/pg-dash-board.component';
+import { authGuard } from '../../utils/guards/auth.guard';
 
 // cspell:disable
 export const routesLogin: Routes = [
@@ -14,6 +15,7 @@ export const routesLogin: Routes = [
   {
     path: 'dashboard',
     component: PgDashBoardComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'users',
@@ -29,6 +31,26 @@ export const routesLogin: Routes = [
         path: 'admin/guardias',
         loadComponent: () =>
           import('./../admin/pages/pg-admin-guardias/pg-admin-guardias.component'),
+      },
+      {
+        path: 'admin/invitados',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-invitados/pg-admin-invitados.component'),
+      },
+      {
+        path: 'admin/historial-accesos',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-historial-accesos/pg-admin-historial-accesos.component'),
+      },
+      {
+        path: 'admin/auditoria-logs',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-auditoria-logs/pg-admin-auditoria-logs.component'),
+      },
+      {
+        path: 'admin/usuarios-roles',
+        loadComponent: () =>
+          import('./../admin/pages/pg-admin-usuarios-roles/pg-admin-usuarios-roles.component'),
       },
       {
         path: 'changelog',

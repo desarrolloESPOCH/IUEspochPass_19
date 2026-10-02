@@ -11,6 +11,7 @@ export class EventosService {
   CaminoMijasService = new EventEmitter<any>();
   LoadingService = new EventEmitter<boolean>();
   obProceso = new EventEmitter<any>();
+  abrirCambioPassword = new EventEmitter<void>();
 
   constructor() {}
 

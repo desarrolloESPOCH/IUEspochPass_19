@@ -62,15 +62,54 @@ export class CSidebarComponent implements OnInit {
           icon: 'pi pi-shield',
           command: () => this.obtenerRutas('/dashboard/admin/guardias')
         });
+        menu.push({
+          label: 'Gestión de Invitados',
+          icon: 'pi pi-users',
+          command: () => this.obtenerRutas('/dashboard/admin/invitados')
+        });
+        menu.push({
+          label: 'Historial de Accesos',
+          icon: 'pi pi-calendar-clock',
+          command: () => this.obtenerRutas('/dashboard/admin/historial-accesos')
+        });
+        menu.push({
+          label: 'Usuarios, Roles y Menús',
+          icon: 'pi pi-users-cog',
+          command: () => this.obtenerRutas('/dashboard/admin/usuarios-roles')
+        });
+        menu.push({
+          label: 'Logs de Auditoría',
+          icon: 'pi pi-shield-check',
+          command: () => this.obtenerRutas('/dashboard/admin/auditoria-logs')
+        });
+      } else if (rol === 6) {
+        menu.push({
+          label: 'Historial de Accesos',
+          icon: 'pi pi-calendar-clock',
+          command: () => this.obtenerRutas('/dashboard/admin/historial-accesos')
+        });
+        menu.push({
+          label: 'Cambiar Contraseña',
+          icon: 'pi pi-key',
+          command: () => this.swEventosServices.abrirCambioPassword.emit()
+        });
+      } else if (rol === 4 || rol === 5) {
+        menu.push({
+          label: 'Cambiar Contraseña',
+          icon: 'pi pi-key',
+          command: () => this.swEventosServices.abrirCambioPassword.emit()
+        });
       }
       menu.push({
         label: 'Historial de Cambios',
         icon: 'pi pi-history',
         command: () => this.obtenerRutas('/dashboard/changelog')
       });
+
       this.items = menu;
     });
   };
+
 
   obtenerRutas = (url: string) => {
     this.router.navigateByUrl(url);

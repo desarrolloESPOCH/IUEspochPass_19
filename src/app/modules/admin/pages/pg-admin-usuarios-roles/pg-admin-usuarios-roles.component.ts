@@ -31,6 +31,7 @@ import {
   IRolOpcion,
 } from '../../../../services/admin/AdminSeguridad.service';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
+import { normalizarTexto } from '../../../../utils/text/normalizarTexto';
 
 export interface IOpcionMenuMatriz {
   intIdOpcion: number;
@@ -248,7 +249,7 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
 
   // Menús Padres filtrados para el catálogo (Tab 4)
   padresCatalogoFiltrados = computed(() => {
-    const query = this.filtroBusquedaPadres.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaPadres);
     const padres = this.opcionesPadreList();
     const matriz = this.opcionesMatriz();
 
@@ -263,8 +264,8 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
       .filter((p) => {
         if (!query) return true;
         return (
-          p.strNombre.toLowerCase().includes(query) ||
-          (p.strUrl || '').toLowerCase().includes(query)
+          normalizarTexto(p.strNombre).includes(query) ||
+          normalizarTexto(p.strUrl).includes(query)
         );
       })
       .sort((a, b) => (a.intOrden || 0) - (b.intOrden || 0));
@@ -272,7 +273,7 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
 
   // Rutas Hijas filtradas para el catálogo (Tab 4)
   hijasCatalogoFiltradas = computed(() => {
-    const query = this.filtroBusquedaHijas.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaHijas);
     const hijas = this.opcionesHijasList();
     const padres = this.opcionesPadreList();
     const matriz = this.opcionesMatriz();
@@ -297,10 +298,10 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
       .filter((h) => {
         if (!query) return true;
         return (
-          h.strNombre.toLowerCase().includes(query) ||
-          (h.strUrl || '').toLowerCase().includes(query) ||
-          (h.strPadreNombre || '').toLowerCase().includes(query) ||
-          (h.strDescripcion || '').toLowerCase().includes(query)
+          normalizarTexto(h.strNombre).includes(query) ||
+          normalizarTexto(h.strUrl).includes(query) ||
+          normalizarTexto(h.strPadreNombre).includes(query) ||
+          normalizarTexto(h.strDescripcion).includes(query)
         );
       })
       .sort((a, b) => (a.intOrden || 0) - (b.intOrden || 0));
@@ -371,13 +372,13 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
   // Opciones disponibles para agregar desde el catálogo
   opcionesDisponiblesParaCatalogo = computed(() => {
     const hijas = this.opcionesHijasList();
-    const query = this.filtroBusquedaCatalogoOpciones.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaCatalogoOpciones);
     return hijas.filter((h) => {
       if (!query) return true;
       return (
-        h.strNombre.toLowerCase().includes(query) ||
-        (h.strDescripcion || '').toLowerCase().includes(query) ||
-        (h.strUrl || '').toLowerCase().includes(query)
+        normalizarTexto(h.strNombre).includes(query) ||
+        normalizarTexto(h.strDescripcion).includes(query) ||
+        normalizarTexto(h.strUrl).includes(query)
       );
     });
   });
@@ -385,12 +386,12 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
   // Padres disponibles para agregar desde el catálogo
   padresDisponiblesParaCatalogo = computed(() => {
     const padres = this.opcionesPadreList();
-    const query = this.filtroBusquedaCatalogoPadres.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaCatalogoPadres);
     return padres.filter((p) => {
       if (!query) return true;
       return (
-        p.strNombre.toLowerCase().includes(query) ||
-        (p.strUrl || '').toLowerCase().includes(query)
+        normalizarTexto(p.strNombre).includes(query) ||
+        normalizarTexto(p.strUrl).includes(query)
       );
     });
   });
@@ -429,7 +430,7 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
     const padres = this.opcionesPadreList();
     const hijas = this.opcionesHijasList();
     const matriz = this.opcionesMatriz();
-    const query = this.filtroBusquedaCatalogo.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaCatalogo);
 
     // Mapear cada opción con el ID de su padre
     const opcionPadreMap = new Map<number, number>();
@@ -443,15 +444,15 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
 
       if (query) {
         const padreCoincide =
-          p.strNombre.toLowerCase().includes(query) ||
-          (p.strUrl || '').toLowerCase().includes(query);
+          normalizarTexto(p.strNombre).includes(query) ||
+          normalizarTexto(p.strUrl).includes(query);
 
         if (!padreCoincide) {
           hijasDePadre = hijasDePadre.filter(
             (h) =>
-              h.strNombre.toLowerCase().includes(query) ||
-              (h.strDescripcion || '').toLowerCase().includes(query) ||
-              (h.strUrl || '').toLowerCase().includes(query)
+              normalizarTexto(h.strNombre).includes(query) ||
+              normalizarTexto(h.strDescripcion).includes(query) ||
+              normalizarTexto(h.strUrl).includes(query)
           );
         }
       }
@@ -463,8 +464,8 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
     }).filter((p) => {
       if (!query) return true;
       const padreCoincide =
-        p.strNombre.toLowerCase().includes(query) ||
-        (p.strUrl || '').toLowerCase().includes(query);
+        normalizarTexto(p.strNombre).includes(query) ||
+        normalizarTexto(p.strUrl).includes(query);
       return padreCoincide || p.hijas.length > 0;
     }).sort((a, b) => (a.intOrden || 0) - (b.intOrden || 0));
   });
@@ -474,7 +475,7 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
     const padresIds = new Set(this.opcionesPadreList().map((p) => p.intPadreOpcion));
     const hijas = this.opcionesHijasList();
     const matriz = this.opcionesMatriz();
-    const query = this.filtroBusquedaCatalogo.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaCatalogo);
     const opcionPadreMap = new Map<number, number>();
     matriz.forEach((m) => opcionPadreMap.set(m.intIdOpcion, m.intPadreOpcion));
 
@@ -484,9 +485,9 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
       if (!huerfana) return false;
       if (!query) return true;
       return (
-        h.strNombre.toLowerCase().includes(query) ||
-        (h.strDescripcion || '').toLowerCase().includes(query) ||
-        (h.strUrl || '').toLowerCase().includes(query)
+        normalizarTexto(h.strNombre).includes(query) ||
+        normalizarTexto(h.strDescripcion).includes(query) ||
+        normalizarTexto(h.strUrl).includes(query)
       );
     }).sort((a, b) => (a.intOrden || 0) - (b.intOrden || 0));
   });
@@ -564,18 +565,20 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
 
   personasFiltradas = computed(() => {
     let list = this.personas();
-    const query = this.filtroBusquedaPersona.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaPersona);
 
     if (query) {
       list = list.filter((p) => {
-        const cedula = (p.strCedula || '').toLowerCase();
-        const nombres = `${p.strNombres || ''} ${p.strApellidos || ''}`.toLowerCase();
-        const correo = (p.strCorreo || '').toLowerCase();
-        const dep = (p.strDepencia || '').toLowerCase();
-        const cargo = (p.strCargo || '').toLowerCase();
+        const cedula = normalizarTexto(p.strCedula);
+        const nombres = normalizarTexto(`${p.strNombres || ''} ${p.strApellidos || ''}`);
+        const apellidos = normalizarTexto(`${p.strApellidos || ''} ${p.strNombres || ''}`);
+        const correo = normalizarTexto(p.strCorreo);
+        const dep = normalizarTexto(p.strDepencia);
+        const cargo = normalizarTexto(p.strCargo);
         return (
           cedula.includes(query) ||
           nombres.includes(query) ||
+          apellidos.includes(query) ||
           correo.includes(query) ||
           dep.includes(query) ||
           cargo.includes(query)
@@ -803,12 +806,12 @@ export default class PgAdminUsuariosRolesComponent implements OnInit {
 
   rolesFiltrados = computed(() => {
     let list = this.rolesList();
-    const query = this.filtroBusquedaRol.trim().toLowerCase();
+    const query = normalizarTexto(this.filtroBusquedaRol);
     if (query) {
       list = list.filter(
         (r) =>
-          r.strNombre.toLowerCase().includes(query) ||
-          (r.strDescripcion || '').toLowerCase().includes(query)
+          normalizarTexto(r.strNombre).includes(query) ||
+          normalizarTexto(r.strDescripcion).includes(query)
       );
     }
     return list;

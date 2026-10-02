@@ -193,6 +193,34 @@ export class AdminCarnetsService {
     );
   }
 
+  buscarPersonas(busqueda: string): Observable<{ count: number; message: string; data: any[] }> {
+    let params = new HttpParams().set('busqueda', busqueda.trim());
+    return this.http.get<{ count: number; message: string; data: any[] }>(
+      `${this.URLSERVICIO}/admin/personas/buscar`,
+      { params }
+    );
+  }
+
+  agregarPersona(data: {
+    strCedula: string;
+    strNombres: string;
+    strApellidos: string;
+    strCorreo?: string;
+    strTelefono?: string;
+    roles?: number[];
+    intRol?: number;
+    strDepencia?: string;
+    strCargo?: string;
+    mesesVigencia?: number;
+    dtFechaFin?: string;
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.post<any>(
+      `${this.URLSERVICIO}/admin/persona/agregar`,
+      data
+    );
+  }
+
   getCarnetsPorPersona(idPersona: number | string): Observable<{ count: number; message: string; data: any[] }> {
     return this.http.get<{ count: number; message: string; data: any[] }>(
       `${this.URLSERVICIO}/admin/persona/${idPersona}/carnets`

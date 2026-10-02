@@ -31,6 +31,8 @@ export interface IFilaPreviaExcelGuardia {
   correo: string;
   valido: boolean;
   motivo: string;
+  cargandoInfo?: boolean;
+  origenInfo?: 'excel' | 'centralizada' | 'local' | 'no_encontrado' | 'pendiente';
 }
 
 @Component({
@@ -110,6 +112,9 @@ export default class PgAdminGuardiasComponent implements OnInit {
   totalInvalidos = signal<number>(0);
   progresoMasivo = signal<number>(0);
   processingMasivo = signal<boolean>(false);
+  resolviendoCentralizada = signal<boolean>(false);
+  filtroPrevia = signal<'TODOS' | 'VALIDOS' | 'INVALIDOS'>('TODOS');
+  filtroResultado = signal<'TODOS' | 'EXITOSOS' | 'ERRORES'>('TODOS');
   resultadoLote = signal<any | null>(null);
 
   ngOnInit() {
@@ -448,15 +453,60 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.totalValidos.set(0);
     this.totalInvalidos.set(0);
     this.progresoMasivo.set(0);
+    this.resolviendoCentralizada.set(false);
+    this.filtroPrevia.set('TODOS');
+    this.filtroResultado.set('TODOS');
     this.resultadoLote.set(null);
     this.dialogMasivo.set(true);
+  }
+
+  limpiarCargaMasiva() {
+    this.archivoSeleccionado = null;
+    this.nombreArchivo = '';
+    this.filasPrevia.set([]);
+    this.totalValidos.set(0);
+    this.totalInvalidos.set(0);
+    this.progresoMasivo.set(0);
+    this.resolviendoCentralizada.set(false);
+    this.filtroPrevia.set('TODOS');
+    this.filtroResultado.set('TODOS');
+    this.resultadoLote.set(null);
+  }
+
+  get filasPreviaFiltradas(): IFilaPreviaExcelGuardia[] {
+    const filtro = this.filtroPrevia();
+    const lista = this.filasPrevia();
+    if (filtro === 'VALIDOS') return lista.filter((f) => f.valido);
+    if (filtro === 'INVALIDOS') return lista.filter((f) => !f.valido);
+    return lista;
+  }
+
+  get detallesResultadosFiltrados(): any[] {
+    const res = this.resultadoLote();
+    if (!res || !res.detalles) return [];
+    const filtro = this.filtroResultado();
+    if (filtro === 'EXITOSOS') return res.detalles.filter((d: any) => d.estado === 'Éxito');
+    if (filtro === 'ERRORES') return res.detalles.filter((d: any) => d.estado !== 'Éxito');
+    return res.detalles;
+  }
+
+  get totalResultadosExitosos(): number {
+    const res = this.resultadoLote();
+    if (!res || !res.detalles) return 0;
+    return res.detalles.filter((d: any) => d.estado === 'Éxito').length;
+  }
+
+  get totalResultadosErrores(): number {
+    const res = this.resultadoLote();
+    if (!res || !res.detalles) return 0;
+    return res.detalles.filter((d: any) => d.estado !== 'Éxito').length;
   }
 
   descargarPlantilla() {
     const encabezados = [
       ['CEDULA', 'NOMBRES', 'APELLIDOS', 'TELEFONO', 'CORREO'],
       ['0604172296', 'Juan Carlos', 'Pérez Morales', '0991234567', 'guardia1@gmail.com'],
-      ['0605987654', 'Manuel Alberto', 'López García', '0987654321', 'guardia2@gmail.com'],
+      ['0605987654', '', '', '0987654321', 'guardia2@gmail.com'],
     ];
 
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(encabezados);
@@ -504,6 +554,8 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.archivoSeleccionado = file;
     this.nombreArchivo = file.name;
     this.resultadoLote.set(null);
+    this.filtroPrevia.set('TODOS');
+    this.filtroResultado.set('TODOS');
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -534,19 +586,29 @@ export default class PgAdminGuardiasComponent implements OnInit {
           const telefono = String(row['TELEFONO'] || row['telefono'] || '').trim();
           const correo = String(row['CORREO'] || row['correo'] || '').trim();
 
-          const cedulaLimpia = rawCedula.replace(/-/g, '');
+          const cedulaLimpia = rawCedula.replace(/-/g, '').replace(/[\s']/g, '');
           let esValido = true;
           let motivo = 'Válido';
+          let origen: 'excel' | 'centralizada' | 'local' | 'no_encontrado' | 'pendiente' = 'excel';
+          let cargando = false;
 
           if (!cedulaLimpia) {
             esValido = false;
             motivo = 'Cédula no proporcionada';
+            origen = 'no_encontrado';
           } else if (cedulaLimpia.length !== 10) {
             esValido = false;
-            motivo = `Longitud inválida (${cedulaLimpia.length} dígitos)`;
+            motivo = `Longitud de cédula inválida (${cedulaLimpia.length} dígitos)`;
+            origen = 'no_encontrado';
           } else if (!correo || !correo.includes('@')) {
             esValido = false;
             motivo = 'Correo personal requerido / inválido';
+          }
+
+          const faltanNombres = !nombres || !apellidos;
+          if (esValido && faltanNombres) {
+            origen = 'pendiente';
+            cargando = true;
           }
 
           if (esValido) validos++;
@@ -555,12 +617,14 @@ export default class PgAdminGuardiasComponent implements OnInit {
           previsualizacion.push({
             fila: index + 2,
             cedula: cedulaLimpia,
-            nombres,
-            apellidos,
+            nombres: nombres || (faltanNombres && esValido ? 'Consultando...' : ''),
+            apellidos: apellidos,
             telefono,
             correo,
             valido: esValido,
             motivo,
+            origenInfo: origen,
+            cargandoInfo: cargando,
           });
         });
 
@@ -568,11 +632,21 @@ export default class PgAdminGuardiasComponent implements OnInit {
         this.totalValidos.set(validos);
         this.totalInvalidos.set(invalidos);
 
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Archivo leído',
-          detail: `Se detectaron ${previsualizacion.length} registros (${validos} válidos, ${invalidos} con advertencias).`,
-        });
+        const pendientes = previsualizacion.filter((f) => f.origenInfo === 'pendiente');
+        if (pendientes.length > 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Consultando Centralizada',
+            detail: `Se detectaron ${pendientes.length} registros sin nombres. Consultando Centralizada institucional...`,
+          });
+          this.resolverNombresCentralizada(previsualizacion);
+        } else {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Archivo leído',
+            detail: `Se detectaron ${previsualizacion.length} registros (${validos} válidos, ${invalidos} con observaciones).`,
+          });
+        }
       } catch (err: any) {
         console.error('Error al leer Excel:', err);
         this.messageService.add({
@@ -583,6 +657,91 @@ export default class PgAdminGuardiasComponent implements OnInit {
       }
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  async resolverNombresCentralizada(filas: IFilaPreviaExcelGuardia[]) {
+    const pendientes = filas.filter((f) => f.origenInfo === 'pendiente');
+    if (pendientes.length === 0) return;
+
+    this.resolviendoCentralizada.set(true);
+
+    for (const fila of pendientes) {
+      try {
+        // 1. Consultar si existe en base local
+        const resLocal: any = await new Promise((resolve) => {
+          this.adminService.getPersonaCarnet(fila.cedula, true).subscribe({
+            next: (r) => resolve(r),
+            error: () => resolve(null),
+          });
+        });
+
+        if (resLocal && resLocal.data && resLocal.data.length > 0) {
+          const p = resLocal.data[0];
+          fila.nombres = (p.strNombres || '').trim();
+          fila.apellidos = (p.strApellidos || '').trim();
+          fila.origenInfo = 'local';
+          fila.cargandoInfo = false;
+          if (fila.nombres && fila.apellidos) {
+            fila.valido = (!fila.correo || !fila.correo.includes('@')) ? false : true;
+            fila.motivo = fila.valido ? 'Válido (BD Local)' : 'Correo personal requerido / inválido';
+          }
+          this.actualizarTotalesFilas(filas);
+          continue;
+        }
+
+        // 2. Si no está local, consultar Centralizada
+        const resCent: any = await new Promise((resolve) => {
+          this.adminService.obtenerPersonaCentralizada(fila.cedula).subscribe({
+            next: (r) => resolve(r),
+            error: () => resolve(null),
+          });
+        });
+
+        if (resCent && resCent.success && resCent.listado && resCent.listado.length > 0) {
+          const din = resCent.listado[0];
+          const nombresDin = (din.per_nombres || din.per_nombre || [din.per_primerNombre, din.per_segundoNombre].map((n: any) => (n || '').trim()).filter((n: string) => n.length > 0).join(' ') || '').trim();
+          const apellidosDin = ([din.per_primerApellido, din.per_segundoApellido].map((a: any) => (a || '').trim()).filter((a: string) => a.length > 0).join(' ') || (din.per_apellidos || '').trim()).trim();
+
+          fila.nombres = nombresDin;
+          fila.apellidos = apellidosDin;
+          fila.origenInfo = 'centralizada';
+          fila.cargandoInfo = false;
+
+          if (fila.nombres && fila.apellidos) {
+            fila.valido = (!fila.correo || !fila.correo.includes('@')) ? false : true;
+            fila.motivo = fila.valido ? 'Válido (Centralizada)' : 'Correo personal requerido / inválido';
+          }
+        } else {
+          // No se encontró en Centralizada ni en BD local
+          fila.nombres = '';
+          fila.apellidos = '';
+          fila.origenInfo = 'no_encontrado';
+          fila.cargandoInfo = false;
+          fila.valido = false;
+          fila.motivo = 'No encontrado en Centralizada (requiere nombres en matriz)';
+        }
+      } catch {
+        fila.cargandoInfo = false;
+        fila.origenInfo = 'no_encontrado';
+        fila.valido = false;
+        fila.motivo = 'Error al consultar Centralizada';
+      }
+
+      this.actualizarTotalesFilas(filas);
+    }
+
+    this.resolviendoCentralizada.set(false);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Centralizada sincronizada',
+      detail: 'Se completó la verificación de nombres desde la Centralizada institucional.',
+    });
+  }
+
+  private actualizarTotalesFilas(filas: IFilaPreviaExcelGuardia[]) {
+    this.filasPrevia.set([...filas]);
+    this.totalValidos.set(filas.filter((f) => f.valido).length);
+    this.totalInvalidos.set(filas.filter((f) => !f.valido).length);
   }
 
   ejecutarCargaMasiva() {
@@ -618,6 +777,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
           this.progresoMasivo.set(100);
           this.processingMasivo.set(false);
           this.resultadoLote.set(res.data);
+          this.filtroResultado.set('TODOS');
           this.messageService.add({
             severity: 'success',
             summary: 'Lote Completado',
@@ -645,8 +805,8 @@ export default class PgAdminGuardiasComponent implements OnInit {
       CEDULA: d.cedula,
       ESTADO: d.estado,
       DETALLE: d.mensaje,
-      NOMBRE: d.datos ? `${d.datos.strNombres} ${d.datos.strApellidos}` : 'N/A',
-      CORREO: d.datos ? d.datos.strCorreo : 'N/A',
+      NOMBRE: d.datos ? `${d.datos.strNombres || ''} ${d.datos.strApellidos || ''}`.trim() : 'N/A',
+      CORREO: d.datos ? d.datos.strCorreo || 'N/A' : 'N/A',
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataReporte);

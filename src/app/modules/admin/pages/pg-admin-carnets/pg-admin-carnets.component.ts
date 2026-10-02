@@ -72,7 +72,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
   // Filtros
   filtroBusqueda: string = '';
   filtroRol: any = 'todos';
-  filtroVigencia: string = 'TODOS';
+  filtroVigencia: string = 'ACTIVO';
   page: number = 1;
   rows: number = 15;
 
@@ -82,16 +82,36 @@ export default class PgAdminCarnetsComponent implements OnInit {
   rolesEdicionList = signal<{ label: string; value: any }[]>([]);
 
   estadosVigenciaList = [
-    { label: 'Todos los estados', value: 'TODOS' },
     { label: 'Activos', value: 'ACTIVO' },
+    { label: 'Todos los estados', value: 'TODOS' },
     { label: 'Vencidos', value: 'VENCIDO' },
     { label: 'Desactivados', value: 'DESACTIVADO' },
   ];
 
-  // Búsqueda específica por cédula
-  cedulaConsulta: string = '';
+  // Búsqueda por Cédula, Nombres o Apellidos
+  busquedaTexto: string = '';
   personaEncontrada: any = null;
   mostrarPanelPersona = signal<boolean>(false);
+  listaResultadosBusqueda = signal<any[]>([]);
+  mostrarResultadosMultiples = signal<boolean>(false);
+  busquedaRealizada = signal<boolean>(false);
+
+  // Modal de Registro de Nueva Persona y Carnet
+  dialogCrearPersona = signal<boolean>(false);
+  savingNuevaPersona = signal<boolean>(false);
+  buscandoDinardap = signal<boolean>(false);
+  nuevaPersona: any = {
+    strCedula: '',
+    strNombres: '',
+    strApellidos: '',
+    strCorreo: '',
+    strTelefono: '',
+    roles: [3],
+    strDepencia: 'ESPOCH',
+    strCargo: '',
+    tipoProrroga: '6',
+    fechaPersonalizada: '',
+  };
 
   // Modal de Detalles de Todos los Carnets de la Persona
   dialogDetallesCarnets = signal<boolean>(false);
@@ -114,7 +134,6 @@ export default class PgAdminCarnetsComponent implements OnInit {
   ngOnInit() {
     this.cargarRoles();
     this.cargarEstadisticas();
-    this.cargarCarnets();
   }
 
   cargarRoles() {
@@ -144,87 +163,60 @@ export default class PgAdminCarnetsComponent implements OnInit {
     });
   }
 
-  cargarCarnets(event?: any) {
-    this.loading.set(true);
-
-    if (event) {
-      this.page = Math.floor(event.first / event.rows) + 1;
-      this.rows = event.rows;
+  refrescarVista() {
+    this.cargarEstadisticas();
+    if (this.mostrarPanelPersona() && this.personaEncontrada?.strCedula) {
+      this.consultarPorCedula(this.personaEncontrada.strCedula);
+    } else if (this.busquedaTexto) {
+      this.ejecutarBusqueda();
     }
-
-    const params = {
-      busqueda: this.filtroBusqueda,
-      idRol: this.filtroRol,
-      estadoVigencia: this.filtroVigencia,
-      page: this.page,
-      limit: this.rows,
-    };
-
-    this.adminService.getCarnets(params).subscribe({
-      next: (res) => {
-        this.carnets.set(res.data || []);
-        this.totalRecords.set(res.total || 0);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo cargar el listado de carnets.',
-        });
-      },
-    });
   }
 
-  onFilterChange() {
-    this.page = 1;
-    this.cargarCarnets();
+  limpiarBusqueda() {
+    this.busquedaTexto = '';
+    this.personaEncontrada = null;
+    this.mostrarPanelPersona.set(false);
+    this.mostrarResultadosMultiples.set(false);
+    this.listaResultadosBusqueda.set([]);
+    this.busquedaRealizada.set(false);
   }
 
-  limpiarFiltros() {
-    this.filtroBusqueda = '';
-    this.filtroRol = 'todos';
-    this.filtroVigencia = 'TODOS';
-    this.page = 1;
-    this.cargarCarnets();
-  }
-
-  // Buscar persona por cédula
-  consultarPorCedula() {
-    if (!this.cedulaConsulta || this.cedulaConsulta.trim() === '') {
+  // Buscar persona por cédula, nombres o apellidos
+  ejecutarBusqueda() {
+    if (!this.busquedaTexto || this.busquedaTexto.trim() === '') {
       this.messageService.add({
         severity: 'warn',
         summary: 'Atención',
-        detail: 'Ingrese un número de cédula para consultar.',
+        detail: 'Ingrese un número de cédula, nombres o apellidos para buscar.',
       });
       return;
     }
 
     this.loadingPersona.set(true);
-    this.adminService.getPersonaCarnet(this.cedulaConsulta.trim()).subscribe({
+    this.busquedaRealizada.set(true);
+    this.adminService.buscarPersonas(this.busquedaTexto.trim()).subscribe({
       next: (res) => {
         this.loadingPersona.set(false);
-        if (res && res.data && res.data.length > 0) {
-          const first = res.data[0];
-          const rolesValidos = first.roles || res.data.filter((r: any) => r.intIdRol != null);
-          const rolesIds = first.rolesIds || rolesValidos.map((r: any) => r.intIdRol);
-          const rolesNombres = first.rol || rolesValidos.map((r: any) => r.rol).join(', ');
-
-          this.personaEncontrada = {
-            ...first,
-            roles: rolesValidos,
-            rolesIds: rolesIds,
-            rol: rolesNombres || first.rol || 'SIN ROL',
-          };
+        const personas = res && res.data ? res.data : [];
+        if (personas.length === 1) {
+          this.personaEncontrada = personas[0];
           this.mostrarPanelPersona.set(true);
+          this.mostrarResultadosMultiples.set(false);
+          this.listaResultadosBusqueda.set([]);
+        } else if (personas.length > 1) {
+          this.listaResultadosBusqueda.set(personas);
+          this.mostrarResultadosMultiples.set(true);
+          this.mostrarPanelPersona.set(false);
+          this.personaEncontrada = null;
         } else {
           this.personaEncontrada = null;
           this.mostrarPanelPersona.set(false);
+          this.mostrarResultadosMultiples.set(false);
+          this.listaResultadosBusqueda.set([]);
           this.messageService.add({
             severity: 'info',
             summary: 'No encontrado',
-            detail: 'No se encontró ninguna persona con la cédula ingresada.',
+            detail: `No se encontraron resultados para "${this.busquedaTexto.trim()}". Puede registrarla con el botón "+ Nueva Persona".`,
           });
         }
       },
@@ -233,19 +225,175 @@ export default class PgAdminCarnetsComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Error al consultar la persona por cédula.',
+          detail: 'Error al consultar personas en el sistema.',
         });
       },
+    });
+  }
+
+  seleccionarPersona(persona: any) {
+    this.personaEncontrada = persona;
+    this.mostrarPanelPersona.set(true);
+    this.mostrarResultadosMultiples.set(false);
+  }
+
+  consultarPorCedula(cedula?: string) {
+    const targetCedula = cedula || this.personaEncontrada?.strCedula || (this.busquedaTexto && /^\d+$/.test(this.busquedaTexto.trim()) ? this.busquedaTexto.trim() : '');
+    if (!targetCedula) return;
+    this.adminService.getPersonaCarnet(targetCedula.trim()).subscribe({
+      next: (res) => {
+        if (res && res.data && res.data.length > 0) {
+          this.personaEncontrada = res.data[0];
+          this.mostrarPanelPersona.set(true);
+        }
+      },
+      error: () => {},
     });
   }
 
   cerrarPanelPersona() {
     this.mostrarPanelPersona.set(false);
     this.personaEncontrada = null;
+    if (this.listaResultadosBusqueda().length > 1) {
+      this.mostrarResultadosMultiples.set(true);
+    }
+  }
+
+  // Modal Registro de Nueva Persona
+  abrirModalCrearPersona(cedulaPrevia: string = '') {
+    const cedulaInicial = (cedulaPrevia || (this.busquedaTexto && /^\d+$/.test(this.busquedaTexto.trim()) ? this.busquedaTexto.trim() : '')).replace(/[\s-]/g, '');
+    const defaultRol = this.rolesEdicionList().length > 0 ? [this.rolesEdicionList()[0].value] : [3];
+    
+    this.nuevaPersona = {
+      strCedula: cedulaInicial,
+      strNombres: '',
+      strApellidos: '',
+      strCorreo: '',
+      strTelefono: '',
+      roles: defaultRol,
+      strDepencia: 'ESPOCH',
+      strCargo: '',
+      tipoProrroga: '6',
+      fechaPersonalizada: '',
+    };
+    this.dialogCrearPersona.set(true);
+    if (cedulaInicial && cedulaInicial.length === 10) {
+      this.consultarDinardapCrear();
+    }
+  }
+
+  consultarDinardapCrear() {
+    if (!this.nuevaPersona.strCedula || this.nuevaPersona.strCedula.trim().length < 10) {
+      return;
+    }
+    const cedula = this.nuevaPersona.strCedula.trim().replace(/[\s-]/g, '');
+    this.buscandoDinardap.set(true);
+    this.adminService.obtenerPersonaCentralizada(cedula).subscribe({
+      next: (res) => {
+        this.buscandoDinardap.set(false);
+        if (res && res.success && res.listado && res.listado.length > 0) {
+          const din = res.listado[0];
+          this.nuevaPersona.strNombres = (din.per_nombres || din.per_nombre || '').trim();
+          const apellidos = [din.per_primerApellido, din.per_segundoApellido]
+            .map((a) => (a || '').trim())
+            .filter((a) => a.length > 0)
+            .join(' ') || (din.per_apellidos || '').trim();
+          this.nuevaPersona.strApellidos = apellidos;
+          const email = [din.per_email, din.per_correo].find((v) => v && v.length > 0);
+          if (email && !['null', 'undefined', 'n/a'].includes(email.toLowerCase())) {
+            this.nuevaPersona.strCorreo = email;
+          }
+          const tel = [din.per_telefonoCelular, din.per_telefonoCasa, din.per_telefono].find((v) => v && v.length > 0);
+          if (tel && !['null', 'undefined', 'n/a'].includes(tel.toLowerCase())) {
+            this.nuevaPersona.strTelefono = tel;
+          }
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Datos recuperados',
+            detail: 'Se autocompletaron los datos de DINARDAP / Centralizada.',
+          });
+        }
+      },
+      error: () => {
+        this.buscandoDinardap.set(false);
+      },
+    });
+  }
+
+  guardarNuevaPersona() {
+    if (!this.nuevaPersona.strCedula || this.nuevaPersona.strCedula.trim() === '') {
+      this.messageService.add({ severity: 'warn', summary: 'Cédula requerida', detail: 'Ingrese el número de cédula.' });
+      return;
+    }
+    if (!this.nuevaPersona.strNombres || this.nuevaPersona.strNombres.trim() === '') {
+      this.messageService.add({ severity: 'warn', summary: 'Nombres requeridos', detail: 'Ingrese los nombres de la persona.' });
+      return;
+    }
+    if (!this.nuevaPersona.strApellidos || this.nuevaPersona.strApellidos.trim() === '') {
+      this.messageService.add({ severity: 'warn', summary: 'Apellidos requeridos', detail: 'Ingrese los apellidos de la persona.' });
+      return;
+    }
+    if (!this.nuevaPersona.roles || this.nuevaPersona.roles.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Roles requeridos', detail: 'Seleccione al menos un rol institucional.' });
+      return;
+    }
+
+    this.savingNuevaPersona.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    let payload: any = {
+      strCedula: this.nuevaPersona.strCedula.trim(),
+      strNombres: this.nuevaPersona.strNombres.trim(),
+      strApellidos: this.nuevaPersona.strApellidos.trim(),
+      strCorreo: this.nuevaPersona.strCorreo?.trim() || 'N/A',
+      strTelefono: this.nuevaPersona.strTelefono?.trim() || 'N/A',
+      roles: this.nuevaPersona.roles,
+      strDepencia: this.nuevaPersona.strDepencia?.trim() || 'ESPOCH',
+      strCargo: this.nuevaPersona.strCargo?.trim() || '',
+      adminInfo: adminInfo,
+    };
+
+    if (this.nuevaPersona.tipoProrroga === 'custom') {
+      if (!this.nuevaPersona.fechaPersonalizada) {
+        this.messageService.add({ severity: 'warn', summary: 'Fecha requerida', detail: 'Seleccione una fecha de vigencia válida.' });
+        this.savingNuevaPersona.set(false);
+        return;
+      }
+      payload.dtFechaFin = new Date(this.nuevaPersona.fechaPersonalizada + 'T23:59:59').toISOString();
+    } else {
+      payload.mesesVigencia = parseInt(this.nuevaPersona.tipoProrroga);
+    }
+
+    this.adminService.agregarPersona(payload).subscribe({
+      next: (res) => {
+        this.savingNuevaPersona.set(false);
+        this.dialogCrearPersona.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Persona Registrada',
+          detail: 'Se registró a la persona y se activó su carnet institucional con éxito.',
+        });
+        this.cargarEstadisticas();
+        if (res && res.data && res.data.length > 0) {
+          this.personaEncontrada = res.data[0];
+          this.mostrarPanelPersona.set(true);
+          this.mostrarResultadosMultiples.set(false);
+          this.busquedaTexto = this.nuevaPersona.strCedula.trim();
+        }
+      },
+      error: (err) => {
+        this.savingNuevaPersona.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo registrar a la persona y activar el carnet.',
+        });
+      },
+    });
   }
 
   // Cambiar estado Activo / Desactivado con Auditoría
-  cambiarEstado(carnet: ICarnetAdmin) {
+  cambiarEstado(carnet: any) {
     const nuevoEstado = carnet.estadoCarnet === 1 ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
     const adminInfo = this.swCas.getUserInfo();
@@ -258,10 +406,8 @@ export default class PgAdminCarnetsComponent implements OnInit {
           detail: `Carnet ${accion === 'activar' ? 'habilitado' : 'deshabilitado'} correctamente.`,
         });
         this.cargarEstadisticas();
-        this.cargarCarnets();
-        if (this.personaEncontrada && this.personaEncontrada.intIdCarnet === carnet.intIdCarnet) {
-          this.personaEncontrada.estadoCarnet = nuevoEstado;
-          this.personaEncontrada.estadoVigencia = nuevoEstado === 1 ? 'ACTIVO' : 'DESACTIVADO';
+        if (this.mostrarPanelPersona()) {
+          this.consultarPorCedula(this.personaEncontrada?.strCedula || carnet?.strCedula);
         }
         if (this.dialogDetallesCarnets() && this.personaSeleccionadaDetalle) {
           this.cargarCarnetsPersona(this.personaSeleccionadaDetalle.intIdPersona || this.personaSeleccionadaDetalle.intUsuario || this.personaSeleccionadaDetalle.strCedula);
@@ -358,9 +504,8 @@ export default class PgAdminCarnetsComponent implements OnInit {
             : 'Se renovó y extendió la vigencia del carnet con éxito.',
         });
         this.cargarEstadisticas();
-        this.cargarCarnets();
         if (this.mostrarPanelPersona()) {
-          this.consultarPorCedula();
+          this.consultarPorCedula(this.personaEncontrada?.strCedula || this.carnetSeleccionado?.strCedula);
         }
         if (this.dialogDetallesCarnets() && this.personaSeleccionadaDetalle) {
           this.cargarCarnetsPersona(this.personaSeleccionadaDetalle.intIdPersona || this.personaSeleccionadaDetalle.intUsuario || this.personaSeleccionadaDetalle.strCedula);
@@ -459,12 +604,11 @@ export default class PgAdminCarnetsComponent implements OnInit {
           detail: 'Se actualizaron correctamente los roles y la dependencia asignada.',
         });
 
-        // Refrescar datos en el panel y en la tabla general
+        // Refrescar datos en el panel
         if (this.mostrarPanelPersona()) {
-          this.consultarPorCedula();
+          this.consultarPorCedula(this.personaEncontrada?.strCedula);
         }
         this.cargarEstadisticas();
-        this.cargarCarnets();
       },
       error: (err) => {
         this.savingRolDep.set(false);

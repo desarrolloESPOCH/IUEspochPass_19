@@ -9,11 +9,11 @@
         Gestión Administrativa de Carnets
       </h1>
       <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
-        Consulta, activa, desactiva y prorroga la vigencia de carnets institucionales por rol o número de cédula.
+        Consulta por número de cédula para gestionar, activar, prorrogar la vigencia o asignar roles institucionales.
       </p>
     </div>
     <div class="flex items-center gap-3">
-      <p-button label="Refrescar" icon="pi pi-refresh" [loading]="loading()" (click)="cargarCarnets(); cargarEstadisticas();" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
+      <p-button label="Refrescar" icon="pi pi-refresh" [loading]="loadingPersona()" (click)="refrescarVista()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
     </div>
   </div>
 
@@ -72,203 +72,268 @@
     </div>
   </div>
 
-  <!-- Buscador Específico por Cédula -->
-  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 p-6 rounded-2xl border border-blue-100 dark:border-slate-700">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <!-- Buscador por Cédula, Nombres o Apellidos -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 p-6 rounded-2xl border border-blue-100 dark:border-slate-700 shadow-sm">
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
       <div>
         <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <i class="pi pi-search text-blue-600 dark:text-blue-400"></i>
-          Búsqueda Rápida y Activación Directa por Cédula
+          Búsqueda Rápida y Gestión de Carnets
         </h2>
         <p class="text-slate-600 dark:text-slate-400 text-xs mt-1">
-          Consulte de forma individual el estado de un estudiante (graduado/activo) o funcionario para habilitar o prorrogar su vigencia.
+          Busque por número de cédula, nombres o apellidos para consultar el estado, renovar vigencia o registrar un nuevo usuario.
         </p>
       </div>
-      <div class="flex items-center gap-2 w-full md:w-auto">
-        <input pInputText type="text" [(ngModel)]="cedulaConsulta" (keyup.enter)="consultarPorCedula()" placeholder="Ej. 1850575133" class="w-full md:w-64" />
-        <p-button label="Consultar" icon="pi pi-search" [loading]="loadingPersona()" (click)="consultarPorCedula()" styleClass="p-button-primary"></p-button>
+
+      <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+        <p-iconfield iconPosition="left" class="w-full sm:w-80">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input 
+            pInputText 
+            type="text" 
+            [(ngModel)]="busquedaTexto" 
+            (keyup.enter)="ejecutarBusqueda()" 
+            placeholder="Cédula, nombres o apellidos..." 
+            class="w-full" />
+        </p-iconfield>
+
+        <p-button label="Buscar" icon="pi pi-search" [loading]="loadingPersona()" (click)="ejecutarBusqueda()" styleClass="p-button-primary"></p-button>
+        
+        @if (busquedaTexto || mostrarPanelPersona() || mostrarResultadosMultiples()) {
+          <p-button icon="pi pi-times" [pTooltip]="'Limpiar búsqueda'" (click)="limpiarBusqueda()" styleClass="p-button-outlined p-button-secondary"></p-button>
+        }
+
+        <p-button label="Nueva Persona" icon="pi pi-user-plus" (click)="abrirModalCrearPersona()" styleClass="p-button-success"></p-button>
       </div>
     </div>
-
-    <!-- Panel de Resultado de Búsqueda de Persona -->
-    @if (mostrarPanelPersona() && personaEncontrada) {
-    <div class="mt-5 bg-white dark:bg-slate-950 p-5 rounded-xl border border-blue-200 dark:border-slate-700 shadow-md">
-      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xl">
-            {{ personaEncontrada.strNombres?.charAt(0) }}{{ personaEncontrada.strApellidos?.charAt(0) }}
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
-              {{ personaEncontrada.strNombres }} {{ personaEncontrada.strApellidos }}
-            </h3>
-            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
-              <span><i class="pi pi-id-card mr-1"></i><strong>Cédula:</strong> {{ personaEncontrada.strCedula }}</span>
-              <span><i class="pi pi-envelope mr-1"></i><strong>Correo:</strong> {{ personaEncontrada.strCorreo }}</span>
-              <span><i class="pi pi-user mr-1"></i><strong>Rol:</strong> {{ personaEncontrada.rol || 'SIN ROL' }}</span>
-              <span><i class="pi pi-building mr-1"></i><strong>Dependencia:</strong> {{ personaEncontrada.strDepencia || 'N/A' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <p-tag [value]="personaEncontrada.estadoVigencia" [severity]="getSeverityVigencia(personaEncontrada.estadoVigencia)"></p-tag>
-          
-          <p-button label="Ver todos los carnets" icon="pi pi-eye" (click)="abrirModalDetalles(personaEncontrada)" styleClass="p-button-outlined p-button-primary p-button-sm"></p-button>
-
-          @if (personaEncontrada.estadoVigencia === 'SIN_CARNET') {
-            <p-button label="Crear y Activar Carnet" icon="pi pi-plus-circle" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
-          } @else {
-            <p-button label="Renovar / Prorrogar Vigencia" icon="pi pi-calendar-plus" (click)="abrirModalProrroga(personaEncontrada)" styleClass="p-button-success p-button-sm"></p-button>
-          }
-
-          <p-button label="Editar Roles / Dependencia" icon="pi pi-user-edit" (click)="abrirModalEditarRolDep(personaEncontrada)" styleClass="p-button-info p-button-sm"></p-button>
-          <p-button icon="pi pi-times" (click)="cerrarPanelPersona()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-xs text-slate-600 dark:text-slate-300">
-        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-          <span class="text-slate-400 block font-semibold uppercase">ID Carnet Actual</span>
-          <span class="font-bold text-sm" [class.text-amber-600]="!personaEncontrada.intIdCarnet">
-            {{ personaEncontrada.intIdCarnet || 'No registrado (Requiere Creación)' }}
-          </span>
-        </div>
-        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-          <span class="text-slate-400 block font-semibold uppercase">Fecha Inicio</span>
-          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}</span>
-        </div>
-        <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-          <span class="text-slate-400 block font-semibold uppercase">Fecha Fin (Vigencia)</span>
-          <span class="font-bold text-sm">{{ (personaEncontrada.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}</span>
-        </div>
-      </div>
-    </div>
-    }
   </div>
 
-  <!-- Tabla General con Filtros -->
-  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
-    
-    <!-- Barra de Filtros de la Tabla -->
-    <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-      <div class="flex-1">
-        <p-iconfield iconPosition="left" class="w-full">
-          <p-inputicon styleClass="pi pi-search"></p-inputicon>
-          <input pInputText type="text" [(ngModel)]="filtroBusqueda" (keyup.enter)="onFilterChange()" placeholder="Buscar por cédula, nombres o correo..." class="w-full" />
-        </p-iconfield>
+  <!-- Vista de Múltiples Resultados Encontrados -->
+  @if (mostrarResultadosMultiples() && listaResultadosBusqueda().length > 1) {
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+    <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div>
+        <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <i class="pi pi-users text-blue-600"></i>
+          Resultados de la búsqueda ({{ listaResultadosBusqueda().length }} personas encontradas)
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Seleccione una persona de la lista para ver su información detallada y gestionar su carnet.
+        </p>
       </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Selector de Rol -->
-        <p-select [options]="rolesList()" [(ngModel)]="filtroRol" (onChange)="onFilterChange()" optionLabel="label" optionValue="value" placeholder="Filtrar por Rol" [appendTo]="'body'" styleClass="w-full sm:w-48"></p-select>
-
-        <!-- Selector de Estado de Vigencia -->
-        <p-select [options]="estadosVigenciaList" [(ngModel)]="filtroVigencia" (onChange)="onFilterChange()" optionLabel="label" optionValue="value" placeholder="Estado Vigencia" [appendTo]="'body'" styleClass="w-full sm:w-44"></p-select>
-
-        <p-button label="Filtrar" icon="pi pi-filter" (click)="onFilterChange()" styleClass="p-button-primary p-button-sm"></p-button>
-        <p-button label="Limpiar" icon="pi pi-filter-slash" (click)="limpiarFiltros()" styleClass="p-button-outlined p-button-secondary p-button-sm"></p-button>
-      </div>
+      <p-button label="Registrar otra persona" icon="pi pi-plus" (click)="abrirModalCrearPersona()" styleClass="p-button-outlined p-button-success p-button-sm"></p-button>
     </div>
 
-    <!-- Tabla de Carnets -->
-    <p-table
-      [value]="carnets()"
-      [lazy]="true"
-      [paginator]="true"
-      [rows]="rows"
-      [totalRecords]="totalRecords()"
-      [loading]="loading()"
-      (onLazyLoad)="cargarCarnets($event)"
-      [rowsPerPageOptions]="[10, 15, 25, 50]"
+    <p-table 
+      [value]="listaResultadosBusqueda()" 
+      [paginator]="true" 
+      [rows]="10" 
       styleClass="p-datatable-sm p-datatable-striped"
-      [tableStyle]="{ 'min-width': '60rem' }">
-      
+      [tableStyle]="{ 'min-width': '50rem' }">
       <ng-template pTemplate="header">
         <tr>
           <th>Cédula</th>
-          <th>Persona / Usuario</th>
+          <th>Persona / Nombres</th>
+          <th>Correo</th>
           <th>Rol(es)</th>
           <th>Dependencia / Cargo</th>
-          <th>Vigencia Inicio</th>
-          <th>Vigencia Fin</th>
-          <th>Estado Carnet</th>
-          <th class="text-center">Acciones</th>
+          <th>Estado Vigencia</th>
+          <th class="text-center">Acción</th>
         </tr>
       </ng-template>
-
-      <ng-template pTemplate="body" let-c>
-        <tr>
+      <ng-template pTemplate="body" let-p>
+        <tr class="hover:bg-blue-50/40 dark:hover:bg-slate-800/40 cursor-pointer transition-colors" (click)="seleccionarPersona(p)">
           <td>
-            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ c.strCedula }}</span>
+            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ p.strCedula }}</span>
           </td>
           <td>
-            <div class="flex flex-col">
-              <span class="font-semibold text-slate-800 dark:text-slate-100">{{ c.strNombres }} {{ c.strApellidos }}</span>
-              <span class="text-xs text-slate-400">{{ c.strCorreo }}</span>
-            </div>
+            <span class="font-semibold text-slate-800 dark:text-slate-100">{{ p.strNombres }} {{ p.strApellidos }}</span>
+          </td>
+          <td class="text-xs text-slate-500 dark:text-slate-400">
+            {{ p.strCorreo }}
           </td>
           <td>
-            <span class="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium">
-              {{ c.rol }}
+            <span class="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded font-medium">
+              {{ p.rol || 'SIN ROL' }}
             </span>
           </td>
-          <td>
-            <div class="flex flex-col text-xs">
-              <span class="font-medium text-slate-700 dark:text-slate-300">{{ c.strDepencia || 'N/A' }}</span>
-              <span class="text-slate-400">{{ c.strCargo }}</span>
-            </div>
-          </td>
           <td class="text-xs text-slate-600 dark:text-slate-400">
-            {{ c.dtFecha_Inicio | date:'dd/MM/yyyy' }}
-          </td>
-          <td class="text-xs text-slate-600 dark:text-slate-400">
-            <span [class.text-rose-600]="c.estadoVigencia === 'VENCIDO'" [class.font-bold]="c.estadoVigencia === 'VENCIDO'">
-              {{ c.dtFecha_Fin | date:'dd/MM/yyyy' }}
-            </span>
+            {{ p.strDepencia || 'N/A' }}
           </td>
           <td>
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <p-tag [value]="c.estadoVigencia" [severity]="getSeverityVigencia(c.estadoVigencia)"></p-tag>
-              @if (c.totalCarnetsUsuario && c.totalCarnetsUsuario > 1) {
-                <span class="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 px-1.5 py-0.5 rounded-full font-bold cursor-pointer" [pTooltip]="c.totalCarnetsUsuario + ' carnets en historial'" (click)="abrirModalDetalles(c)">
-                  {{ c.totalCarnetsUsuario }} carnets
-                </span>
-              }
-            </div>
+            <p-tag [value]="p.estadoVigencia" [severity]="getSeverityVigencia(p.estadoVigencia)"></p-tag>
           </td>
           <td class="text-center">
-            <div class="flex items-center justify-center gap-1">
-              <!-- Ver Detalles y Todos los Carnets -->
-              <p-button icon="pi pi-eye" [pTooltip]="'Ver todos los carnets de la persona'" tooltipPosition="top" (click)="abrirModalDetalles(c)" styleClass="p-button-rounded p-button-text p-button-info p-button-sm"></p-button>
-
-              <!-- Editar Roles y Dependencia -->
-              <p-button icon="pi pi-user-edit" [pTooltip]="'Editar Roles y Dependencia'" tooltipPosition="top" (click)="abrirModalEditarRolDep(c)" styleClass="p-button-rounded p-button-text p-button-help p-button-sm"></p-button>
-
-              <!-- Prorrogar / Renovar -->
-              <p-button icon="pi pi-calendar-plus" [pTooltip]="'Prorrogar / Renovar Vigencia'" tooltipPosition="top" (click)="abrirModalProrroga(c)" styleClass="p-button-rounded p-button-text p-button-success p-button-sm"></p-button>
-              
-              <!-- Desactivar / Activar -->
-              @if (c.estadoCarnet === 1) {
-              <p-button icon="pi pi-ban" [pTooltip]="'Deshabilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"></p-button>
-              }@else {
-              <p-button icon="pi pi-check" [pTooltip]="'Habilitar Carnet'" tooltipPosition="top" (click)="cambiarEstado(c)" styleClass="p-button-rounded p-button-text p-button-secondary p-button-sm"></p-button>
-              }
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="8" class="text-center p-6 text-slate-400">
-            <i class="pi pi-inbox text-4xl mb-2 block"></i>
-            No se encontraron carnets con los criterios de búsqueda seleccionados.
+            <p-button label="Gestionar" icon="pi pi-arrow-right" iconPos="right" (click)="seleccionarPersona(p); $event.stopPropagation();" styleClass="p-button-sm p-button-primary p-button-outlined"></p-button>
           </td>
         </tr>
       </ng-template>
     </p-table>
   </div>
+  }
+
+  <!-- Panel de Resultado Individual de Persona -->
+  @if (mostrarPanelPersona() && personaEncontrada) {
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-blue-200 dark:border-slate-700 shadow-sm flex flex-col gap-6">
+    
+    <!-- Encabezado de la Ficha del Usuario -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white font-black text-2xl shadow-md">
+          {{ personaEncontrada.strNombres?.charAt(0) }}{{ personaEncontrada.strApellidos?.charAt(0) }}
+        </div>
+        <div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">
+              {{ personaEncontrada.strNombres }} {{ personaEncontrada.strApellidos }}
+            </h3>
+            <p-tag [value]="personaEncontrada.estadoVigencia" [severity]="getSeverityVigencia(personaEncontrada.estadoVigencia)"></p-tag>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-2">
+            <span><i class="pi pi-id-card mr-1 text-blue-500"></i><strong>Cédula:</strong> {{ personaEncontrada.strCedula }}</span>
+            <span><i class="pi pi-envelope mr-1 text-blue-500"></i><strong>Correo:</strong> {{ personaEncontrada.strCorreo }}</span>
+            <span><i class="pi pi-phone mr-1 text-blue-500"></i><strong>Teléfono:</strong> {{ personaEncontrada.strTelefono || 'N/A' }}</span>
+            <span><i class="pi pi-user mr-1 text-blue-500"></i><strong>Rol(es):</strong> <span class="font-semibold text-slate-700 dark:text-slate-300">{{ personaEncontrada.rol || 'SIN ROL' }}</span></span>
+            <span><i class="pi pi-building mr-1 text-blue-500"></i><strong>Dependencia:</strong> {{ personaEncontrada.strDepencia || 'N/A' }}</span>
+            @if (personaEncontrada.strCargo) {
+              <span><i class="pi pi-briefcase mr-1 text-blue-500"></i><strong>Cargo:</strong> {{ personaEncontrada.strCargo }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-button icon="pi pi-times" [pTooltip]="'Cerrar resultado'" (click)="cerrarPanelPersona()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
+      </div>
+    </div>
+
+    <!-- Métricas del Carnet Actual -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
+        <span class="text-slate-400 block text-xs font-semibold uppercase">ID Carnet</span>
+        <span class="font-black text-base text-slate-800 dark:text-slate-100 mt-0.5 block" [class.text-amber-600]="!personaEncontrada.intIdCarnet">
+          {{ personaEncontrada.intIdCarnet ? '#' + personaEncontrada.intIdCarnet : 'No Registrado' }}
+        </span>
+      </div>
+
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
+        <span class="text-slate-400 block text-xs font-semibold uppercase">Fecha Inicio</span>
+        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 mt-0.5 block">
+          {{ (personaEncontrada.dtFecha_Inicio | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}
+        </span>
+      </div>
+
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
+        <span class="text-slate-400 block text-xs font-semibold uppercase">Fecha Fin (Vigencia)</span>
+        <span class="font-bold text-sm mt-0.5 block" [class.text-rose-600]="personaEncontrada.estadoVigencia === 'VENCIDO'" [class.text-emerald-600]="personaEncontrada.estadoVigencia === 'ACTIVO'">
+          {{ (personaEncontrada.dtFecha_Fin | date:'dd/MM/yyyy HH:mm') || 'Sin fecha' }}
+        </span>
+      </div>
+
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
+        <span class="text-slate-400 block text-xs font-semibold uppercase">Estado del Carnet</span>
+        <span class="font-bold text-sm mt-0.5 block" [class.text-emerald-600]="personaEncontrada.estadoCarnet === 1" [class.text-slate-500]="personaEncontrada.estadoCarnet !== 1">
+          {{ personaEncontrada.estadoCarnet === 1 ? 'Habilitado (Activo)' : (personaEncontrada.intIdCarnet ? 'Deshabilitado' : 'Sin Carnet') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Barra de Acciones y Opciones para la Persona -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-4 rounded-xl">
+      <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+        Acciones disponibles para este usuario:
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Ver todos los carnets / Historial -->
+        <p-button 
+          label="Historial de Carnets" 
+          icon="pi pi-history" 
+          (click)="abrirModalDetalles(personaEncontrada)" 
+          styleClass="p-button-outlined p-button-primary p-button-sm">
+        </p-button>
+
+        <!-- Editar Roles / Dependencia -->
+        <p-button 
+          label="Editar Roles y Dependencia" 
+          icon="pi pi-user-edit" 
+          (click)="abrirModalEditarRolDep(personaEncontrada)" 
+          styleClass="p-button-outlined p-button-help p-button-sm">
+        </p-button>
+
+        <!-- Prorrogar / Renovar / Crear -->
+        @if (personaEncontrada.estadoVigencia === 'SIN_CARNET') {
+          <p-button 
+            label="Crear y Activar Carnet" 
+            icon="pi pi-plus-circle" 
+            (click)="abrirModalProrroga(personaEncontrada)" 
+            styleClass="p-button-success p-button-sm">
+          </p-button>
+        } @else {
+          <p-button 
+            label="Renovar / Prorrogar Vigencia" 
+            icon="pi pi-calendar-plus" 
+            (click)="abrirModalProrroga(personaEncontrada)" 
+            styleClass="p-button-success p-button-sm">
+          </p-button>
+        }
+
+        <!-- Habilitar / Deshabilitar Carnet -->
+        @if (personaEncontrada.intIdCarnet) {
+          @if (personaEncontrada.estadoCarnet === 1) {
+            <p-button 
+              label="Deshabilitar Carnet" 
+              icon="pi pi-ban" 
+              (click)="cambiarEstado(personaEncontrada)" 
+              styleClass="p-button-danger p-button-sm">
+            </p-button>
+          } @else {
+            <p-button 
+              label="Habilitar Carnet" 
+              icon="pi pi-check" 
+              (click)="cambiarEstado(personaEncontrada)" 
+              styleClass="p-button-outlined p-button-success p-button-sm">
+            </p-button>
+          }
+        }
+      </div>
+    </div>
+  </div>
+  } @else if (busquedaRealizada() && !personaEncontrada && (!listaResultadosBusqueda() || listaResultadosBusqueda().length === 0)) {
+  <!-- Estado No Encontrado -->
+  <div class="bg-white dark:bg-slate-900 p-10 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center text-center gap-4">
+    <div class="w-16 h-16 rounded-full bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400 text-3xl">
+      <i class="pi pi-user-minus"></i>
+    </div>
+    <div class="max-w-md">
+      <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+        No se encontró ningún registro
+      </h3>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+        No se encontraron coincidencias para <strong>"{{ busquedaTexto }}"</strong> en la base de datos institucional.
+      </p>
+    </div>
+    <p-button label="Registrar como Nueva Persona" icon="pi pi-user-plus" (click)="abrirModalCrearPersona(busquedaTexto)" styleClass="p-button-success"></p-button>
+  </div>
+  } @else {
+  <!-- Estado inicial / Placeholder cuando no hay búsqueda activa -->
+  <div class="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center gap-4">
+    <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl shadow-inner">
+      <i class="pi pi-id-card"></i>
+    </div>
+    <div class="max-w-md">
+      <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+        Búsqueda y Gestión Individual de Carnets
+      </h3>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+        Ingrese el número de cédula, nombres o apellidos en el buscador superior para consultar datos, renovar vigencia, habilitar/deshabilitar accesos o actualizar roles institucionales de manera rápida.
+      </p>
+    </div>
+    <div class="pt-2">
+      <p-button label="Registrar Nueva Persona" icon="pi pi-user-plus" (click)="abrirModalCrearPersona()" styleClass="p-button-outlined p-button-primary p-button-sm"></p-button>
+    </div>
+  </div>
+  }
 
 </div>
 
@@ -560,6 +625,187 @@
   <ng-template pTemplate="footer">
     <div class="flex justify-end">
       <p-button label="Cerrar" icon="pi pi-times" (click)="dialogDetallesCarnets.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo para Registro de Nueva Persona y Carnet -->
+<p-dialog
+  [(visible)]="dialogCrearPersona"
+  [modal]="true"
+  header="Registrar Nueva Persona y Activar Carnet Institucional"
+  [style]="{ width: '92vw', maxWidth: '640px' }"
+  [contentStyle]="{ 'overflow': 'visible' }"
+  [focusTrap]="false"
+  [draggable]="false"
+  [resizable]="false">
+
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Cédula y botón DINARDAP -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Número de Cédula <span class="text-rose-500">*</span>:
+      </label>
+      <div class="flex gap-2">
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strCedula"
+          (blur)="consultarDinardapCrear()"
+          placeholder="Ej: 1850575133"
+          class="w-full font-mono font-bold" />
+        <p-button
+          label="DINARDAP"
+          icon="pi pi-cloud-download"
+          [loading]="buscandoDinardap()"
+          [pTooltip]="'Consultar datos automáticamente en DINARDAP / Centralizada'"
+          (click)="consultarDinardapCrear()"
+          styleClass="p-button-outlined p-button-info p-button-sm">
+        </p-button>
+      </div>
+      <span class="text-[11px] text-slate-400">Al ingresar la cédula se intentarán autocompletar nombres y apellidos desde el registro centralizado.</span>
+    </div>
+
+    <!-- Nombres y Apellidos -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Nombres <span class="text-rose-500">*</span>:
+        </label>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strNombres"
+          placeholder="Ej: Juan Carlos"
+          class="w-full uppercase" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Apellidos <span class="text-rose-500">*</span>:
+        </label>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strApellidos"
+          placeholder="Ej: Pérez Rodríguez"
+          class="w-full uppercase" />
+      </div>
+    </div>
+
+    <!-- Correo y Teléfono -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Correo Institucional / Personal:
+        </label>
+        <input
+          pInputText
+          type="email"
+          [(ngModel)]="nuevaPersona.strCorreo"
+          placeholder="Ej: usuario@espoch.edu.ec"
+          class="w-full" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Teléfono / Celular:
+        </label>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strTelefono"
+          placeholder="Ej: 0987654321"
+          class="w-full" />
+      </div>
+    </div>
+
+    <!-- Rol Institucional (MultiSelect) -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Rol(es) Institucional(es) <span class="text-rose-500">*</span>:
+      </label>
+      <p-multiselect
+        [options]="rolesEdicionList()"
+        [(ngModel)]="nuevaPersona.roles"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Seleccione uno o más roles"
+        [appendTo]="'body'"
+        display="chip"
+        styleClass="w-full">
+      </p-multiselect>
+    </div>
+
+    <!-- Dependencia y Cargo -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Dependencia / Carrera / Empresa:
+        </label>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strDepencia"
+          placeholder="Ej: Facultad / Servicios Generales / Bar"
+          class="w-full" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+          Cargo / Función:
+        </label>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="nuevaPersona.strCargo"
+          placeholder="Ej: DOCENTE / ADMINISTRADOR / CONTRATISTA"
+          class="w-full" />
+      </div>
+    </div>
+
+    <!-- Vigencia Inicial del Carnet -->
+    <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Vigencia Inicial del Carnet:
+      </label>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="nuevaPersona.tipoProrroga === '6'" [class.bg-blue-50/50]="nuevaPersona.tipoProrroga === '6'" [class.dark:bg-blue-950/20]="nuevaPersona.tipoProrroga === '6'">
+          <input type="radio" name="tipoProrrogaCrear" [(ngModel)]="nuevaPersona.tipoProrroga" value="6" class="w-4 h-4 text-blue-600" />
+          <div class="flex flex-col">
+            <span class="font-bold text-xs text-slate-800 dark:text-slate-100">+6 Meses</span>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">1 Semestre</span>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="nuevaPersona.tipoProrroga === '12'" [class.bg-blue-50/50]="nuevaPersona.tipoProrroga === '12'" [class.dark:bg-blue-950/20]="nuevaPersona.tipoProrroga === '12'">
+          <input type="radio" name="tipoProrrogaCrear" [(ngModel)]="nuevaPersona.tipoProrroga" value="12" class="w-4 h-4 text-blue-600" />
+          <div class="flex flex-col">
+            <span class="font-bold text-xs text-slate-800 dark:text-slate-100">+1 Año</span>
+            <span class="text-[10px] text-slate-500 dark:text-slate-400">12 Meses</span>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all" [class.border-blue-500]="nuevaPersona.tipoProrroga === 'custom'" [class.bg-blue-50/50]="nuevaPersona.tipoProrroga === 'custom'" [class.dark:bg-blue-950/20]="nuevaPersona.tipoProrroga === 'custom'">
+          <input type="radio" name="tipoProrrogaCrear" [(ngModel)]="nuevaPersona.tipoProrroga" value="custom" class="w-4 h-4 text-blue-600" />
+          <span class="font-bold text-xs text-slate-800 dark:text-slate-100">Personalizada</span>
+        </label>
+      </div>
+
+      @if (nuevaPersona.tipoProrroga === 'custom') {
+      <div class="mt-1">
+        <label class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Fecha de Expiración:</label>
+        <input pInputText type="date" [(ngModel)]="nuevaPersona.fechaPersonalizada" class="w-full" />
+      </div>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogCrearPersona.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Guardar y Activar Carnet" icon="pi pi-check" [loading]="savingNuevaPersona()" (click)="guardarNuevaPersona()" styleClass="p-button-success"></p-button>
     </div>
   </ng-template>
 </p-dialog>

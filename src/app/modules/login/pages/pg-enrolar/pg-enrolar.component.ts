@@ -61,7 +61,9 @@ export default class PgEnrolarComponent {
     { label: 'BETSABE DE LOS ANGELES VACA SANTILLAN', value: { per_email: 'betsabe.vaca@espoch.edu.ec', per_id: '182298', cedula: '0650007727', nombres: 'BETSABE DE LOS ANGELES', apellidos: 'VACA SANTILLAN' } },
     { label: 'MATEO PATRICIO PILCO GUAMAN', value: { per_email: 'mateo.pilco@espoch.edu.ec', per_id: '214942', cedula: '0605708114', nombres: 'MATEO PATRICIO', apellidos: 'PILCO GUAMAN' } },
     { label: 'RITA EULALIA LLIGUILEMA BOCON', value: { per_email: 'rita.lliguilema@espoch.edu.ec', per_id: '296625', cedula: '0605270362', nombres: 'RITA EULALIA', apellidos: 'LLIGUILEMA BOCON' } },
-
+    { label: 'HUMBERTO ALVAREZ (TRABAJADOR - CODIGO DE TRABAJO)', value: { per_email: 'humberto.alvarez@espoch.edu.ec', per_id: '41311', cedula: '0602492647', nombres: 'HUMBERTO ALONSO', apellidos: 'ALVAREZ PEREZ' } },
+    { label: 'MARIO PAGUAY (DOCENTE - LOES)', value: { per_email: 'mario.paguay@espoch.edu.ec', per_id: '1358', cedula: '0601807829', nombres: 'MARIO HUMBERTO', apellidos: 'PAGUAY CUVI' } },
+    { label: 'BRYAN BALDEON (EMPLEADO - LOSEP)', value: { per_email: 'bryan.baldeon@espoch.edu.ec', per_id: '20959', cedula: '0706705159', nombres: 'BRYAN ALEXANDER', apellidos: 'BALDEON HERMIDA' } },
   ];
 
   async suplantarUsuario(event: any) {
@@ -131,23 +133,61 @@ export default class PgEnrolarComponent {
     if (!data) return { cargo, dependencia };
     const { contrato, accionPersonal } = data;
 
-    if (contrato) {
-      const { conCargo, conDependenciaEspecifica } = contrato;
-      if (conCargo && conCargo.trim() !== '') {
-        conCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        cargo = conCargo;
-        dependencia = conDependenciaEspecifica || 'ESPOCH';
-        return { cargo, dependencia };
+    // Determinar cuál vínculo tomar (contrato o acción de personal)
+    let vinculo: any = null;
+    let tipoVinculo: 'accionPersonal' | 'contrato' | '' = '';
+
+    if (accionPersonal && contrato) {
+      // Priorizar el que tenga estado activo
+      if (accionPersonal.apeEstado === true && !contrato.conEstado) {
+        vinculo = accionPersonal;
+        tipoVinculo = 'accionPersonal';
+      } else if (contrato.conEstado === true && !accionPersonal.apeEstado) {
+        vinculo = contrato;
+        tipoVinculo = 'contrato';
+      } else {
+        vinculo = accionPersonal.apeRegimen ? accionPersonal : contrato;
+        tipoVinculo = accionPersonal.apeRegimen ? 'accionPersonal' : 'contrato';
       }
+    } else if (accionPersonal) {
+      vinculo = accionPersonal;
+      tipoVinculo = 'accionPersonal';
+    } else if (contrato) {
+      vinculo = contrato;
+      tipoVinculo = 'contrato';
     }
 
-    if (accionPersonal) {
-      const { apeCargo, apeDepedenciaEspecifica } = accionPersonal;
-      if (apeCargo && apeCargo.trim() !== '') {
-        apeCargo.includes('PROFESOR') ? (this.rol = 4) : (this.rol = 2);
-        cargo = apeCargo;
-        dependencia = apeDepedenciaEspecifica || 'ESPOCH';
-        return { cargo, dependencia };
+    if (!vinculo) return { cargo, dependencia };
+
+    const regimen = (tipoVinculo === 'accionPersonal' ? vinculo.apeRegimen : vinculo.conRegimen) || '';
+    dependencia = (tipoVinculo === 'accionPersonal'
+      ? (vinculo.apeDepedenciaEspecifica || vinculo.apeDepedenciaGeneral)
+      : (vinculo.conDependenciaEspecifica || vinculo.conDependenciaGeneral)) || 'ESPOCH';
+
+    const regimenNormalizado = regimen
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    if (regimenNormalizado.includes('CODIGO DE TRABAJO')) {
+      cargo = 'TRABAJADOR';
+      this.rol = 2;
+    } else if (regimenNormalizado.includes('LOES')) {
+      cargo = 'DOCENTE';
+      this.rol = 4;
+    } else if (regimenNormalizado.includes('LOSEP')) {
+      cargo = 'EMPLEADO';
+      this.rol = 2;
+    } else {
+      // Fallback si no coincide con los 3 pero existe cargo
+      const cargoTexto = (tipoVinculo === 'accionPersonal' ? vinculo.apeCargo : vinculo.conCargo) || '';
+      if (cargoTexto.toUpperCase().includes('PROFESOR') || cargoTexto.toUpperCase().includes('DOCENTE')) {
+        cargo = 'DOCENTE';
+        this.rol = 4;
+      } else if (cargoTexto.trim() !== '') {
+        cargo = 'EMPLEADO';
+        this.rol = 2;
       }
     }
 

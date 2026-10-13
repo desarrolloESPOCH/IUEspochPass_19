@@ -21,6 +21,7 @@ import {
   IEstadisticasCarnet,
 } from '../../../../services/admin/AdminCarnets.service';
 import { SwCasService } from '../../../../utils/cas/sw-cas.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-pg-admin-carnets',
@@ -55,6 +56,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
   loadingPersona = signal<boolean>(false);
   saving = signal<boolean>(false);
   savingRolDep = signal<boolean>(false);
+  exportandoExcel = signal<boolean>(false);
 
   // Datos de tabla y estadísticas
   carnets = signal<ICarnetAdmin[]>([]);
@@ -72,7 +74,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
   // Filtros
   filtroBusqueda: string = '';
   filtroRol: any = 'todos';
-  filtroVigencia: string = 'ACTIVO';
+  filtroVigencia: string = 'TODOS';
   page: number = 1;
   rows: number = 15;
 
@@ -80,10 +82,16 @@ export default class PgAdminCarnetsComponent implements OnInit {
     { label: 'Todos los roles', value: 'todos' },
   ]);
   rolesEdicionList = signal<{ label: string; value: any }[]>([]);
+  todosLosRolesOriginales: { label: string; value: any }[] = [];
+
+  get esUsuarioAdminGeneral(): boolean {
+    const rolGuardado = sessionStorage.getItem('rol');
+    return rolGuardado !== null && Number(rolGuardado) === 1;
+  }
 
   estadosVigenciaList = [
-    { label: 'Activos', value: 'ACTIVO' },
     { label: 'Todos los estados', value: 'TODOS' },
+    { label: 'Activos', value: 'ACTIVO' },
     { label: 'Vencidos', value: 'VENCIDO' },
     { label: 'Desactivados', value: 'DESACTIVADO' },
   ];
@@ -134,6 +142,125 @@ export default class PgAdminCarnetsComponent implements OnInit {
   ngOnInit() {
     this.cargarRoles();
     this.cargarEstadisticas();
+    this.cargarCarnets();
+  }
+
+  cargarCarnets() {
+    this.loading.set(true);
+    const params: any = {
+      page: this.page,
+      limit: this.rows,
+    };
+    if (this.filtroBusqueda && this.filtroBusqueda.trim() !== '') {
+      params.busqueda = this.filtroBusqueda.trim();
+    }
+    if (this.filtroRol && this.filtroRol !== 'todos') {
+      params.rol = this.filtroRol;
+    }
+    if (this.filtroVigencia && this.filtroVigencia !== 'TODOS') {
+      params.vigencia = this.filtroVigencia;
+    }
+
+    this.adminService.getCarnets(params).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        this.carnets.set(res.data || []);
+        this.totalRecords.set(res.total || res.count || 0);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        console.error('Error al cargar carnets', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo cargar el listado de carnets.',
+        });
+      },
+    });
+  }
+
+  onPageChange(event: any) {
+    this.page = Math.floor(event.first / event.rows) + 1;
+    this.rows = event.rows;
+    this.cargarCarnets();
+  }
+
+  limpiarFiltrosTabla() {
+    this.filtroBusqueda = '';
+    this.filtroRol = 'todos';
+    this.filtroVigencia = 'TODOS';
+    this.page = 1;
+    this.cargarCarnets();
+  }
+
+  descargarExcelFiltrado() {
+    this.exportandoExcel.set(true);
+    const params: any = {
+      page: 1,
+      limit: Math.max(this.totalRecords(), 1000) || 5000,
+    };
+    if (this.filtroBusqueda && this.filtroBusqueda.trim() !== '') {
+      params.busqueda = this.filtroBusqueda.trim();
+    }
+    if (this.filtroRol && this.filtroRol !== 'todos') {
+      params.rol = this.filtroRol;
+    }
+    if (this.filtroVigencia && this.filtroVigencia !== 'TODOS') {
+      params.vigencia = this.filtroVigencia;
+    }
+
+    this.adminService.getCarnets(params).subscribe({
+      next: (res) => {
+        this.exportandoExcel.set(false);
+        const lista = res.data || [];
+        if (lista.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Sin registros',
+            detail: 'No existen carnets que coincidan con los filtros aplicados para exportar.',
+          });
+          return;
+        }
+
+        const dataExcel = lista.map((c: any, index: number) => ({
+          '#': index + 1,
+          'CÉDULA': c.strCedula || '',
+          'NOMBRES': c.strNombres || '',
+          'APELLIDOS': c.strApellidos || '',
+          'ROL': c.rol || 'SIN ROL',
+          'DEPENDENCIA': c.strDepencia || 'ESPOCH',
+          'CARGO': c.strCargo || '',
+          'CORREO': c.strCorreo && c.strCorreo !== 'N/A' ? c.strCorreo : '',
+          'TELÉFONO': c.strTelefono && c.strTelefono !== 'N/A' ? c.strTelefono : '',
+          'ESTADO CARNET': c.estadoCarnet === 1 ? 'HABILITADO' : 'DESACTIVADO',
+          'ESTADO VIGENCIA': c.estadoVigencia || 'ACTIVO',
+          'FECHA EMISIÓN': c.dtFecha_Inicio ? new Date(c.dtFecha_Inicio).toLocaleDateString('es-EC') : '',
+          'FECHA EXPIRACIÓN': c.dtFecha_Fin ? new Date(c.dtFecha_Fin).toLocaleDateString('es-EC') : '',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Carnets_Institucionales');
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Carnets_ESPOCH_Filtrados_${fechaHoy}.xlsx`);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Exportación Exitosa',
+          detail: `Se exportaron ${lista.length} carnets a Excel correctamente.`,
+        });
+      },
+      error: (err) => {
+        this.exportandoExcel.set(false);
+        console.error('Error al exportar carnets a Excel', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Ocurrió un error al generar la exportación a Excel.',
+        });
+      },
+    });
   }
 
   cargarRoles() {
@@ -144,12 +271,24 @@ export default class PgAdminCarnetsComponent implements OnInit {
             label: r.strNombre,
             value: r.intIdRol,
           }));
+          this.todosLosRolesOriginales = roles;
           this.rolesList.set([{ label: 'Todos los roles', value: 'todos' }, ...roles]);
-          this.rolesEdicionList.set(roles);
+          this.actualizarRolesEdicionSegunUsuario();
         }
       },
       error: (err) => console.error('Error al cargar roles', err),
     });
+  }
+
+  actualizarRolesEdicionSegunUsuario() {
+    const esAdmin = this.esUsuarioAdminGeneral;
+    // Si el rol del usuario conectado NO es 1, no permitir ver ni agregar administradores (rol 1)
+    const rolesFiltrados = esAdmin
+      ? this.todosLosRolesOriginales
+      : this.todosLosRolesOriginales.filter(
+          (r) => Number(r.value) !== 1 && !r.label.toUpperCase().includes('ADMIN')
+        );
+    this.rolesEdicionList.set(rolesFiltrados);
   }
 
   cargarEstadisticas() {
@@ -165,6 +304,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
 
   refrescarVista() {
     this.cargarEstadisticas();
+    this.cargarCarnets();
     if (this.mostrarPanelPersona() && this.personaEncontrada?.strCedula) {
       this.consultarPorCedula(this.personaEncontrada.strCedula);
     } else if (this.busquedaTexto) {
@@ -261,8 +401,12 @@ export default class PgAdminCarnetsComponent implements OnInit {
 
   // Modal Registro de Nueva Persona
   abrirModalCrearPersona(cedulaPrevia: string = '') {
+    this.actualizarRolesEdicionSegunUsuario();
     const cedulaInicial = (cedulaPrevia || (this.busquedaTexto && /^\d+$/.test(this.busquedaTexto.trim()) ? this.busquedaTexto.trim() : '')).replace(/[\s-]/g, '');
-    const defaultRol = this.rolesEdicionList().length > 0 ? [this.rolesEdicionList()[0].value] : [3];
+    const rolesDisponibles = this.rolesEdicionList();
+    const defaultRol = rolesDisponibles.some((r) => r.value === 3)
+      ? [3]
+      : (rolesDisponibles.length > 0 ? [rolesDisponibles[0].value] : []);
     
     this.nuevaPersona = {
       strCedula: cedulaInicial,
@@ -338,6 +482,15 @@ export default class PgAdminCarnetsComponent implements OnInit {
       return;
     }
 
+    if (!this.esUsuarioAdminGeneral && this.nuevaPersona.roles.some((r: any) => Number(r) === 1)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Permiso denegado',
+        detail: 'No tiene permisos para asignar el rol de Administrador.',
+      });
+      return;
+    }
+
     this.savingNuevaPersona.set(true);
     const adminInfo = this.swCas.getUserInfo();
 
@@ -374,6 +527,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
           detail: 'Se registró a la persona y se activó su carnet institucional con éxito.',
         });
         this.cargarEstadisticas();
+        this.cargarCarnets();
         if (res && res.data && res.data.length > 0) {
           this.personaEncontrada = res.data[0];
           this.mostrarPanelPersona.set(true);
@@ -406,6 +560,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
           detail: `Carnet ${accion === 'activar' ? 'habilitado' : 'deshabilitado'} correctamente.`,
         });
         this.cargarEstadisticas();
+        this.cargarCarnets();
         if (this.mostrarPanelPersona()) {
           this.consultarPorCedula(this.personaEncontrada?.strCedula || carnet?.strCedula);
         }
@@ -504,6 +659,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
             : 'Se renovó y extendió la vigencia del carnet con éxito.',
         });
         this.cargarEstadisticas();
+        this.cargarCarnets();
         if (this.mostrarPanelPersona()) {
           this.consultarPorCedula(this.personaEncontrada?.strCedula || this.carnetSeleccionado?.strCedula);
         }
@@ -524,6 +680,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
 
   // Modal Edición de Rol y Dependencia
   abrirModalEditarRolDep(persona: any) {
+    this.actualizarRolesEdicionSegunUsuario();
     const idPersona = persona.intUsuario || persona.intIdPersona;
     this.personaEncontrada = {
       ...persona,
@@ -581,6 +738,15 @@ export default class PgAdminCarnetsComponent implements OnInit {
       return;
     }
 
+    if (!this.esUsuarioAdminGeneral && this.rolesSeleccionadosEdicion.some((r: any) => Number(r) === 1)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Permiso denegado',
+        detail: 'No tiene permisos para asignar el rol de Administrador.',
+      });
+      return;
+    }
+
     this.savingRolDep.set(true);
     const adminInfo = this.swCas.getUserInfo();
 
@@ -609,6 +775,7 @@ export default class PgAdminCarnetsComponent implements OnInit {
           this.consultarPorCedula(this.personaEncontrada?.strCedula);
         }
         this.cargarEstadisticas();
+        this.cargarCarnets();
       },
       error: (err) => {
         this.savingRolDep.set(false);

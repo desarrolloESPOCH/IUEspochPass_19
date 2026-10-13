@@ -32,6 +32,26 @@ export default class PgChangelogComponent implements OnInit {
   // Datos del changelog para el Frontend (Aplicación)
   frontChanges = signal<ChangelogItem[]>([
     {
+      version: '2.2.0',
+      fecha: '13 Octubre 2026',
+      nuevasFunciones: [
+        'Presentación del listado general institucional de carnets con paginación lazy y filtros de búsqueda por persona, rol y estado de vigencia.',
+        'Exportación y descarga a formato Excel (.xlsx) respetando los filtros activos en Gestión de Carnets, Gestión de Guardias y Gestión de Invitados.',
+        'Selector de vigencia de acceso y carnet personalizado con calendario para invitados y nuevas personas.',
+        'Funcionalidad para editar el número de teléfono y la dependencia institucional asignada a los guardias de seguridad.',
+        'Inclusión del campo de dependencia / garita al dar de alta a nuevos guardias de seguridad institucional.',
+        'Control estricto de privilegios: restricción de asignación del rol de Administrador cuando el usuario autenticado tiene un rol distinto a 1.'
+      ],
+      correcciones: [
+        'Ajuste en la asignación de cargo y rol en enrolamiento según régimen de Talento Humano (Código de Trabajo -> Trabajador, LOES -> Docente con rol 4, LOSEP -> Empleado).',
+        'Validación de seguridad preventiva contra escalado de privilegios administrativos en registro y actualización de roles.'
+      ],
+      mejoras: [
+        'Optimización visual en modales de administración y filtros con componentes PrimeNG 19.',
+        'Mensajes informativos y alertas contextuales para el usuario al realizar operaciones administrativas.'
+      ]
+    },
+    {
       version: '2.1.0',
       fecha: '23 Septiembre 2026',
       nuevasFunciones: [
@@ -108,6 +128,23 @@ export default class PgChangelogComponent implements OnInit {
 
   // Datos del changelog para el Backend (Servicios)
   backChanges = signal<ChangelogItem[]>([
+    {
+      version: '1.4.0',
+      fecha: '13 Octubre 2026',
+      nuevasFunciones: [
+        'Endpoint PUT /admin/guardia/editar para actualización de datos de contacto (teléfono) y asignación de dependencia del guardia.',
+        'Recepción y persistencia de dependencia personalizada (strDepencia) en el servicio de creación individual y masiva de guardias.',
+        'Auditoría detallada para el evento EDITAR_GUARDIA registrando la dependencia y contacto actualizados.'
+      ],
+      correcciones: [
+        'Eliminación de la asignación estática de dependencia en roles de guardia en base de datos.',
+        'Normalización de valores de contacto y saneamiento de cadenas en actualización de perfiles.'
+      ],
+      mejoras: [
+        'Optimización de consultas para listado masivo y exportación filtrada de carnets, guardias e invitados.',
+        'Soporte para auditoría de acciones administrativas con trazabilidad de administradores actuantes.'
+      ]
+    },
     {
       version: '1.3.0',
       fecha: '23 Septiembre 2026',

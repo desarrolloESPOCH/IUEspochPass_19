@@ -126,7 +126,7 @@
           <td>
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs">
-                {{ g.strNombres?.charAt(0) }}{{ g.strApellidos?.charAt(0) }}
+                {{ (g.strNombres || '').charAt(0) }}{{ (g.strApellidos || '').charAt(0) }}
               </div>
               <span class="font-semibold text-slate-800 dark:text-slate-100">{{ g.strNombres }} {{ g.strApellidos }}</span>
             </div>
@@ -710,50 +710,57 @@
 </p-dialog>
 
 <!-- ========================================== -->
-<!-- MODAL: EDITAR GUARDIA (TELÉFONO Y DEPENDENCIA) -->
+<!-- MODAL: EDITAR INFORMACIÓN DEL GUARDIA      -->
 <!-- ========================================== -->
 <p-dialog
   [(visible)]="dialogEditar"
   [modal]="true"
-  header="Editar Información del Guardia"
-  [style]="{ width: '90vw', maxWidth: '480px' }"
+  header="Editar Datos de Guardia"
+  [style]="{ width: '90vw', maxWidth: '580px' }"
   [draggable]="false"
   [resizable]="false">
 
   @if (guardiaSeleccionadoEditar) {
   <div class="flex flex-col gap-4 py-2 text-sm">
-    <!-- Encabezado con datos del guardia -->
-    <div class="p-3.5 bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-slate-700 rounded-xl flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">
-        {{ guardiaSeleccionadoEditar.strNombres?.charAt(0) }}{{ guardiaSeleccionadoEditar.strApellidos?.charAt(0) }}
+    <!-- Encabezado con datos del guardia (Solo Lectura) -->
+    <div
+      class="p-3.5 bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">
+        {{ (guardiaSeleccionadoEditar.strNombres || '').charAt(0) }}{{ (guardiaSeleccionadoEditar.strApellidos || '').charAt(0) }}
       </div>
-      <div class="flex-1">
-        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">
           {{ guardiaSeleccionadoEditar.strNombres }} {{ guardiaSeleccionadoEditar.strApellidos }}
         </h4>
-        <div class="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+        <div class="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
           <span>Cédula: <strong class="font-mono text-slate-700 dark:text-slate-200">{{ guardiaSeleccionadoEditar.strCedula }}</strong></span>
+          <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded font-semibold text-[10px]">
+            {{ guardiaSeleccionadoEditar.strDepencia || 'SEGURIDAD INSTITUCIONAL' }}
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Campo Teléfono -->
-    <div class="flex flex-col gap-1.5">
-      <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
-        Teléfono / Celular de Contacto:
-      </label>
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="editarTelefono"
-        placeholder="Ej: 0999999999"
-        class="w-full" />
-      <span class="text-[11px] text-slate-400">
-        Número telefónico actualizado para contacto del guardia.
-      </span>
+    <!-- Campos Correo y Teléfono -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Correo Personal / Institucional:
+        </label>
+        <input pInputText type="email" [(ngModel)]="editarCorreo" placeholder="correo@ejemplo.com" class="w-full" />
+        <span class="text-[11px] text-slate-400">Para acceso y notificaciones del guardia.</span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Teléfono / Celular:
+        </label>
+        <input pInputText type="text" [(ngModel)]="editarTelefono" placeholder="099..." class="w-full" />
+        <span class="text-[11px] text-slate-400">Contacto telefónico directo.</span>
+      </div>
     </div>
 
-    <!-- Campo Dependencia -->
+    <!-- Campo Dependencia / Ubicación -->
     <div class="flex flex-col gap-1.5">
       <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
         Dependencia / Ubicación de Servicio: <span class="text-rose-500">*</span>
@@ -766,6 +773,31 @@
         class="w-full" />
       <span class="text-[11px] text-slate-400">
         Lugar, campus, puerta, garita o dependencia institucional donde presta servicio.
+      </span>
+    </div>
+
+    <!-- Campo Cargo / Función -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="editarCargo"
+        placeholder="Ej: GUARDIA DE SEGURIDAD / SUPERVISOR / OPERADOR DE CONTROL"
+        class="w-full" />
+    </div>
+
+    <!-- Vigencia del Carnet -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+        <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+        Fecha Fin de Vigencia del Carnet:
+      </label>
+      <input pInputText type="date" [(ngModel)]="editarFechaFin" class="w-full text-xs" />
+      <span class="text-[11px] text-slate-400">
+        Modifique esta fecha si necesita extender o recortar la vigencia del carnet del guardia.
       </span>
     </div>
   </div>

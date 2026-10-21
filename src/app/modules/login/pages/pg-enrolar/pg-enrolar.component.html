@@ -1,7 +1,7 @@
 <!-- cspell:disable -->
 <div class="total bg-gradient">
   <div class="container mx-auto px-4 flex flex-col items-center justify-center min-h-[calc(100vh-6rem)]">
-    @if(!dataEnrol.per_id ){
+    @if(!dataEnrol?.per_id ){
     <div class="w-full max-w-lg mt-8">
       <p-card styleClass="shadow-2xl border-round-xl">
         <div class="text-center p-4">
@@ -39,11 +39,33 @@
           </div>
           }@else {
           <div class="flex flex-col items-center">
+            <div class="w-full flex items-center justify-between mb-3">
+              <button
+                type="button"
+                (click)="atras()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer shadow-xs">
+                <i class="pi pi-arrow-left"></i>
+                <span>Atrás</span>
+              </button>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">
+                Enrolamiento Institucional
+              </span>
+            </div>
+
             <h2 class="text-2xl font-semibold text-gray-800 dark:text-slate-100 mb-2"><i
                 class="pi pi-shield text-blue-600 dark:text-blue-400 mr-2 text-3xl"></i> Bienvenido a ESPOCH-PASS</h2>
-            <p class="text-gray-600 dark:text-slate-400 text-center">
-              Por favor, compruebe los siguientes datos para su registro en el sistema institucional.
+            <p class="text-gray-600 dark:text-slate-400 text-center max-w-xl text-sm sm:text-base">
+              Por favor, compruebe los siguientes datos para su registro o renovación de credencial en el sistema institucional.
             </p>
+
+            <!-- Mensaje informativo sobre matrícula activa o contrato legalizado -->
+            <div class="mt-4 p-3.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-xl text-blue-900 dark:text-blue-200 flex items-start gap-3 text-left w-full max-w-2xl text-xs sm:text-sm">
+              <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-lg sm:text-xl shrink-0 mt-0.5"></i>
+              <div>
+                <span class="font-bold block mb-0.5">Requisito para Registro o Renovación:</span>
+                <span>Recuerde que solo se podrá registrar o renovar su credencial si cuenta con una <strong>matrícula activa</strong> en el periodo vigente (estudiantes) o un <strong>contrato legalizado / acción de personal vigente</strong> (docentes y personal administrativo).</span>
+              </div>
+            </div>
           </div>
           }
         </p-card>
@@ -51,7 +73,7 @@
         @if (!enrolado) {
         <div class="w-full">
           <p-card styleClass="shadow-2xl border-round-xl w-full">
-            @if(!sinMatricula){
+            @if(!sinMatricula && frmRegistro){
             <form [formGroup]="frmRegistro" class="p-2 md:p-6">
               <h3
                 class="text-xl font-bold text-gray-800 dark:text-slate-100 border-b dark:border-slate-700 pb-3 mb-6 flex items-center gap-2">
@@ -115,10 +137,13 @@
                 </div>
               </div>
 
-              <div class="w-full mt-8 pt-6 border-t dark:border-slate-700 flex justify-end">
+              <div class="w-full mt-8 pt-6 border-t dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p-button label="Volver atrás" (click)="atras()" icon="pi pi-arrow-left"
+                  styleClass="p-button-outlined p-button-secondary px-5 py-3 w-full sm:w-auto"></p-button>
+
                 @if(this.isloading()){
                 <p-button label="Confirmar Registro" (click)="guardar()" icon="pi pi-check"
-                  styleClass="p-button-rounded p-button-success px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all"></p-button>
+                  styleClass="p-button-rounded p-button-success px-6 py-3 font-bold shadow-md hover:shadow-lg transition-all w-full sm:w-auto"></p-button>
                 }
               </div>
             </form>
@@ -126,15 +151,12 @@
             }@else {
             <div class="text-center p-6">
               <i class="pi pi-times-circle text-red-500 text-6xl mb-4"></i>
-              <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-4">Inscripción Requerida</h2>
-              <p class="text-gray-600 dark:text-slate-400 mb-8">
-                Usted no se encuentra matriculado en la ESPOCH. Por favor,
-                primero necesita realizar el proceso de inscripción.
-                <br class="hidden sm:inline" />
-                Si es funcionario o docente, debe tener primero firmado su contrato o acción de personal.
+              <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-4">No es posible completar el registro</h2>
+              <p class="text-gray-600 dark:text-slate-400 max-w-lg mx-auto mb-6 text-sm sm:text-base leading-relaxed">
+                Recuerde que únicamente se podrá registrar o renovar su credencial si cuenta con una <strong>matrícula activa</strong> en el periodo académico vigente (para estudiantes) o un <strong>contrato legalizado / acción de personal vigente</strong> (para docentes o personal administrativo).
               </p>
               <p-button label="Volver atrás" (click)="atras()" icon="pi pi-arrow-left"
-                styleClass="p-button-outlined p-button-secondary"></p-button>
+                styleClass="p-button-outlined p-button-secondary px-6 py-2.5"></p-button>
             </div>
             }
           </p-card>

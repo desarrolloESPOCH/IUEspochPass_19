@@ -32,6 +32,27 @@ export default class PgChangelogComponent implements OnInit {
   // Datos del changelog para el Frontend (Aplicación)
   frontChanges = signal<ChangelogItem[]>([
     {
+      version: '2.3.0',
+      fecha: '21 Octubre 2026',
+      nuevasFunciones: [
+        'Botón de redirección hacia Enrolamiento en la vista de Credencial Digital (dashboard/users) para renovación por caducidad o actualización voluntaria de datos.',
+        'Efecto visual reflectivo tipo "Premium Card Shine" en la credencial con gradiente angular a 115° y traslación dinámica en hover y animación ambiental.',
+        'Acceso directo a "Actualizar Datos / Carnet" integrado en el menú lateral institucional (c-sidebar).',
+        'Botones de navegación rápida para volver al carnet y actualizar datos desde la pantalla de detalle QR (pg-info-qr).',
+        'Botón de retroceso ("Atrás") integrado en la interfaz de Enrolamiento tanto en la cabecera como al pie del formulario.',
+        'Banner y avisos informativos sobre requisitos de registro: exigencia de matrícula activa (estudiantes) o contrato legalizado / acción de personal vigente (docentes y funcionarios).'
+      ],
+      correcciones: [
+        'Prevención de bucle infinito de redirecciones en el botón Atrás de Enrolamiento mediante verificación de carnet vigente, redirigiendo de forma segura a inicio si el carnet está caducado o no existe.',
+        'Corrección de error crítico "TypeError: this.form._updateTreeValidity is not a function" y "TypeError: this.frmRegistro.get is not a function" mediante inicialización síncrona de FormGroup con FormBuilder.',
+        'Protección de getters con optional chaining en el componente de enrolamiento para garantizar estabilidad durante renderizado asíncrono.'
+      ],
+      mejoras: [
+        'Detección y alerta visual superior destacada en caso de carnet digital expirado con llamada a la acción "Renovar".',
+        'Estilos modernos con compatibilidad total para modo claro y modo oscuro (dark mode).'
+      ]
+    },
+    {
       version: '2.2.0',
       fecha: '13 Octubre 2026',
       nuevasFunciones: [

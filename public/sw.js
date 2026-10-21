@@ -1,5 +1,5 @@
 // Service Worker para ESPOCH Pass PWA
-const CACHE_NAME = 'espochpass-v5';
+const CACHE_NAME = 'espochpass-v5.0.1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -58,7 +58,7 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
           }
-        }).catch(() => {});
+        }).catch(() => { });
         return cachedResponse;
       }
 

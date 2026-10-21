@@ -20,6 +20,47 @@
   box-shadow: 0 20px 35px rgba(0, 0, 0, 0.25), 0 0 30px rgba(59, 130, 246, 0.2);
 }
 
+/* Efecto de Reflexión / Premium Card Shine */
+.carnet-shine {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(115deg, #0000 40%, #ffffff40 50%, #0000 60%);
+  pointer-events: none;
+  z-index: 5;
+  transform: translate(-100%, -100%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  animation: card-shine-ambient 7s ease-in-out infinite;
+}
+
+/* Traslación activa al pasar el cursor para destello inmediato */
+.carnet-wrapper:hover .carnet-shine {
+  animation: none;
+  transform: translate(100%, 100%);
+  transition: transform 0.85s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Ciclo de destello ambiental suave */
+@keyframes card-shine-ambient {
+  0% {
+    transform: translate(-100%, -100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  45% {
+    transform: translate(100%, 100%);
+    opacity: 1;
+  }
+  50%, 100% {
+    transform: translate(100%, 100%);
+    opacity: 0;
+  }
+}
+
 /* Superposición interactiva al hacer hover */
 .carnet-overlay {
   position: absolute;
@@ -200,4 +241,74 @@
 
 .terms-scrollable::-webkit-scrollbar-thumb:hover {
   background-color: rgba(156, 163, 175, 0.5);
+}
+
+/* Botón de Enrolamiento / Actualizar Datos */
+.btn-enrolamiento {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-enrolamiento:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.12);
+}
+
+:host-context(.app-dark, .dark) .btn-enrolamiento {
+  background-color: rgba(30, 58, 138, 0.35);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+:host-context(.app-dark, .dark) .btn-enrolamiento:hover {
+  background-color: rgba(30, 58, 138, 0.55);
+  color: #bfdbfe;
+  border-color: rgba(59, 130, 246, 0.55);
+}
+
+.btn-enrolamiento.expired-btn {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  animation: pulse-border 2.2s infinite;
+}
+
+.btn-enrolamiento.expired-btn:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+:host-context(.app-dark, .dark) .btn-enrolamiento.expired-btn {
+  background-color: rgba(127, 29, 29, 0.35);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+:host-context(.app-dark, .dark) .btn-enrolamiento.expired-btn:hover {
+  background-color: rgba(127, 29, 29, 0.55);
+  color: #fecaca;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  }
 }

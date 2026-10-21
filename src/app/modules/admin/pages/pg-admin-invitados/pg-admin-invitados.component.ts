@@ -133,6 +133,18 @@ export default class PgAdminInvitadosComponent implements OnInit {
   correoNotificacionClave: string = '';
   notificarPorCorreo: boolean = true;
 
+  // ==============================
+  // MODAL EDITAR INVITADO
+  // ==============================
+  dialogEditar = signal<boolean>(false);
+  guardandoEdicion = signal<boolean>(false);
+  invitadoSeleccionadoEditar: IInvitadoAdmin | null = null;
+  editarCorreo: string = '';
+  editarTelefono: string = '';
+  editarDependencia: string = '';
+  editarCargo: string = '';
+  editarFechaFin: string = '';
+
   ngOnInit() {
     this.cargarInvitados();
   }
@@ -896,5 +908,95 @@ export default class PgAdminInvitadosComponent implements OnInit {
           });
         },
       });
+  }
+
+  // ==========================================
+  // EDITAR DATOS DE INVITADO
+  // ==========================================
+
+  abrirModalEditar(invitado: IInvitadoAdmin) {
+    this.invitadoSeleccionadoEditar = invitado;
+    this.editarCorreo =
+      invitado.strCorreo && !['null', 'undefined', 'n/a'].includes(invitado.strCorreo.toLowerCase().trim())
+        ? invitado.strCorreo.trim()
+        : '';
+    this.editarTelefono =
+      invitado.strTelefono && !['null', 'undefined', 'n/a'].includes(invitado.strTelefono.toLowerCase().trim())
+        ? invitado.strTelefono.trim()
+        : '';
+    this.editarDependencia = (invitado.strDepencia || 'BAR / PROVEEDOR').trim();
+    this.editarCargo = (invitado.strCargo || 'INVITADO').trim();
+
+    if (invitado.dtFecha_Fin) {
+      try {
+        this.editarFechaFin = new Date(invitado.dtFecha_Fin).toISOString().split('T')[0];
+      } catch {
+        this.editarFechaFin = '';
+      }
+    } else {
+      this.editarFechaFin = '';
+    }
+
+    this.dialogEditar.set(true);
+  }
+
+  guardarEdicionInvitado() {
+    if (!this.invitadoSeleccionadoEditar) return;
+
+    if (!this.editarDependencia.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Campo requerido',
+        detail: 'El local, bar o empresa proveedora es obligatorio.',
+      });
+      return;
+    }
+
+    if (this.editarCorreo.trim() && !this.editarCorreo.includes('@')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido.',
+      });
+      return;
+    }
+
+    this.guardandoEdicion.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    const body: any = {
+      intPersona: this.invitadoSeleccionadoEditar.intPersona,
+      strCedula: this.invitadoSeleccionadoEditar.strCedula,
+      strCorreo: this.editarCorreo.trim() || 'N/A',
+      strTelefono: this.editarTelefono.trim() || 'N/A',
+      strDepencia: this.editarDependencia.trim(),
+      strCargo: this.editarCargo.trim() || 'INVITADO',
+      adminInfo,
+    };
+
+    if (this.editarFechaFin) {
+      body.dtFechaFin = new Date(this.editarFechaFin + 'T23:59:59').toISOString();
+    }
+
+    this.adminService.editarInvitado(body).subscribe({
+      next: (res) => {
+        this.guardandoEdicion.set(false);
+        this.dialogEditar.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Invitado Actualizado',
+          detail: res.message || 'Los datos del invitado fueron actualizados exitosamente.',
+        });
+        this.cargarInvitados();
+      },
+      error: (err) => {
+        this.guardandoEdicion.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al actualizar',
+          detail: err.error?.message || 'No se pudieron actualizar los datos del invitado.',
+        });
+      },
+    });
   }
 }

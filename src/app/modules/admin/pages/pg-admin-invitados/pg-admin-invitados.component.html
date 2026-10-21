@@ -169,6 +169,9 @@
           </td>
           <td class="text-center">
             <div class="flex items-center justify-center gap-1">
+              <p-button icon="pi pi-pencil" severity="info" pTooltip="Editar Datos de Invitado"
+                (click)="abrirModalEditar(inv)" [rounded]="true" [text]="true">
+              </p-button>
               <p-button icon="pi pi-key" severity="warn" pTooltip="Cambiar Contraseña" (click)="abrirModalPassword(inv)"
                 [rounded]="true" [text]="true">
               </p-button>
@@ -725,6 +728,96 @@
       </p-button>
       <p-button label="Actualizar Contraseña" icon="pi pi-check" [loading]="guardandoPassword()"
         (click)="guardarPassword()" styleClass="p-button-primary">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ========================================== -->
+<!-- MODAL: EDITAR INFORMACIÓN DE INVITADO      -->
+<!-- ========================================== -->
+<p-dialog [(visible)]="dialogEditar" [modal]="true" header="Editar Datos de Invitado"
+  [style]="{ width: '90vw', maxWidth: '580px' }" [draggable]="false" [resizable]="false">
+
+  @if (invitadoSeleccionadoEditar) {
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Encabezado con datos del invitado (Solo Lectura) -->
+    <div
+      class="p-3.5 bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-sm shadow">
+        {{ (invitadoSeleccionadoEditar.strNombres || '').charAt(0) }}{{ (invitadoSeleccionadoEditar.strApellidos || '').charAt(0) }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">
+          {{ invitadoSeleccionadoEditar.strNombres }} {{ invitadoSeleccionadoEditar.strApellidos }}
+        </h4>
+        <div class="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          <span>Cédula: <strong class="font-mono text-slate-700 dark:text-slate-200">{{ invitadoSeleccionadoEditar.strCedula }}</strong></span>
+          <span class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded font-semibold text-[10px]">
+            {{ invitadoSeleccionadoEditar.strDepencia || 'BAR / PROVEEDOR' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos Correo y Teléfono -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Correo Personal:
+        </label>
+        <input pInputText type="email" [(ngModel)]="editarCorreo" placeholder="correo@ejemplo.com" class="w-full" />
+        <span class="text-[11px] text-slate-400">Utilizado para acceso y notificación de credenciales.</span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Teléfono / Celular:
+        </label>
+        <input pInputText type="text" [(ngModel)]="editarTelefono" placeholder="099..." class="w-full" />
+        <span class="text-[11px] text-slate-400">Contacto telefónico directo.</span>
+      </div>
+    </div>
+
+    <!-- Campo Local / Bar / Proveedor -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Local, Bar o Empresa Proveedora: <span class="text-rose-500">*</span>
+      </label>
+      <input pInputText type="text" [(ngModel)]="editarDependencia"
+        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro" class="w-full" />
+    </div>
+
+    <!-- Campo Cargo / Función -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input pInputText type="text" [(ngModel)]="editarCargo"
+        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo" class="w-full" />
+    </div>
+
+    <!-- Vigencia del Carnet -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+        <i class="pi pi-calendar text-purple-600 dark:text-purple-400"></i>
+        Fecha Fin de Vigencia del Carnet:
+      </label>
+      <input pInputText type="date" [(ngModel)]="editarFechaFin" class="w-full text-xs" />
+      <span class="text-[11px] text-slate-400">
+        Modifique esta fecha si necesita extender o recortar la vigencia del carnet del invitado.
+      </span>
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogEditar.set(false)"
+        styleClass="p-button-text p-button-secondary">
+      </p-button>
+      <p-button label="Guardar Cambios" icon="pi pi-check" [loading]="guardandoEdicion()"
+        (click)="guardarEdicionInvitado()" styleClass="p-button-primary">
       </p-button>
     </div>
   </ng-template>

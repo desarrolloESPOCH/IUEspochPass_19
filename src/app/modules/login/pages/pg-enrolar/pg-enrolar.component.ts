@@ -22,6 +22,8 @@ import { SwCasService } from '../../../../utils/cas/sw-cas.service';
 import { IRol } from '../../interface/IRol.interface';
 import { obtenerToken } from '../../../../utils/tthh/tokens';
 import { FotoService } from '../../../../services/otros/FotoService';
+import { QrService } from '../../../../services/qr/QrService';
+import { firstValueFrom } from 'rxjs';
 
 import { Select } from 'primeng/select';
 import { environment } from '../../../../../environments/environment';
@@ -51,6 +53,7 @@ export default class PgEnrolarComponent {
   private swFoto = inject(FotoService);
   private alerty = inject(MessageService);
   private router = inject(Router);
+  private qrService = inject(QrService);
 
   isDevMode = !environment.production;
   selectedMockUser: any;
@@ -80,25 +83,40 @@ export default class PgEnrolarComponent {
   isloading = signal(false);
 
   public base64textString = signal<string>('');
-  public dataEnrol: any;
+  public dataEnrol: any = {};
 
   conexion = signal('');
   public enrolado: Boolean = false;
   public sinMatricula: Boolean = false;
 
-  frmRegistro: FormGroup = {} as FormGroup;
+  frmRegistro: FormGroup = this.fb.group({
+    intIdPersona: [{ value: '', disabled: true }],
+    strCedula: [{ value: '', disabled: true }],
+    strNombres: [{ value: '', disabled: true }],
+    strApellidos: [{ value: '', disabled: true }],
+    strCorreo: [{ value: '', disabled: false }],
+    strTelefono: [''],
+    cargo: [{ value: '', disabled: true }],
+    dependencia: [{ value: '', disabled: true }],
+    intEstado: [1],
+    intIdTermino: [1],
+    intAceptado: [1],
+    rolId: [2],
+    roles: [''],
+  });
   rol: number = 2;
 
   async ngOnInit() {
     this.isloading.set(false);
-    this.dataEnrol = this.swCas.getUserInfo();
+    this.dataEnrol = this.swCas.getUserInfo() || {};
     // console.log('this.dataEnrol : ', this.dataEnrol);
 
-    if (!this.dataEnrol.per_id) {
+    if (!this.dataEnrol || !this.dataEnrol.per_id) {
       console.log('No se loguea aun');
       this.atras();
       return;
     }
+    this.formBuilder(this.dataEnrol);
     await this.cargarDatosCentralizada(this.dataEnrol.cedula);
     this.formBuilder(this.dataEnrol);
     await this.getCargos(this.dataEnrol);
@@ -438,30 +456,56 @@ export default class PgEnrolarComponent {
     this.router.navigate(['/dashboard/users']);
   };
 
-  atras = () => {
-    this.router.navigate(['/']);
+  atras = async () => {
+    if (!this.dataEnrol || !this.dataEnrol.per_id) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    try {
+      // Validar si el usuario posee un carnet actualmente vigente en el sistema
+      const carnet = await firstValueFrom(this.qrService.buscarCarnet(this.dataEnrol.per_id));
+      if (carnet && carnet.count > 0) {
+        // Tiene carnet activo vigente (entró a actualizar datos): puede volver a /dashboard/users sin provocar bucle
+        this.router.navigate(['/dashboard/users']);
+      } else {
+        // El carnet está caducado o no existe aún. Si redirigimos a /dashboard/users,
+        // la página detectaría carnet inexistente/caducado y lo enviaría de nuevo a /enrolamiento (bucle infinito).
+        this.alerty.add({
+          severity: 'info',
+          summary: 'Registro o Renovación Pendiente',
+          detail: 'Su carnet ha caducado o no se encuentra activo. Debe completar el registro para ingresar. Redirigiendo al inicio...',
+        });
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 1200);
+      }
+    } catch (err) {
+      console.warn('Error al verificar carnet en retroceso:', err);
+      this.router.navigate(['/']);
+    }
   };
 
   get intIdPersona() {
-    return this.frmRegistro.get('intIdPersona');
+    return this.frmRegistro?.get ? this.frmRegistro.get('intIdPersona') : null;
   }
 
   get strCedula() {
-    return this.frmRegistro.get('strCedula');
+    return this.frmRegistro?.get ? this.frmRegistro.get('strCedula') : null;
   }
   get strCorreo() {
-    return this.frmRegistro.get('strCorreo');
+    return this.frmRegistro?.get ? this.frmRegistro.get('strCorreo') : null;
   }
   get strNombres() {
-    return this.frmRegistro.get('strNombres');
+    return this.frmRegistro?.get ? this.frmRegistro.get('strNombres') : null;
   }
   get strApellidos() {
-    return this.frmRegistro.get('strApellidos');
+    return this.frmRegistro?.get ? this.frmRegistro.get('strApellidos') : null;
   }
   get strCargo() {
-    return this.frmRegistro.get('cargo');
+    return this.frmRegistro?.get ? this.frmRegistro.get('cargo') : null;
   }
   get strDependencia() {
-    return this.frmRegistro.get('dependencia');
+    return this.frmRegistro?.get ? this.frmRegistro.get('dependencia') : null;
   }
 }

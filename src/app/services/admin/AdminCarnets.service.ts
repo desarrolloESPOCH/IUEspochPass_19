@@ -312,6 +312,8 @@ export class AdminCarnetsService {
     strTelefono?: string;
     strDepencia: string;
     strCorreo?: string;
+    strCargo?: string;
+    dtFechaFin?: string;
     adminInfo?: any;
   }): Observable<any> {
     return this.http.put<any>(
@@ -356,6 +358,24 @@ export class AdminCarnetsService {
     return this.http.put<any>(
       `${this.URLSERVICIO}/admin/invitado/cambiar_estado`,
       { intPersona, intEstado, adminInfo }
+    );
+  }
+
+  editarInvitado(body: {
+    intPersona: number;
+    strCedula?: string;
+    strNombres?: string;
+    strApellidos?: string;
+    strCorreo?: string;
+    strTelefono?: string;
+    strDepencia?: string;
+    strCargo?: string;
+    dtFechaFin?: string;
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.put<any>(
+      `${this.URLSERVICIO}/admin/invitado/editar`,
+      body
     );
   }
 

@@ -203,4 +203,12 @@ export class PgInfoQrComponent implements OnInit {
       this.getRoles();
     }
   };
+
+  irAEnrolamiento() {
+    this.router.navigate(['/enrolamiento']);
+  }
+
+  volverACarnet() {
+    this.router.navigate(['/dashboard/users']);
+  }
 }

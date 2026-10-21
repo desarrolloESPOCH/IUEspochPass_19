@@ -95,12 +95,15 @@ export default class PgAdminGuardiasComponent implements OnInit {
   nuevoDependencia: string = 'SEGURIDAD INSTITUCIONAL';
   mostrarCamposManuales = signal<boolean>(false);
 
-  // Modal Editar Guardia (Teléfono y Dependencia)
+  // Modal Editar Guardia
   dialogEditar = signal<boolean>(false);
   guardandoEdicion = signal<boolean>(false);
   guardiaSeleccionadoEditar: IGuardiaAdmin | null = null;
+  editarCorreo: string = '';
   editarTelefono: string = '';
   editarDependencia: string = '';
+  editarCargo: string = '';
+  editarFechaFin: string = '';
 
   // Modal Cambiar Contraseña
   dialogPassword = signal<boolean>(false);
@@ -274,11 +277,30 @@ export default class PgAdminGuardiasComponent implements OnInit {
     });
   }
 
-  // Modal Editar Guardia (Teléfono y Dependencia)
+  // Modal Editar Guardia
   abrirModalEditar(guardia: IGuardiaAdmin) {
     this.guardiaSeleccionadoEditar = guardia;
-    this.editarTelefono = guardia.strTelefono && guardia.strTelefono !== 'N/A' ? guardia.strTelefono : '';
-    this.editarDependencia = guardia.strDepencia || 'SEGURIDAD INSTITUCIONAL';
+    this.editarCorreo =
+      guardia.strCorreo && !['null', 'undefined', 'n/a'].includes(guardia.strCorreo.toLowerCase().trim())
+        ? guardia.strCorreo.trim()
+        : '';
+    this.editarTelefono =
+      guardia.strTelefono && !['null', 'undefined', 'n/a'].includes(guardia.strTelefono.toLowerCase().trim())
+        ? guardia.strTelefono.trim()
+        : '';
+    this.editarDependencia = (guardia.strDepencia || 'SEGURIDAD INSTITUCIONAL').trim();
+    this.editarCargo = (guardia.strCargo || 'GUARDIA DE SEGURIDAD').trim();
+
+    if (guardia.dtFecha_Fin) {
+      try {
+        this.editarFechaFin = new Date(guardia.dtFecha_Fin).toISOString().split('T')[0];
+      } catch {
+        this.editarFechaFin = '';
+      }
+    } else {
+      this.editarFechaFin = '';
+    }
+
     this.dialogEditar.set(true);
   }
 
@@ -293,14 +315,29 @@ export default class PgAdminGuardiasComponent implements OnInit {
       return;
     }
 
+    if (this.editarCorreo.trim() && !this.editarCorreo.includes('@')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido.',
+      });
+      return;
+    }
+
     this.guardandoEdicion.set(true);
-    const body = {
+    const body: any = {
       intPersona: this.guardiaSeleccionadoEditar.intPersona,
       strCedula: this.guardiaSeleccionadoEditar.strCedula,
+      strCorreo: this.editarCorreo.trim() || 'N/A',
       strTelefono: this.editarTelefono.trim() || 'N/A',
       strDepencia: this.editarDependencia.trim(),
+      strCargo: this.editarCargo.trim() || 'GUARDIA DE SEGURIDAD',
       adminInfo: this.swCas.getUserInfo(),
     };
+
+    if (this.editarFechaFin) {
+      body.dtFechaFin = new Date(this.editarFechaFin + 'T23:59:59').toISOString();
+    }
 
     this.adminService.editarGuardia(body).subscribe({
       next: (res) => {
@@ -317,7 +354,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Guardia Actualizado',
-          detail: 'El teléfono y dependencia han sido actualizados exitosamente.',
+          detail: 'Los datos del guardia han sido actualizados exitosamente.',
         });
         this.dialogEditar.set(false);
         this.cargarGuardias();

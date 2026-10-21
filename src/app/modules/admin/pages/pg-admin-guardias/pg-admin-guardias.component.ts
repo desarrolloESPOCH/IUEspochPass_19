@@ -66,6 +66,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   searchingPersona = signal<boolean>(false);
+  exportandoExcel = signal<boolean>(false);
 
   // Listado y métricas
   guardias = signal<IGuardiaAdmin[]>([]);
@@ -91,7 +92,18 @@ export default class PgAdminGuardiasComponent implements OnInit {
   nuevoApellidos: string = '';
   nuevoCorreo: string = '';
   nuevoTelefono: string = '';
+  nuevoDependencia: string = 'SEGURIDAD INSTITUCIONAL';
   mostrarCamposManuales = signal<boolean>(false);
+
+  // Modal Editar Guardia
+  dialogEditar = signal<boolean>(false);
+  guardandoEdicion = signal<boolean>(false);
+  guardiaSeleccionadoEditar: IGuardiaAdmin | null = null;
+  editarCorreo: string = '';
+  editarTelefono: string = '';
+  editarDependencia: string = '';
+  editarCargo: string = '';
+  editarFechaFin: string = '';
 
   // Modal Cambiar Contraseña
   dialogPassword = signal<boolean>(false);
@@ -179,6 +191,66 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.cargarGuardias();
   }
 
+  descargarExcelFiltrado() {
+    this.exportandoExcel.set(true);
+    const params: any = {
+      busqueda: this.filtroBusqueda,
+    };
+    if (this.filtroEstado !== 'TODOS') {
+      params.estado = this.filtroEstado;
+    }
+
+    this.adminService.getGuardias(params).subscribe({
+      next: (res) => {
+        this.exportandoExcel.set(false);
+        const rawList = res.data || [];
+        if (rawList.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Sin registros',
+            detail: 'No existen guardias que coincidan con los filtros aplicados para exportar.',
+          });
+          return;
+        }
+
+        const dataExcel = rawList.map((g: any, index: number) => ({
+          '#': index + 1,
+          'CÉDULA': g.strCedula || '',
+          'NOMBRES': g.strNombres || '',
+          'APELLIDOS': g.strApellidos || '',
+          'CORREO': this.normalizarContacto(g.strCorreo),
+          'TELÉFONO': this.normalizarContacto(g.strTelefono),
+          'ROL': g.rol || 'GUARDIA DE SEGURIDAD',
+          'DEPENDENCIA': g.strDepencia || 'ESPOCH',
+          'CARGO': g.strCargo || 'GUARDIA',
+          'ESTADO': g.estadoGuardia === 1 ? 'HABILITADO' : 'DESHABILITADO',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Guardias_Seguridad');
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Guardias_ESPOCH_Filtrados_${fechaHoy}.xlsx`);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Exportación Exitosa',
+          detail: `Se exportaron ${rawList.length} guardias a Excel correctamente.`,
+        });
+      },
+      error: (err) => {
+        this.exportandoExcel.set(false);
+        console.error('Error al exportar guardias a Excel', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Ocurrió un error al generar la exportación de guardias a Excel.',
+        });
+      },
+    });
+  }
+
   // Cambiar Estado (Habilitar / Deshabilitar)
   cambiarEstado(guardia: IGuardiaAdmin) {
     const nuevoEstado = guardia.estadoGuardia === 1 ? 0 : 1;
@@ -205,6 +277,99 @@ export default class PgAdminGuardiasComponent implements OnInit {
     });
   }
 
+  // Modal Editar Guardia
+  abrirModalEditar(guardia: IGuardiaAdmin) {
+    this.guardiaSeleccionadoEditar = guardia;
+    this.editarCorreo =
+      guardia.strCorreo && !['null', 'undefined', 'n/a'].includes(guardia.strCorreo.toLowerCase().trim())
+        ? guardia.strCorreo.trim()
+        : '';
+    this.editarTelefono =
+      guardia.strTelefono && !['null', 'undefined', 'n/a'].includes(guardia.strTelefono.toLowerCase().trim())
+        ? guardia.strTelefono.trim()
+        : '';
+    this.editarDependencia = (guardia.strDepencia || 'SEGURIDAD INSTITUCIONAL').trim();
+    this.editarCargo = (guardia.strCargo || 'GUARDIA DE SEGURIDAD').trim();
+
+    if (guardia.dtFecha_Fin) {
+      try {
+        this.editarFechaFin = new Date(guardia.dtFecha_Fin).toISOString().split('T')[0];
+      } catch {
+        this.editarFechaFin = '';
+      }
+    } else {
+      this.editarFechaFin = '';
+    }
+
+    this.dialogEditar.set(true);
+  }
+
+  guardarEdicionGuardia() {
+    if (!this.guardiaSeleccionadoEditar) return;
+    if (!this.editarDependencia || this.editarDependencia.trim() === '') {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Campo requerido',
+        detail: 'La dependencia / ubicación no puede estar vacía.',
+      });
+      return;
+    }
+
+    if (this.editarCorreo.trim() && !this.editarCorreo.includes('@')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido.',
+      });
+      return;
+    }
+
+    this.guardandoEdicion.set(true);
+    const body: any = {
+      intPersona: this.guardiaSeleccionadoEditar.intPersona,
+      strCedula: this.guardiaSeleccionadoEditar.strCedula,
+      strCorreo: this.editarCorreo.trim() || 'N/A',
+      strTelefono: this.editarTelefono.trim() || 'N/A',
+      strDepencia: this.editarDependencia.trim(),
+      strCargo: this.editarCargo.trim() || 'GUARDIA DE SEGURIDAD',
+      adminInfo: this.swCas.getUserInfo(),
+    };
+
+    if (this.editarFechaFin) {
+      body.dtFechaFin = new Date(this.editarFechaFin + 'T23:59:59').toISOString();
+    }
+
+    this.adminService.editarGuardia(body).subscribe({
+      next: (res) => {
+        this.guardandoEdicion.set(false);
+        if (res && res.count === -1) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: res.message || 'No se pudo actualizar el guardia.',
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Guardia Actualizado',
+          detail: 'Los datos del guardia han sido actualizados exitosamente.',
+        });
+        this.dialogEditar.set(false);
+        this.cargarGuardias();
+      },
+      error: (err) => {
+        this.guardandoEdicion.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err?.error?.message || 'Error al actualizar el guardia.',
+        });
+      },
+    });
+  }
+
   // Modal Agregar Guardia
   abrirModalAgregar() {
     this.cedulaNuevoGuardia = '';
@@ -213,6 +378,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.nuevoApellidos = '';
     this.nuevoCorreo = '';
     this.nuevoTelefono = '';
+    this.nuevoDependencia = 'SEGURIDAD INSTITUCIONAL';
     this.mostrarCamposManuales.set(false);
     this.dialogAgregar.set(true);
   }
@@ -235,6 +401,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
     this.nuevoApellidos = '';
     this.nuevoCorreo = '';
     this.nuevoTelefono = '';
+    this.nuevoDependencia = 'SEGURIDAD INSTITUCIONAL';
 
     // 1. Consultar si la persona ya está registrada localmente
     this.adminService.getPersonaCarnet(cedulaLimpia, true).subscribe({
@@ -257,6 +424,9 @@ export default class PgAdminGuardiasComponent implements OnInit {
           this.nuevoApellidos = (persona.strApellidos || '').trim();
           this.nuevoCorreo = correo;
           this.nuevoTelefono = telefono;
+          if (persona.strDepencia && persona.strDepencia.trim() !== '') {
+            this.nuevoDependencia = persona.strDepencia.trim();
+          }
           this.mostrarCamposManuales.set(true);
 
           this.messageService.add({
@@ -402,6 +572,10 @@ export default class PgAdminGuardiasComponent implements OnInit {
       return;
     }
 
+    const depFinal = (this.nuevoDependencia && this.nuevoDependencia.trim() !== ''
+      ? this.nuevoDependencia
+      : 'SEGURIDAD INSTITUCIONAL').trim();
+
     this.saving.set(true);
     const body: any = {
       strCedula: cedulaLimpia,
@@ -409,6 +583,7 @@ export default class PgAdminGuardiasComponent implements OnInit {
       strApellidos: apellidosFinal,
       strCorreo: correoFinal,
       strTelefono: telefonoFinal,
+      strDepencia: depFinal,
       adminInfo: this.swCas.getUserInfo(),
     };
 

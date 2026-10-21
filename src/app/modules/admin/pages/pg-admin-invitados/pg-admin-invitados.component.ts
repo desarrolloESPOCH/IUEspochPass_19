@@ -71,6 +71,7 @@ export default class PgAdminInvitadosComponent implements OnInit {
   savingIndividual = signal<boolean>(false);
   processingMasivo = signal<boolean>(false);
   searchingPersona = signal<boolean>(false);
+  exportandoExcel = signal<boolean>(false);
 
   // Listado y métricas
   invitados = signal<IInvitadoAdmin[]>([]);
@@ -101,6 +102,9 @@ export default class PgAdminInvitadosComponent implements OnInit {
   nuevoDependencia: string = '';
   nuevoCargo: string = '';
   mesesVigenciaIndividual: number = 6; // Por defecto 6 meses
+  tipoVigenciaIndividual: string = '6'; // '6', '12' o 'custom'
+  fechaPersonalizadaIndividual: string = '';
+  fechaMinimaVigencia: string = new Date().toISOString().split('T')[0];
   mostrarCamposManuales = signal<boolean>(false);
 
   // ==============================
@@ -128,6 +132,18 @@ export default class PgAdminInvitadosComponent implements OnInit {
   nuevaClave: string = '';
   correoNotificacionClave: string = '';
   notificarPorCorreo: boolean = true;
+
+  // ==============================
+  // MODAL EDITAR INVITADO
+  // ==============================
+  dialogEditar = signal<boolean>(false);
+  guardandoEdicion = signal<boolean>(false);
+  invitadoSeleccionadoEditar: IInvitadoAdmin | null = null;
+  editarCorreo: string = '';
+  editarTelefono: string = '';
+  editarDependencia: string = '';
+  editarCargo: string = '';
+  editarFechaFin: string = '';
 
   ngOnInit() {
     this.cargarInvitados();
@@ -168,6 +184,67 @@ export default class PgAdminInvitadosComponent implements OnInit {
     this.cargarInvitados();
   }
 
+  descargarExcelFiltrado() {
+    this.exportandoExcel.set(true);
+    const params: any = {
+      busqueda: this.filtroBusqueda,
+    };
+    if (this.filtroEstado !== 'TODOS') {
+      params.estado = this.filtroEstado;
+    }
+
+    this.adminService.getInvitados(params).subscribe({
+      next: (res) => {
+        this.exportandoExcel.set(false);
+        const lista = res.data || [];
+        if (lista.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Sin registros',
+            detail: 'No existen invitados que coincidan con los filtros aplicados para exportar.',
+          });
+          return;
+        }
+
+        const dataExcel = lista.map((inv: any, index: number) => ({
+          '#': index + 1,
+          'CÉDULA': inv.strCedula || '',
+          'NOMBRES': inv.strNombres || '',
+          'APELLIDOS': inv.strApellidos || '',
+          'LOCAL / EMPRESA': inv.strDepencia || 'BAR / PROVEEDOR',
+          'CARGO / FUNCIÓN': inv.strCargo || 'INVITADO',
+          'CORREO': inv.strCorreo && inv.strCorreo !== 'N/A' ? inv.strCorreo : '',
+          'TELÉFONO': inv.strTelefono && inv.strTelefono !== 'N/A' ? inv.strTelefono : '',
+          'ESTADO INVITADO': inv.estadoInvitado === 1 ? 'HABILITADO' : 'DESACTIVADO',
+          'ESTADO VIGENCIA': inv.estadoVigencia || 'ACTIVO',
+          'FECHA FIN VIGENCIA': inv.dtFecha_Fin ? new Date(inv.dtFecha_Fin).toLocaleDateString('es-EC') : '',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Invitados_Bares_Proveedores');
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Invitados_ESPOCH_Filtrados_${fechaHoy}.xlsx`);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Exportación Exitosa',
+          detail: `Se exportaron ${lista.length} invitados a Excel correctamente.`,
+        });
+      },
+      error: (err) => {
+        this.exportandoExcel.set(false);
+        console.error('Error al exportar invitados a Excel', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Ocurrió un error al generar la exportación a Excel.',
+        });
+      },
+    });
+  }
+
   // Cambiar Estado con Auditoría
   cambiarEstado(invitado: IInvitadoAdmin) {
     const nuevoEstado = invitado.estadoInvitado === 1 ? 0 : 1;
@@ -206,6 +283,8 @@ export default class PgAdminInvitadosComponent implements OnInit {
     this.nuevoDependencia = '';
     this.nuevoCargo = 'ATENCIÓN / PERSONAL';
     this.mesesVigenciaIndividual = 6;
+    this.tipoVigenciaIndividual = '6';
+    this.fechaPersonalizadaIndividual = '';
     this.mostrarCamposManuales.set(false);
     this.dialogAgregar.set(true);
   }
@@ -309,18 +388,35 @@ export default class PgAdminInvitadosComponent implements OnInit {
       strTelefono: (this.nuevoTelefono || '').trim(),
       strDepencia: this.nuevoDependencia.trim(),
       strCargo: this.nuevoCargo.trim() || 'INVITADO',
-      mesesVigencia: this.mesesVigenciaIndividual || 6,
       adminInfo: adminInfo,
     };
+
+    if (this.tipoVigenciaIndividual === 'custom') {
+      if (!this.fechaPersonalizadaIndividual) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Fecha requerida',
+          detail: 'Seleccione una fecha de vigencia válida para el carnet.',
+        });
+        this.savingIndividual.set(false);
+        return;
+      }
+      body.dtFechaFin = new Date(this.fechaPersonalizadaIndividual + 'T23:59:59').toISOString();
+    } else {
+      body.mesesVigencia = parseInt(this.tipoVigenciaIndividual) || 6;
+    }
 
     this.adminService.agregarInvitado(body).subscribe({
       next: (res) => {
         this.savingIndividual.set(false);
         this.dialogAgregar.set(false);
+        const detalleVigencia = this.tipoVigenciaIndividual === 'custom'
+          ? `con vigencia hasta el ${this.fechaPersonalizadaIndividual}.`
+          : `con vigencia de ${this.tipoVigenciaIndividual} meses.`;
         this.messageService.add({
           severity: 'success',
           summary: 'Invitado Registrado',
-          detail: 'El usuario fue registrado con rol INVITADO y su carnet activado por 6 meses.',
+          detail: `El usuario fue registrado con rol INVITADO y su carnet activado ${detalleVigencia}`,
         });
         this.cargarInvitados();
       },
@@ -812,5 +908,95 @@ export default class PgAdminInvitadosComponent implements OnInit {
           });
         },
       });
+  }
+
+  // ==========================================
+  // EDITAR DATOS DE INVITADO
+  // ==========================================
+
+  abrirModalEditar(invitado: IInvitadoAdmin) {
+    this.invitadoSeleccionadoEditar = invitado;
+    this.editarCorreo =
+      invitado.strCorreo && !['null', 'undefined', 'n/a'].includes(invitado.strCorreo.toLowerCase().trim())
+        ? invitado.strCorreo.trim()
+        : '';
+    this.editarTelefono =
+      invitado.strTelefono && !['null', 'undefined', 'n/a'].includes(invitado.strTelefono.toLowerCase().trim())
+        ? invitado.strTelefono.trim()
+        : '';
+    this.editarDependencia = (invitado.strDepencia || 'BAR / PROVEEDOR').trim();
+    this.editarCargo = (invitado.strCargo || 'INVITADO').trim();
+
+    if (invitado.dtFecha_Fin) {
+      try {
+        this.editarFechaFin = new Date(invitado.dtFecha_Fin).toISOString().split('T')[0];
+      } catch {
+        this.editarFechaFin = '';
+      }
+    } else {
+      this.editarFechaFin = '';
+    }
+
+    this.dialogEditar.set(true);
+  }
+
+  guardarEdicionInvitado() {
+    if (!this.invitadoSeleccionadoEditar) return;
+
+    if (!this.editarDependencia.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Campo requerido',
+        detail: 'El local, bar o empresa proveedora es obligatorio.',
+      });
+      return;
+    }
+
+    if (this.editarCorreo.trim() && !this.editarCorreo.includes('@')) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Correo inválido',
+        detail: 'Ingrese un correo electrónico válido.',
+      });
+      return;
+    }
+
+    this.guardandoEdicion.set(true);
+    const adminInfo = this.swCas.getUserInfo();
+
+    const body: any = {
+      intPersona: this.invitadoSeleccionadoEditar.intPersona,
+      strCedula: this.invitadoSeleccionadoEditar.strCedula,
+      strCorreo: this.editarCorreo.trim() || 'N/A',
+      strTelefono: this.editarTelefono.trim() || 'N/A',
+      strDepencia: this.editarDependencia.trim(),
+      strCargo: this.editarCargo.trim() || 'INVITADO',
+      adminInfo,
+    };
+
+    if (this.editarFechaFin) {
+      body.dtFechaFin = new Date(this.editarFechaFin + 'T23:59:59').toISOString();
+    }
+
+    this.adminService.editarInvitado(body).subscribe({
+      next: (res) => {
+        this.guardandoEdicion.set(false);
+        this.dialogEditar.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Invitado Actualizado',
+          detail: res.message || 'Los datos del invitado fueron actualizados exitosamente.',
+        });
+        this.cargarInvitados();
+      },
+      error: (err) => {
+        this.guardandoEdicion.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al actualizar',
+          detail: err.error?.message || 'No se pudieron actualizar los datos del invitado.',
+        });
+      },
+    });
   }
 }

@@ -32,6 +32,47 @@ export default class PgChangelogComponent implements OnInit {
   // Datos del changelog para el Frontend (Aplicación)
   frontChanges = signal<ChangelogItem[]>([
     {
+      version: '2.3.0',
+      fecha: '21 Octubre 2026',
+      nuevasFunciones: [
+        'Botón de redirección hacia Enrolamiento en la vista de Credencial Digital (dashboard/users) para renovación por caducidad o actualización voluntaria de datos.',
+        'Efecto visual reflectivo tipo "Premium Card Shine" en la credencial con gradiente angular a 115° y traslación dinámica en hover y animación ambiental.',
+        'Acceso directo a "Actualizar Datos / Carnet" integrado en el menú lateral institucional (c-sidebar).',
+        'Botones de navegación rápida para volver al carnet y actualizar datos desde la pantalla de detalle QR (pg-info-qr).',
+        'Botón de retroceso ("Atrás") integrado en la interfaz de Enrolamiento tanto en la cabecera como al pie del formulario.',
+        'Banner y avisos informativos sobre requisitos de registro: exigencia de matrícula activa (estudiantes) o contrato legalizado / acción de personal vigente (docentes y funcionarios).'
+      ],
+      correcciones: [
+        'Prevención de bucle infinito de redirecciones en el botón Atrás de Enrolamiento mediante verificación de carnet vigente, redirigiendo de forma segura a inicio si el carnet está caducado o no existe.',
+        'Corrección de error crítico "TypeError: this.form._updateTreeValidity is not a function" y "TypeError: this.frmRegistro.get is not a function" mediante inicialización síncrona de FormGroup con FormBuilder.',
+        'Protección de getters con optional chaining en el componente de enrolamiento para garantizar estabilidad durante renderizado asíncrono.'
+      ],
+      mejoras: [
+        'Detección y alerta visual superior destacada en caso de carnet digital expirado con llamada a la acción "Renovar".',
+        'Estilos modernos con compatibilidad total para modo claro y modo oscuro (dark mode).'
+      ]
+    },
+    {
+      version: '2.2.0',
+      fecha: '13 Octubre 2026',
+      nuevasFunciones: [
+        'Presentación del listado general institucional de carnets con paginación lazy y filtros de búsqueda por persona, rol y estado de vigencia.',
+        'Exportación y descarga a formato Excel (.xlsx) respetando los filtros activos en Gestión de Carnets, Gestión de Guardias y Gestión de Invitados.',
+        'Selector de vigencia de acceso y carnet personalizado con calendario para invitados y nuevas personas.',
+        'Funcionalidad para editar el número de teléfono y la dependencia institucional asignada a los guardias de seguridad.',
+        'Inclusión del campo de dependencia / garita al dar de alta a nuevos guardias de seguridad institucional.',
+        'Control estricto de privilegios: restricción de asignación del rol de Administrador cuando el usuario autenticado tiene un rol distinto a 1.'
+      ],
+      correcciones: [
+        'Ajuste en la asignación de cargo y rol en enrolamiento según régimen de Talento Humano (Código de Trabajo -> Trabajador, LOES -> Docente con rol 4, LOSEP -> Empleado).',
+        'Validación de seguridad preventiva contra escalado de privilegios administrativos en registro y actualización de roles.'
+      ],
+      mejoras: [
+        'Optimización visual en modales de administración y filtros con componentes PrimeNG 19.',
+        'Mensajes informativos y alertas contextuales para el usuario al realizar operaciones administrativas.'
+      ]
+    },
+    {
       version: '2.1.0',
       fecha: '23 Septiembre 2026',
       nuevasFunciones: [
@@ -108,6 +149,23 @@ export default class PgChangelogComponent implements OnInit {
 
   // Datos del changelog para el Backend (Servicios)
   backChanges = signal<ChangelogItem[]>([
+    {
+      version: '1.4.0',
+      fecha: '13 Octubre 2026',
+      nuevasFunciones: [
+        'Endpoint PUT /admin/guardia/editar para actualización de datos de contacto (teléfono) y asignación de dependencia del guardia.',
+        'Recepción y persistencia de dependencia personalizada (strDepencia) en el servicio de creación individual y masiva de guardias.',
+        'Auditoría detallada para el evento EDITAR_GUARDIA registrando la dependencia y contacto actualizados.'
+      ],
+      correcciones: [
+        'Eliminación de la asignación estática de dependencia en roles de guardia en base de datos.',
+        'Normalización de valores de contacto y saneamiento de cadenas en actualización de perfiles.'
+      ],
+      mejoras: [
+        'Optimización de consultas para listado masivo y exportación filtrada de carnets, guardias e invitados.',
+        'Soporte para auditoría de acciones administrativas con trazabilidad de administradores actuantes.'
+      ]
+    },
     {
       version: '1.3.0',
       fecha: '23 Septiembre 2026',

@@ -315,25 +315,209 @@
     </div>
     <p-button label="Registrar como Nueva Persona" icon="pi pi-user-plus" (click)="abrirModalCrearPersona(busquedaTexto)" styleClass="p-button-success"></p-button>
   </div>
-  } @else {
-  <!-- Estado inicial / Placeholder cuando no hay búsqueda activa -->
-  <div class="bg-white dark:bg-slate-900 p-12 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center gap-4">
-    <div class="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 text-3xl shadow-inner">
-      <i class="pi pi-id-card"></i>
-    </div>
-    <div class="max-w-md">
-      <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">
-        Búsqueda y Gestión Individual de Carnets
-      </h3>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
-        Ingrese el número de cédula, nombres o apellidos en el buscador superior para consultar datos, renovar vigencia, habilitar/deshabilitar accesos o actualizar roles institucionales de manera rápida.
-      </p>
-    </div>
-    <div class="pt-2">
-      <p-button label="Registrar Nueva Persona" icon="pi pi-user-plus" (click)="abrirModalCrearPersona()" styleClass="p-button-outlined p-button-primary p-button-sm"></p-button>
-    </div>
-  </div>
   }
+
+  <!-- ======================================================== -->
+  <!-- TABLA PRINCIPAL: LISTADO DE TODOS LOS CARNETS            -->
+  <!-- ======================================================== -->
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+    <!-- Encabezado de la Sección y Filtros -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <i class="pi pi-list text-blue-600 dark:text-blue-400"></i>
+          Listado Institucional de Carnets
+        </h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+          Visualización y control de carnets digitales emitidos para estudiantes, docentes, funcionarios e invitados.
+        </p>
+      </div>
+
+      <!-- Filtros de la Tabla -->
+      <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+        <!-- Búsqueda en tabla -->
+        <p-iconfield iconPosition="left" class="w-full sm:w-60">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input
+            pInputText
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            (keyup.enter)="page = 1; cargarCarnets()"
+            placeholder="Filtrar por cédula, nombre..."
+            class="w-full text-xs" />
+        </p-iconfield>
+
+        <!-- Filtro por Rol -->
+        <p-select
+          [options]="rolesList()"
+          [(ngModel)]="filtroRol"
+          (onChange)="page = 1; cargarCarnets()"
+          optionLabel="label"
+          optionValue="value"
+          [appendTo]="'body'"
+          styleClass="w-full sm:w-44 text-xs">
+        </p-select>
+
+        <!-- Filtro por Vigencia -->
+        <p-select
+          [options]="estadosVigenciaList"
+          [(ngModel)]="filtroVigencia"
+          (onChange)="page = 1; cargarCarnets()"
+          optionLabel="label"
+          optionValue="value"
+          [appendTo]="'body'"
+          styleClass="w-full sm:w-44 text-xs">
+        </p-select>
+
+        <!-- Botones de Acción -->
+        <p-button
+          icon="pi pi-filter-slash"
+          pTooltip="Limpiar Filtros"
+          (click)="limpiarFiltrosTabla()"
+          styleClass="p-button-outlined p-button-secondary p-button-sm">
+        </p-button>
+
+        <p-button
+          icon="pi pi-refresh"
+          pTooltip="Recargar Tabla"
+          [loading]="loading()"
+          (click)="cargarCarnets()"
+          styleClass="p-button-outlined p-button-primary p-button-sm">
+        </p-button>
+
+        <p-button
+          label="Exportar Excel"
+          icon="pi pi-file-excel"
+          pTooltip="Descargar listado filtrado en Excel (.xlsx)"
+          [loading]="exportandoExcel()"
+          (click)="descargarExcelFiltrado()"
+          styleClass="p-button-success p-button-sm font-semibold">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Tabla PrimeNG de Carnets -->
+    <p-table
+      [value]="carnets()"
+      [loading]="loading()"
+      [lazy]="true"
+      (onLazyLoad)="onPageChange($event)"
+      [paginator]="true"
+      [rows]="rows"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} carnets"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [tableStyle]="{ 'min-width': '65rem' }">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Cédula</th>
+          <th>Beneficiario</th>
+          <th>Rol Institucional</th>
+          <th>Dependencia / Carrera</th>
+          <th>Cargo</th>
+          <th>Contacto</th>
+          <th class="text-center">Estado Carnet</th>
+          <th class="text-center">Vigencia</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-c>
+        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+          <td>
+            <span class="font-mono font-bold text-slate-800 dark:text-slate-100">{{ c.strCedula }}</span>
+          </td>
+          <td>
+            <div class="font-semibold text-slate-800 dark:text-slate-100">
+              {{ c.strNombres }} {{ c.strApellidos }}
+            </div>
+          </td>
+          <td>
+            <span class="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 rounded font-medium inline-block">
+              {{ c.rol || 'SIN ROL' }}
+            </span>
+          </td>
+          <td class="text-xs text-slate-600 dark:text-slate-300">
+            {{ c.strDepencia || 'ESPOCH' }}
+          </td>
+          <td class="text-xs text-slate-500 dark:text-slate-400">
+            {{ c.strCargo || 'N/A' }}
+          </td>
+          <td>
+            <div class="text-xs text-slate-500 flex flex-col">
+              <span *ngIf="c.strCorreo && c.strCorreo !== 'N/A'"><i class="pi pi-envelope mr-1 text-[10px]"></i>{{ c.strCorreo }}</span>
+              <span *ngIf="c.strTelefono && c.strTelefono !== 'N/A'"><i class="pi pi-phone mr-1 text-[10px]"></i>{{ c.strTelefono }}</span>
+            </div>
+          </td>
+          <td class="text-center">
+            <p-tag
+              [value]="c.estadoCarnet === 1 ? 'Habilitado' : 'Desactivado'"
+              [severity]="c.estadoCarnet === 1 ? 'success' : 'secondary'">
+            </p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-0.5">
+              <p-tag
+                [value]="c.estadoVigencia || 'ACTIVO'"
+                [severity]="getSeverityVigencia(c.estadoVigencia || 'ACTIVO')">
+              </p-tag>
+              <span class="text-[10px] text-slate-400" *ngIf="c.dtFecha_Fin">
+                Hasta: {{ c.dtFecha_Fin | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <p-button
+                icon="pi pi-id-card"
+                pTooltip="Gestionar / Ver Ficha"
+                (click)="seleccionarPersona(c)"
+                [rounded]="true"
+                [text]="true"
+                severity="info">
+              </p-button>
+              <p-button
+                icon="pi pi-history"
+                pTooltip="Historial de Carnets"
+                (click)="abrirModalDetalles(c)"
+                [rounded]="true"
+                [text]="true"
+                severity="primary">
+              </p-button>
+              <p-button
+                icon="pi pi-calendar-plus"
+                pTooltip="Renovar / Prorrogar Vigencia"
+                (click)="abrirModalProrroga(c)"
+                [rounded]="true"
+                [text]="true"
+                severity="success">
+              </p-button>
+              <p-button
+                [icon]="c.estadoCarnet === 1 ? 'pi pi-ban' : 'pi pi-check'"
+                [severity]="c.estadoCarnet === 1 ? 'danger' : 'success'"
+                [pTooltip]="c.estadoCarnet === 1 ? 'Deshabilitar Carnet' : 'Habilitar Carnet'"
+                (click)="cambiarEstado(c)"
+                [rounded]="true"
+                [text]="true">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center py-10 text-slate-400">
+            <i class="pi pi-inbox text-3xl mb-2 block"></i>
+            No se encontraron carnets registrados con los criterios seleccionados.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
 
 </div>
 

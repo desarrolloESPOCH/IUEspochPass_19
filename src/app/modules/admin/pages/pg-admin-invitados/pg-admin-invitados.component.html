@@ -1,9 +1,11 @@
 <div class="w-full flex flex-col gap-4 sm:gap-6 p-2 sm:p-4 md:p-6 max-w-[1650px] mx-auto animate-fadein">
   <!-- Encabezado -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
     <div>
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl shadow-inner">
+        <div
+          class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl shadow-inner">
           <i class="pi pi-users"></i>
         </div>
         <div>
@@ -19,22 +21,13 @@
 
     <!-- Botones de Acción Superior -->
     <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-      <p-button
-        label="Descargar Plantilla"
-        icon="pi pi-download"
-        (click)="descargarPlantilla()"
+      <p-button label="Descargar Plantilla" icon="pi pi-download" (click)="descargarPlantilla()"
         styleClass="p-button-outlined p-button-secondary p-button-sm">
       </p-button>
-      <p-button
-        label="Carga Masiva Excel"
-        icon="pi pi-file-excel"
-        (click)="abrirModalMasivo()"
+      <p-button label="Carga Masiva Excel" icon="pi pi-file-excel" (click)="abrirModalMasivo()"
         styleClass="p-button-outlined p-button-success p-button-sm">
       </p-button>
-      <p-button
-        label="Agregar Invitado"
-        icon="pi pi-user-plus"
-        (click)="abrirModalAgregar()"
+      <p-button label="Agregar Invitado" icon="pi pi-user-plus" (click)="abrirModalAgregar()"
         styleClass="p-button-primary p-button-sm">
       </p-button>
     </div>
@@ -42,98 +35,84 @@
 
   <!-- Métricas Rápidas -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invitados</span>
         <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
           {{ totalInvitados() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shadow-inner">
+      <div
+        class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shadow-inner">
         <i class="pi pi-users"></i>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Habilitados / Activos</span>
         <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
           {{ activosCount() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
+      <div
+        class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl shadow-inner">
         <i class="pi pi-check-circle"></i>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
       <div>
         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desactivados / Inactivos</span>
         <h3 class="text-2xl font-black text-slate-600 dark:text-slate-400 mt-1">
           {{ desactivadosCount() | number }}
         </h3>
       </div>
-      <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-xl shadow-inner">
+      <div
+        class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 text-xl shadow-inner">
         <i class="pi pi-ban"></i>
       </div>
     </div>
   </div>
 
   <!-- Tabla Principal de Invitados -->
-  <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+  <div
+    class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
     <!-- Barra de Filtros -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-3">
       <div class="w-full md:w-80">
         <p-iconfield iconPosition="left" styleClass="w-full">
           <p-inputicon styleClass="pi pi-search"></p-inputicon>
-          <input
-            pInputText
-            type="text"
-            [(ngModel)]="filtroBusqueda"
-            (keyup.enter)="cargarInvitados()"
-            placeholder="Buscar por cédula, nombre o local..."
-            class="w-full" />
+          <input pInputText type="text" [(ngModel)]="filtroBusqueda" (keyup.enter)="cargarInvitados()"
+            placeholder="Buscar por cédula, nombre o local..." class="w-full" />
         </p-iconfield>
       </div>
 
       <div class="flex items-center gap-3 w-full md:w-auto">
-        <p-select
-          [options]="estadosList"
-          [(ngModel)]="filtroEstado"
-          (onChange)="cargarInvitados()"
-          optionLabel="label"
-          optionValue="value"
-          [appendTo]="'body'"
-          styleClass="w-full md:w-56">
+        <p-select [options]="estadosList" [(ngModel)]="filtroEstado" (onChange)="cargarInvitados()" optionLabel="label"
+          optionValue="value" [appendTo]="'body'" styleClass="w-full md:w-56">
         </p-select>
 
-        <p-button
-          icon="pi pi-filter-slash"
-          (click)="limpiarFiltros()"
-          pTooltip="Limpiar Filtros"
+        <p-button icon="pi pi-filter-slash" (click)="limpiarFiltros()" pTooltip="Limpiar Filtros"
           styleClass="p-button-outlined p-button-secondary">
         </p-button>
-        <p-button
-          icon="pi pi-refresh"
-          (click)="cargarInvitados()"
-          [loading]="loading()"
-          pTooltip="Recargar Listado"
+        <p-button icon="pi pi-refresh" (click)="cargarInvitados()" [loading]="loading()" pTooltip="Recargar Listado"
           styleClass="p-button-outlined p-button-primary">
+        </p-button>
+        <p-button label="Exportar Excel" icon="pi pi-file-excel" (click)="descargarExcelFiltrado()" [loading]="exportandoExcel()"
+          pTooltip="Descargar listado filtrado de invitados en Excel (.xlsx)" styleClass="p-button-success p-button-sm">
         </p-button>
       </div>
     </div>
 
     <!-- Tabla PrimeNG -->
-    <p-table
-      [value]="invitados()"
-      [loading]="loading()"
-      [paginator]="true"
-      [rows]="15"
-      [rowsPerPageOptions]="[10, 15, 30, 50]"
-      [showCurrentPageReport]="true"
+    <p-table [value]="invitados()" [loading]="loading()" [paginator]="true" [rows]="15"
+      [rowsPerPageOptions]="[10, 15, 30, 50]" [showCurrentPageReport]="true"
       currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} invitados"
-      styleClass="p-datatable-sm p-datatable-striped"
-      responsiveLayout="scroll">
+      styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="scroll">
 
       <ng-template pTemplate="header">
         <tr>
@@ -159,7 +138,8 @@
             </div>
           </td>
           <td>
-            <div class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-medium rounded inline-block">
+            <div
+              class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-medium rounded inline-block">
               <i class="pi pi-building mr-1"></i>{{ inv.strDepencia || 'BAR / PROVEEDOR' }}
             </div>
           </td>
@@ -173,15 +153,13 @@
             </div>
           </td>
           <td class="text-center">
-            <p-tag
-              [value]="inv.estadoInvitado === 1 ? 'Habilitado' : 'Desactivado'"
+            <p-tag [value]="inv.estadoInvitado === 1 ? 'Habilitado' : 'Desactivado'"
               [severity]="inv.estadoInvitado === 1 ? 'success' : 'secondary'">
             </p-tag>
           </td>
           <td class="text-center">
             <div class="flex flex-col items-center gap-0.5">
-              <p-tag
-                [value]="inv.estadoVigencia || 'ACTIVO'"
+              <p-tag [value]="inv.estadoVigencia || 'ACTIVO'"
                 [severity]="getSeverityVigencia(inv.estadoVigencia || 'ACTIVO')">
               </p-tag>
               <span class="text-[10px] text-slate-400" *ngIf="inv.dtFecha_Fin">
@@ -191,21 +169,16 @@
           </td>
           <td class="text-center">
             <div class="flex items-center justify-center gap-1">
-              <p-button
-                icon="pi pi-key"
-                severity="warn"
-                pTooltip="Cambiar Contraseña"
-                (click)="abrirModalPassword(inv)"
-                [rounded]="true"
-                [text]="true">
+              <p-button icon="pi pi-pencil" severity="info" pTooltip="Editar Datos de Invitado"
+                (click)="abrirModalEditar(inv)" [rounded]="true" [text]="true">
               </p-button>
-              <p-button
-                [icon]="inv.estadoInvitado === 1 ? 'pi pi-ban' : 'pi pi-check'"
+              <p-button icon="pi pi-key" severity="warn" pTooltip="Cambiar Contraseña" (click)="abrirModalPassword(inv)"
+                [rounded]="true" [text]="true">
+              </p-button>
+              <p-button [icon]="inv.estadoInvitado === 1 ? 'pi pi-ban' : 'pi pi-check'"
                 [severity]="inv.estadoInvitado === 1 ? 'danger' : 'success'"
                 [pTooltip]="inv.estadoInvitado === 1 ? 'Deshabilitar Invitado' : 'Habilitar Invitado'"
-                (click)="cambiarEstado(inv)"
-                [rounded]="true"
-                [text]="true">
+                (click)="cambiarEstado(inv)" [rounded]="true" [text]="true">
               </p-button>
             </div>
           </td>
@@ -227,13 +200,8 @@
 <!-- ========================================== -->
 <!-- MODAL: AGREGAR INVITADO INDIVIDUAL         -->
 <!-- ========================================== -->
-<p-dialog
-  [(visible)]="dialogAgregar"
-  [modal]="true"
-  header="Registrar Nuevo Invitado (Bar / Proveedor)"
-  [style]="{ width: '90vw', maxWidth: '580px' }"
-  [draggable]="false"
-  [resizable]="false">
+<p-dialog [(visible)]="dialogAgregar" [modal]="true" header="Registrar Nuevo Invitado (Bar / Proveedor)"
+  [style]="{ width: '90vw', maxWidth: '580px' }" [draggable]="false" [resizable]="false">
 
   <div class="flex flex-col gap-4 py-2 text-sm">
     <!-- Campo Cédula con Búsqueda -->
@@ -242,28 +210,22 @@
         Número de Cédula: <span class="text-rose-500">*</span>
       </label>
       <div class="flex gap-2">
-        <input
-          pInputText
-          type="text"
-          [(ngModel)]="cedulaNuevo"
-          (keyup.enter)="buscarPersonaPorCedula()"
-          placeholder="Ej. 1850575133"
-          class="w-full" />
-        <p-button
-          label="Buscar"
-          icon="pi pi-search"
-          [loading]="searchingPersona()"
-          (click)="buscarPersonaPorCedula()"
+        <input pInputText type="text" [(ngModel)]="cedulaNuevo" (keyup.enter)="buscarPersonaPorCedula()"
+          placeholder="Ej. 1850575133" class="w-full" />
+        <p-button label="Buscar" icon="pi pi-search" [loading]="searchingPersona()" (click)="buscarPersonaPorCedula()"
           styleClass="p-button-outlined p-button-primary">
         </p-button>
       </div>
-      <span class="text-[11px] text-slate-400">El sistema buscará automáticamente los nombres en la base institucional / DINARDAP.</span>
+      <span class="text-[11px] text-slate-400">El sistema buscará automáticamente los nombres en la base institucional /
+        DINARDAP.</span>
     </div>
 
     <!-- Preview si se encontró la persona -->
     @if (personaPreview) {
-    <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow">
+    <div
+      class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow">
         {{ personaPreview.strNombres?.charAt(0) }}{{ personaPreview.strApellidos?.charAt(0) }}
       </div>
       <div class="flex-1">
@@ -276,18 +238,23 @@
     }
 
     <!-- Campos de datos de la persona -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl">
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl">
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nombres: <span class="text-rose-500">*</span></label>
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Nombres: <span
+            class="text-rose-500">*</span></label>
         <input pInputText type="text" [(ngModel)]="nuevoNombres" placeholder="Nombres completos" class="w-full" />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Apellidos: <span class="text-rose-500">*</span></label>
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Apellidos: <span
+            class="text-rose-500">*</span></label>
         <input pInputText type="text" [(ngModel)]="nuevoApellidos" placeholder="Apellidos completos" class="w-full" />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Correo Personal: <span class="text-rose-500">*</span></label>
-        <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="correo_personal@gmail.com" class="w-full" />
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Correo Personal: <span
+            class="text-rose-500">*</span></label>
+        <input pInputText type="email" [(ngModel)]="nuevoCorreo" placeholder="correo_personal@gmail.com"
+          class="w-full" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Teléfono / Celular:</label>
@@ -296,10 +263,12 @@
     </div>
 
     <!-- Nota informativa de credenciales -->
-    <div class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg flex items-start gap-2 text-xs text-purple-900 dark:text-purple-300">
+    <div
+      class="p-2.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-lg flex items-start gap-2 text-xs text-purple-900 dark:text-purple-300">
       <i class="pi pi-envelope text-sm mt-0.5 text-purple-600 dark:text-purple-400"></i>
       <span>
-        Al registrar y activar el carnet, se creará la cuenta del invitado y se enviarán automáticamente sus <strong>credenciales (usuario y contraseña generada)</strong> a su correo personal.
+        Al registrar y activar el carnet, se creará la cuenta del invitado y se enviarán automáticamente sus
+        <strong>credenciales (usuario y contraseña generada)</strong> a su correo personal.
       </span>
     </div>
 
@@ -308,12 +277,8 @@
       <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
         Local, Bar o Empresa Proveedora: <span class="text-rose-500">*</span>
       </label>
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="nuevoDependencia"
-        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro"
-        class="w-full" />
+      <input pInputText type="text" [(ngModel)]="nuevoDependencia"
+        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro" class="w-full" />
     </div>
 
     <!-- Campo Cargo -->
@@ -321,37 +286,60 @@
       <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
         Cargo / Función:
       </label>
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="nuevoCargo"
-        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo"
-        class="w-full" />
+      <input pInputText type="text" [(ngModel)]="nuevoCargo"
+        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo" class="w-full" />
     </div>
 
-    <!-- Vigencia del Carnet (Por defecto 6 meses) -->
-    <div class="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl flex flex-col gap-2">
+    <!-- Vigencia del Carnet (Por defecto 6 meses o Personalizado) -->
+    <div
+      class="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl flex flex-col gap-2.5">
       <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
         Vigencia de Acceso y Carnet:
       </label>
-      <div class="flex gap-4">
+      <div class="flex flex-wrap gap-4 items-center">
         <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
-          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="6" class="text-purple-600" />
+          <input type="radio" name="vigenciaInd" [(ngModel)]="tipoVigenciaIndividual" value="6"
+            class="text-purple-600" />
           <span><strong>6 Meses (Recomendado)</strong></span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
-          <input type="radio" name="vigenciaInd" [(ngModel)]="mesesVigenciaIndividual" [value]="12" class="text-purple-600" />
+          <input type="radio" name="vigenciaInd" [(ngModel)]="tipoVigenciaIndividual" value="12"
+            class="text-purple-600" />
           <span>12 Meses (1 Año)</span>
         </label>
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium">
+          <input type="radio" name="vigenciaInd" [(ngModel)]="tipoVigenciaIndividual" value="custom"
+            class="text-purple-600" />
+          <span>Personalizado</span>
+        </label>
       </div>
-      <span class="text-[11px] text-slate-400">Se generará y activará automáticamente el carnet con esta vigencia en el sistema de torniquetes.</span>
+
+      @if (tipoVigenciaIndividual === 'custom') {
+      <div
+        class="mt-1 flex flex-col gap-1.5 p-3 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg animate-fadeIn">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <i class="pi pi-calendar text-purple-600 dark:text-purple-400"></i>
+          Fecha Límite de Vigencia: <span class="text-rose-500">*</span>
+        </label>
+        <input pInputText type="date" [(ngModel)]="fechaPersonalizadaIndividual" [min]="fechaMinimaVigencia"
+          class="w-full text-xs" />
+        <span class="text-[11px] text-slate-500 dark:text-slate-400">
+          El carnet de invitado caducará automáticamente a las 23:59:59 de la fecha seleccionada.
+        </span>
+      </div>
+      }
+
+      <span class="text-[11px] text-slate-400">Se generará y activará automáticamente el carnet con esta vigencia en el
+        sistema.</span>
     </div>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
-      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
-      <p-button label="Registrar y Activar Carnet" icon="pi pi-check" [loading]="savingIndividual()" (click)="guardarNuevoInvitado()" styleClass="p-button-success"></p-button>
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogAgregar.set(false)"
+        styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Registrar y Activar Carnet" icon="pi pi-check" [loading]="savingIndividual()"
+        (click)="guardarNuevoInvitado()" styleClass="p-button-success"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -359,28 +347,23 @@
 <!-- ========================================== -->
 <!-- MODAL: CARGA MASIVA VÍA EXCEL             -->
 <!-- ========================================== -->
-<p-dialog
-  [(visible)]="dialogMasivo"
-  [modal]="true"
+<p-dialog [(visible)]="dialogMasivo" [modal]="true"
   header="Carga Masiva de Invitados (Bares / Proveedores) vía Excel (.xlsx)"
-  [style]="{ width: '94vw', maxWidth: '940px' }"
-  [draggable]="false"
-  [resizable]="false">
+  [style]="{ width: '94vw', maxWidth: '940px' }" [draggable]="false" [resizable]="false">
 
   <div class="flex flex-col gap-4 py-2 text-sm">
     <!-- Instrucciones y Descarga de Plantilla -->
     @if (!resultadoLote()) {
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800 rounded-xl">
+    <div
+      class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-800 rounded-xl">
       <div>
         <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Plantilla Oficial de Invitados</h4>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Si no incluye nombres en la matriz, el sistema los <strong>obtendrá automáticamente desde la Centralizada institucional (DINARDAP)</strong>.
+          Si no incluye nombres en la matriz, el sistema los <strong>obtendrá automáticamente desde la Centralizada
+            institucional (DINARDAP)</strong>.
         </p>
       </div>
-      <p-button
-        label="Descargar Plantilla (.xlsx)"
-        icon="pi pi-download"
-        (click)="descargarPlantilla()"
+      <p-button label="Descargar Plantilla (.xlsx)" icon="pi pi-download" (click)="descargarPlantilla()"
         styleClass="p-button-sm p-button-outlined p-button-purple">
       </p-button>
     </div>
@@ -388,9 +371,7 @@
     <!-- Zona Drag & Drop / Selección de Archivo -->
     <div
       class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-purple-400 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/50"
-      (dragover)="onDragOver($event)"
-      (drop)="onDrop($event)"
-      (click)="fileInput.click()">
+      (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
       <input #fileInput type="file" (change)="onArchivoSeleccionado($event)" accept=".xlsx, .xls" class="hidden" />
       <i class="pi pi-upload text-3xl text-purple-500 mb-2"></i>
       <span class="font-bold text-slate-700 dark:text-slate-200 text-sm">
@@ -406,9 +387,11 @@
 
     <!-- Indicador de resolución Centralizada -->
     @if (resolviendoCentralizada()) {
-    <div class="p-3 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 rounded-xl flex items-center gap-3 text-xs text-cyan-800 dark:text-cyan-200 animate-pulse">
+    <div
+      class="p-3 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 rounded-xl flex items-center gap-3 text-xs text-cyan-800 dark:text-cyan-200 animate-pulse">
       <i class="pi pi-spin pi-spinner text-base text-cyan-600"></i>
-      <span>Consultando y sincronizando nombres desde la <strong>Centralizada institucional (DINARDAP)</strong> para los invitados sin nombre...</span>
+      <span>Consultando y sincronizando nombres desde la <strong>Centralizada institucional (DINARDAP)</strong> para los
+        invitados sin nombre...</span>
     </div>
     }
 
@@ -421,33 +404,21 @@
           Previsualización del Archivo ({{ filasPrevia().length }} registros):
         </span>
         <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs">
-          <button
-            type="button"
-            (click)="filtroPrevia.set('TODOS')"
-            [class.bg-white]="filtroPrevia() === 'TODOS'"
-            [class.shadow-sm]="filtroPrevia() === 'TODOS'"
-            [class.font-bold]="filtroPrevia() === 'TODOS'"
+          <button type="button" (click)="filtroPrevia.set('TODOS')" [class.bg-white]="filtroPrevia() === 'TODOS'"
+            [class.shadow-sm]="filtroPrevia() === 'TODOS'" [class.font-bold]="filtroPrevia() === 'TODOS'"
             [class.text-purple-600]="filtroPrevia() === 'TODOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Todos ({{ filasPrevia().length }})
           </button>
-          <button
-            type="button"
-            (click)="filtroPrevia.set('VALIDOS')"
-            [class.bg-white]="filtroPrevia() === 'VALIDOS'"
-            [class.shadow-sm]="filtroPrevia() === 'VALIDOS'"
-            [class.font-bold]="filtroPrevia() === 'VALIDOS'"
+          <button type="button" (click)="filtroPrevia.set('VALIDOS')" [class.bg-white]="filtroPrevia() === 'VALIDOS'"
+            [class.shadow-sm]="filtroPrevia() === 'VALIDOS'" [class.font-bold]="filtroPrevia() === 'VALIDOS'"
             [class.text-emerald-600]="filtroPrevia() === 'VALIDOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Válidos ({{ totalValidos() }})
           </button>
-          <button
-            type="button"
-            (click)="filtroPrevia.set('INVALIDOS')"
-            [class.bg-white]="filtroPrevia() === 'INVALIDOS'"
-            [class.shadow-sm]="filtroPrevia() === 'INVALIDOS'"
-            [class.font-bold]="filtroPrevia() === 'INVALIDOS'"
-            [class.text-rose-600]="filtroPrevia() === 'INVALIDOS'"
+          <button type="button" (click)="filtroPrevia.set('INVALIDOS')"
+            [class.bg-white]="filtroPrevia() === 'INVALIDOS'" [class.shadow-sm]="filtroPrevia() === 'INVALIDOS'"
+            [class.font-bold]="filtroPrevia() === 'INVALIDOS'" [class.text-rose-600]="filtroPrevia() === 'INVALIDOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Con Error ({{ totalInvalidos() }})
           </button>
@@ -457,7 +428,8 @@
       <!-- Tabla de previsualización -->
       <div class="max-h-64 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl shadow-inner">
         <table class="w-full text-xs text-left">
-          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
+          <thead
+            class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th class="p-2.5">#</th>
               <th class="p-2.5">Cédula</th>
@@ -475,36 +447,39 @@
               <td class="p-2.5 font-bold font-mono">{{ fila.cedula }}</td>
               <td class="p-2.5">
                 @if (fila.cargandoInfo) {
-                  <span class="flex items-center gap-1.5 text-cyan-600 font-medium">
-                    <i class="pi pi-spin pi-spinner text-xs"></i> Consultando Centralizada...
-                  </span>
+                <span class="flex items-center gap-1.5 text-cyan-600 font-medium">
+                  <i class="pi pi-spin pi-spinner text-xs"></i> Consultando Centralizada...
+                </span>
                 } @else {
-                  <span class="font-medium text-slate-800 dark:text-slate-100">
-                    {{ fila.nombres }} {{ fila.apellidos }}
-                  </span>
+                <span class="font-medium text-slate-800 dark:text-slate-100">
+                  {{ fila.nombres }} {{ fila.apellidos }}
+                </span>
                 }
               </td>
               <td class="p-2.5">
                 @if (fila.origenInfo === 'centralizada') {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-200">
-                    <i class="pi pi-cloud mr-1"></i> Centralizada
-                  </span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-200">
+                  <i class="pi pi-cloud mr-1"></i> Centralizada
+                </span>
                 } @else if (fila.origenInfo === 'local') {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200">
-                    <i class="pi pi-database mr-1"></i> Base Local
-                  </span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200">
+                  <i class="pi pi-database mr-1"></i> Base Local
+                </span>
                 } @else if (fila.origenInfo === 'excel') {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    Excel
-                  </span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  Excel
+                </span>
                 } @else if (fila.origenInfo === 'pendiente') {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                    Pendiente
-                  </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                  Pendiente
+                </span>
                 } @else {
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                    No Encontrado
-                  </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                  No Encontrado
+                </span>
                 }
               </td>
               <td class="p-2.5 text-purple-700 dark:text-purple-300 font-medium">
@@ -527,7 +502,8 @@
 
       <!-- Barra de Progreso durante la Carga -->
       @if (processingMasivo()) {
-      <div class="flex flex-col gap-1.5 mt-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200">
+      <div
+        class="flex flex-col gap-1.5 mt-2 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200">
         <span class="text-xs text-purple-700 dark:text-purple-300 font-semibold flex items-center gap-2">
           <i class="pi pi-spin pi-spinner text-sm"></i> Registrando invitados y activando carnets en el sistema...
         </span>
@@ -543,7 +519,8 @@
     <div class="flex flex-col gap-4">
       <!-- Tarjetas de métricas del lote -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+        <div
+          class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center">
           <div>
             <span class="text-xs text-slate-500 font-medium">Total Procesados</span>
             <h4 class="text-xl font-bold text-slate-800 dark:text-slate-100">{{ resultadoLote().total }}</h4>
@@ -551,7 +528,8 @@
           <i class="pi pi-list text-2xl text-slate-400"></i>
         </div>
 
-        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
+        <div
+          class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 flex justify-between items-center">
           <div>
             <span class="text-xs text-emerald-600 font-medium">Invitados Registrados</span>
             <h4 class="text-xl font-bold text-emerald-700 dark:text-emerald-300">{{ totalResultadosExitosos }}</h4>
@@ -559,7 +537,8 @@
           <i class="pi pi-check-circle text-2xl text-emerald-500"></i>
         </div>
 
-        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 flex justify-between items-center">
+        <div
+          class="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 flex justify-between items-center">
           <div>
             <span class="text-xs text-rose-600 font-medium">Registros con Error</span>
             <h4 class="text-xl font-bold text-rose-700 dark:text-rose-300">{{ totalResultadosErrores }}</h4>
@@ -574,33 +553,22 @@
           Detalle del Resultado por Invitado:
         </span>
         <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg text-xs">
-          <button
-            type="button"
-            (click)="filtroResultado.set('TODOS')"
-            [class.bg-white]="filtroResultado() === 'TODOS'"
-            [class.shadow-sm]="filtroResultado() === 'TODOS'"
-            [class.font-bold]="filtroResultado() === 'TODOS'"
+          <button type="button" (click)="filtroResultado.set('TODOS')" [class.bg-white]="filtroResultado() === 'TODOS'"
+            [class.shadow-sm]="filtroResultado() === 'TODOS'" [class.font-bold]="filtroResultado() === 'TODOS'"
             [class.text-purple-600]="filtroResultado() === 'TODOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Todos ({{ resultadoLote().detalles?.length || 0 }})
           </button>
-          <button
-            type="button"
-            (click)="filtroResultado.set('EXITOSOS')"
-            [class.bg-white]="filtroResultado() === 'EXITOSOS'"
-            [class.shadow-sm]="filtroResultado() === 'EXITOSOS'"
+          <button type="button" (click)="filtroResultado.set('EXITOSOS')"
+            [class.bg-white]="filtroResultado() === 'EXITOSOS'" [class.shadow-sm]="filtroResultado() === 'EXITOSOS'"
             [class.font-bold]="filtroResultado() === 'EXITOSOS'"
             [class.text-emerald-600]="filtroResultado() === 'EXITOSOS'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Exitosos ({{ totalResultadosExitosos }})
           </button>
-          <button
-            type="button"
-            (click)="filtroResultado.set('ERRORES')"
-            [class.bg-white]="filtroResultado() === 'ERRORES'"
-            [class.shadow-sm]="filtroResultado() === 'ERRORES'"
-            [class.font-bold]="filtroResultado() === 'ERRORES'"
-            [class.text-rose-600]="filtroResultado() === 'ERRORES'"
+          <button type="button" (click)="filtroResultado.set('ERRORES')"
+            [class.bg-white]="filtroResultado() === 'ERRORES'" [class.shadow-sm]="filtroResultado() === 'ERRORES'"
+            [class.font-bold]="filtroResultado() === 'ERRORES'" [class.text-rose-600]="filtroResultado() === 'ERRORES'"
             class="px-2.5 py-1 rounded transition-all text-slate-600 dark:text-slate-300">
             Solo Errores ({{ totalResultadosErrores }})
           </button>
@@ -610,7 +578,8 @@
       <!-- Tabla interactiva de resultados y errores -->
       <div class="max-h-72 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl shadow-inner">
         <table class="w-full text-xs text-left">
-          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
+          <thead
+            class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th class="p-2.5">Cédula</th>
               <th class="p-2.5">Nombre Completo</th>
@@ -625,7 +594,8 @@
             <tr [class.bg-rose-50/60]="det.estado !== 'Éxito'" [class.dark:bg-rose-950/30]="det.estado !== 'Éxito'">
               <td class="p-2.5 font-bold font-mono">{{ det.cedula || 'N/A' }}</td>
               <td class="p-2.5 font-medium">
-                {{ det.datos ? ((det.datos.strNombres || '') + ' ' + (det.datos.strApellidos || '')).trim() || 'N/A' : 'N/A' }}
+                {{ det.datos ? ((det.datos.strNombres || '') + ' ' + (det.datos.strApellidos || '')).trim() || 'N/A' :
+                'N/A' }}
               </td>
               <td class="p-2.5 text-purple-700 dark:text-purple-300 font-medium">
                 {{ det.datos?.strDepencia || 'BAR / PROVEEDOR' }}
@@ -633,15 +603,17 @@
               <td class="p-2.5 font-mono text-[11px]">
                 <div>{{ det.datos?.strCorreo || 'N/A' }}</div>
                 @if (det.estado === 'Éxito') {
-                  @if (det.datos?.correoEnviado !== false) {
-                    <span class="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1 mt-0.5">
-                      <i class="pi pi-check text-[9px]"></i> Correo enviado
-                    </span>
-                  } @else {
-                    <span class="text-amber-600 dark:text-amber-400 text-[10px] font-semibold flex items-center gap-1 mt-0.5">
-                      <i class="pi pi-exclamation-circle text-[9px]"></i> Correo no enviado
-                    </span>
-                  }
+                @if (det.datos?.correoEnviado !== false) {
+                <span
+                  class="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1 mt-0.5">
+                  <i class="pi pi-check text-[9px]"></i> Correo enviado
+                </span>
+                } @else {
+                <span
+                  class="text-amber-600 dark:text-amber-400 text-[10px] font-semibold flex items-center gap-1 mt-0.5">
+                  <i class="pi pi-exclamation-circle text-[9px]"></i> Correo no enviado
+                </span>
+                }
                 }
               </td>
               <td class="p-2.5 text-center">
@@ -662,18 +634,12 @@
       </div>
 
       <div class="flex justify-between items-center gap-2 pt-2">
-        <p-button
-          label="Cargar Otro Archivo"
-          icon="pi pi-refresh"
-          (click)="limpiarCargaMasiva()"
+        <p-button label="Cargar Otro Archivo" icon="pi pi-refresh" (click)="limpiarCargaMasiva()"
           styleClass="p-button-outlined p-button-secondary p-button-sm">
         </p-button>
 
-        <p-button
-          label="Descargar Reporte Completo (.xlsx)"
-          icon="pi pi-file-excel"
-          (click)="descargarReporteResultados()"
-          styleClass="p-button-success p-button-sm">
+        <p-button label="Descargar Reporte Completo (.xlsx)" icon="pi pi-file-excel"
+          (click)="descargarReporteResultados()" styleClass="p-button-success p-button-sm">
         </p-button>
       </div>
     </div>
@@ -682,15 +648,13 @@
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
-      <p-button label="Cerrar" icon="pi pi-times" (click)="dialogMasivo.set(false)" styleClass="p-button-text p-button-secondary"></p-button>
+      <p-button label="Cerrar" icon="pi pi-times" (click)="dialogMasivo.set(false)"
+        styleClass="p-button-text p-button-secondary"></p-button>
       @if (!resultadoLote()) {
-      <p-button
-        label="Procesar Carga Masiva"
-        icon="pi pi-play"
+      <p-button label="Procesar Carga Masiva" icon="pi pi-play"
         [loading]="processingMasivo() || resolviendoCentralizada()"
         [disabled]="totalValidos() === 0 || processingMasivo() || resolviendoCentralizada()"
-        (click)="ejecutarCargaMasiva()"
-        styleClass="p-button-success">
+        (click)="ejecutarCargaMasiva()" styleClass="p-button-success">
       </p-button>
       }
     </div>
@@ -698,18 +662,15 @@
 </p-dialog>
 
 <!-- Modal: Cambiar Contraseña -->
-<p-dialog
-  header="Cambiar Contraseña de Invitado"
-  [(visible)]="dialogPassword"
-  [modal]="true"
-  [style]="{ width: '90vw', maxWidth: '480px' }"
-  [draggable]="false"
-  [resizable]="false">
+<p-dialog header="Cambiar Contraseña de Invitado" [(visible)]="dialogPassword" [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '480px' }" [draggable]="false" [resizable]="false">
 
   <div class="flex flex-col gap-4 py-2" *ngIf="invitadoSeleccionadoPassword">
     <!-- Info del Invitado -->
-    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/60 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm">
+    <div
+      class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/60 flex items-center justify-center text-purple-700 dark:text-purple-300 font-bold text-sm">
         {{ invitadoSeleccionadoPassword.strNombres.charAt(0) }}{{ invitadoSeleccionadoPassword.strApellidos.charAt(0) }}
       </div>
       <div class="flex flex-col flex-1 min-w-0">
@@ -729,16 +690,9 @@
         Nueva Contraseña <span class="text-red-500">*</span>
       </label>
       <div class="flex gap-2">
-        <input
-          type="text"
-          pInputText
-          [(ngModel)]="nuevaClave"
-          placeholder="Ingrese o genere una clave"
+        <input type="text" pInputText [(ngModel)]="nuevaClave" placeholder="Ingrese o genere una clave"
           class="w-full font-mono font-bold tracking-wider" />
-        <p-button
-          icon="pi pi-refresh"
-          (click)="generarNuevaClaveManual()"
-          pTooltip="Generar clave aleatoria"
+        <p-button icon="pi pi-refresh" (click)="generarNuevaClaveManual()" pTooltip="Generar clave aleatoria"
           styleClass="p-button-outlined p-button-secondary">
         </p-button>
       </div>
@@ -752,22 +706,16 @@
       <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">
         Correo para Notificación <span class="text-red-500" *ngIf="notificarPorCorreo">*</span>
       </label>
-      <input
-        type="email"
-        pInputText
-        [(ngModel)]="correoNotificacionClave"
-        placeholder="ejemplo@correo.com"
+      <input type="email" pInputText [(ngModel)]="correoNotificacionClave" placeholder="ejemplo@correo.com"
         class="w-full" />
     </div>
 
     <!-- Checkbox Notificar -->
     <div class="flex items-center gap-2 mt-1">
-      <input
-        type="checkbox"
-        id="chkNotificarInvitado"
-        [(ngModel)]="notificarPorCorreo"
+      <input type="checkbox" id="chkNotificarInvitado" [(ngModel)]="notificarPorCorreo"
         class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer" />
-      <label for="chkNotificarInvitado" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+      <label for="chkNotificarInvitado"
+        class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
         Enviar credenciales actualizadas por correo electrónico
       </label>
     </div>
@@ -775,18 +723,101 @@
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
-      <p-button
-        label="Cancelar"
-        icon="pi pi-times"
-        (click)="dialogPassword.set(false)"
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogPassword.set(false)"
         styleClass="p-button-text p-button-secondary">
       </p-button>
-      <p-button
-        label="Actualizar Contraseña"
-        icon="pi pi-check"
-        [loading]="guardandoPassword()"
-        (click)="guardarPassword()"
-        styleClass="p-button-primary">
+      <p-button label="Actualizar Contraseña" icon="pi pi-check" [loading]="guardandoPassword()"
+        (click)="guardarPassword()" styleClass="p-button-primary">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ========================================== -->
+<!-- MODAL: EDITAR INFORMACIÓN DE INVITADO      -->
+<!-- ========================================== -->
+<p-dialog [(visible)]="dialogEditar" [modal]="true" header="Editar Datos de Invitado"
+  [style]="{ width: '90vw', maxWidth: '580px' }" [draggable]="false" [resizable]="false">
+
+  @if (invitadoSeleccionadoEditar) {
+  <div class="flex flex-col gap-4 py-2 text-sm">
+    <!-- Encabezado con datos del invitado (Solo Lectura) -->
+    <div
+      class="p-3.5 bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-sm shadow">
+        {{ (invitadoSeleccionadoEditar.strNombres || '').charAt(0) }}{{ (invitadoSeleccionadoEditar.strApellidos || '').charAt(0) }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">
+          {{ invitadoSeleccionadoEditar.strNombres }} {{ invitadoSeleccionadoEditar.strApellidos }}
+        </h4>
+        <div class="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          <span>Cédula: <strong class="font-mono text-slate-700 dark:text-slate-200">{{ invitadoSeleccionadoEditar.strCedula }}</strong></span>
+          <span class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded font-semibold text-[10px]">
+            {{ invitadoSeleccionadoEditar.strDepencia || 'BAR / PROVEEDOR' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos Correo y Teléfono -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Correo Personal:
+        </label>
+        <input pInputText type="email" [(ngModel)]="editarCorreo" placeholder="correo@ejemplo.com" class="w-full" />
+        <span class="text-[11px] text-slate-400">Utilizado para acceso y notificación de credenciales.</span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          Teléfono / Celular:
+        </label>
+        <input pInputText type="text" [(ngModel)]="editarTelefono" placeholder="099..." class="w-full" />
+        <span class="text-[11px] text-slate-400">Contacto telefónico directo.</span>
+      </div>
+    </div>
+
+    <!-- Campo Local / Bar / Proveedor -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Local, Bar o Empresa Proveedora: <span class="text-rose-500">*</span>
+      </label>
+      <input pInputText type="text" [(ngModel)]="editarDependencia"
+        placeholder="Ej: Bar Facultad de Informática / Distribuidora Alimentos San Pedro" class="w-full" />
+    </div>
+
+    <!-- Campo Cargo / Función -->
+    <div class="flex flex-col gap-1.5">
+      <label class="font-bold text-xs text-slate-700 dark:text-slate-300">
+        Cargo / Función:
+      </label>
+      <input pInputText type="text" [(ngModel)]="editarCargo"
+        placeholder="Ej: Atención al Cliente / Repartidor / Proveedor Externo" class="w-full" />
+    </div>
+
+    <!-- Vigencia del Carnet -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col gap-1.5">
+      <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+        <i class="pi pi-calendar text-purple-600 dark:text-purple-400"></i>
+        Fecha Fin de Vigencia del Carnet:
+      </label>
+      <input pInputText type="date" [(ngModel)]="editarFechaFin" class="w-full text-xs" />
+      <span class="text-[11px] text-slate-400">
+        Modifique esta fecha si necesita extender o recortar la vigencia del carnet del invitado.
+      </span>
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" (click)="dialogEditar.set(false)"
+        styleClass="p-button-text p-button-secondary">
+      </p-button>
+      <p-button label="Guardar Cambios" icon="pi pi-check" [loading]="guardandoEdicion()"
+        (click)="guardarEdicionInvitado()" styleClass="p-button-primary">
       </p-button>
     </div>
   </ng-template>

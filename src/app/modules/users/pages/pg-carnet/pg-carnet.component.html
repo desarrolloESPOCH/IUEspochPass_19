@@ -15,6 +15,25 @@
           </span>
         </div>
 
+        @if (isCaducado()) {
+          <div class="mb-4 p-3 sm:p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-xl flex items-center justify-between gap-3 text-red-700 dark:text-red-300">
+            <div class="flex items-center gap-2.5">
+              <span class="pi pi-exclamation-triangle text-base sm:text-lg text-red-500 shrink-0"></span>
+              <div class="text-xs sm:text-sm">
+                <span class="font-bold block">Tu carnet ha caducado</span>
+                <span class="text-red-600 dark:text-red-400 text-xs">Actualiza tus datos para renovarlo.</span>
+              </div>
+            </div>
+            <button 
+              type="button"
+              (click)="irAEnrolamiento()"
+              class="cursor-pointer px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-sm">
+              <span class="pi pi-refresh"></span>
+              <span>Renovar</span>
+            </button>
+          </div>
+        }
+
         <p class="text-xs sm:text-sm text-slate-400 dark:text-zinc-500 mb-4 sm:mb-6">
           Presiona tu credencial digital para acceder al código de escaneo QR y detalles de tu cuenta.
         </p>
@@ -67,6 +86,9 @@
               (load)="onImageLoad()"
               (error)="onImageError($event)"
             />
+
+            <!-- Efecto de Reflexión / Premium Card Shine -->
+            <div class="carnet-shine" aria-hidden="true"></div>
 
             @if (imagenCargada() && !imagenError()) {
               <div class="carnet-overlay">
@@ -122,14 +144,24 @@
         </div>
       </div>
 
-      <div class="border-t border-slate-100 dark:border-zinc-800 pt-3 sm:pt-4 flex justify-center">
+      <div class="border-t border-slate-100 dark:border-zinc-800 pt-3 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         @if (!mostrarCarnet) {
           <p-skeleton width="180px" height="1.8rem" borderRadius="12px"></p-skeleton>
+          <p-skeleton width="140px" height="2rem" borderRadius="12px"></p-skeleton>
         } @else {
-          <div class="expiration-badge text-xs sm:text-sm" [class.expired]="isCaducado()">
+          <div class="expiration-badge text-xs sm:text-sm justify-center sm:justify-start" [class.expired]="isCaducado()">
             <span class="pi pi-calendar-times"></span>
             <span>Válido hasta: {{ fecha() | date : "dd/MM/yy, h:mm a" }}</span>
           </div>
+
+          <button
+            type="button"
+            (click)="irAEnrolamiento()"
+            class="btn-enrolamiento cursor-pointer"
+            [class.expired-btn]="isCaducado()">
+            <span class="pi" [ngClass]="isCaducado() ? 'pi-refresh' : 'pi-user-edit'"></span>
+            <span>{{ isCaducado() ? 'Renovar Carnet' : 'Actualizar Datos' }}</span>
+          </button>
         }
       </div>
 

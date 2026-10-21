@@ -198,4 +198,8 @@ export class PgCarnetComponent {
   opencarnet() {
     this.router.navigate(['/dashboard/users/qr']);
   }
+
+  irAEnrolamiento() {
+    this.router.navigate(['/enrolamiento']);
+  }
 }

@@ -101,6 +101,11 @@ export class CSidebarComponent implements OnInit {
         });
       }
       menu.push({
+        label: 'Actualizar Datos / Carnet',
+        icon: 'pi pi-user-edit',
+        command: () => this.obtenerRutas('/enrolamiento')
+      });
+      menu.push({
         label: 'Historial de Cambios',
         icon: 'pi pi-history',
         command: () => this.obtenerRutas('/dashboard/changelog')

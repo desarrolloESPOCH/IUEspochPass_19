@@ -306,7 +306,23 @@ export class AdminCarnetsService {
     );
   }
 
-  agregarGuardia(body: { strCedula: string; strNombres?: string; strApellidos?: string; strCorreo?: string; strTelefono?: string; adminInfo?: any }): Observable<any> {
+  editarGuardia(body: {
+    intPersona: number;
+    strCedula?: string;
+    strTelefono?: string;
+    strDepencia: string;
+    strCorreo?: string;
+    strCargo?: string;
+    dtFechaFin?: string;
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.put<any>(
+      `${this.URLSERVICIO}/admin/guardia/editar`,
+      body
+    );
+  }
+
+  agregarGuardia(body: { strCedula: string; strNombres?: string; strApellidos?: string; strCorreo?: string; strTelefono?: string; strDepencia?: string; adminInfo?: any }): Observable<any> {
     return this.http.post<any>(
       `${this.URLSERVICIO}/admin/guardia/agregar`,
       body
@@ -345,6 +361,24 @@ export class AdminCarnetsService {
     );
   }
 
+  editarInvitado(body: {
+    intPersona: number;
+    strCedula?: string;
+    strNombres?: string;
+    strApellidos?: string;
+    strCorreo?: string;
+    strTelefono?: string;
+    strDepencia?: string;
+    strCargo?: string;
+    dtFechaFin?: string;
+    adminInfo?: any;
+  }): Observable<any> {
+    return this.http.put<any>(
+      `${this.URLSERVICIO}/admin/invitado/editar`,
+      body
+    );
+  }
+
   agregarInvitado(body: {
     strCedula: string;
     strNombres?: string;
@@ -354,6 +388,7 @@ export class AdminCarnetsService {
     strDepencia?: string;
     strCargo?: string;
     mesesVigencia?: number;
+    dtFechaFin?: string;
     adminInfo?: any;
   }): Observable<any> {
     return this.http.post<any>(
@@ -365,6 +400,7 @@ export class AdminCarnetsService {
   cargaMasivaInvitados(payload: {
     lista: any[];
     mesesVigencia?: number;
+    dtFechaFin?: string;
     adminInfo?: any;
   }): Observable<any> {
     return this.http.post<any>(
